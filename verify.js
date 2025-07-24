@@ -31,7 +31,15 @@ let allFilesExist = true;
 
 requiredFiles.forEach(file => {
     const exists = fs.existsSync(path.join(__dirname, file));
-    console.log(`  ${exists ? '✅' : '❌'} ${file}`);
+// Import the DOMPurify library for sanitizing user input
+// const DOMPurify = require('dompurify');
+
+requiredFiles.forEach(file => {
+    const exists = fs.existsSync(path.join(__dirname, file));
+    const sanitizedFile = DOMPurify.sanitize(file);
+    console.log(`  ${exists ? '✅' : '❌'} ${sanitizedFile}`);
+    if (!exists) allFilesExist = false;
+});
     if (!exists) allFilesExist = false;
 });
 
