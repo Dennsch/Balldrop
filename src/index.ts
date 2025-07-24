@@ -37,52 +37,12 @@ document.addEventListener('DOMContentLoaded', () => {
             text-align: center;
             z-index: 1000;
         `;
-// Import DOMPurify for HTML sanitization
-    // DOMPurify is a library that sanitizes HTML and prevents XSS attacks
-    try {
-        // Create game instance with default configuration
-        const game = new Game({
-            gridSize: 20,
-            ballsPerPlayer: 10,
-            minBoxes: 15,
-            maxBoxes: 30
-        });
-
-        // Create UI controller
-        const gameUI = new GameUI(game);
-
-        // Make game available globally for debugging
-        (window as any).game = game;
-        (window as any).gameUI = gameUI;
-
-        console.log('Balldrop game initialized successfully!');
-    } catch (error) {
-        console.error('Failed to initialize game:', error);
         
-        // Show error message to user
-        const errorDiv = document.createElement('div');
-        errorDiv.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #ff6b6b;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            z-index: 1000;
-        `;
-        errorDiv.innerHTML = DOMPurify.sanitize(`
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        errorDiv.innerHTML = `
             <h3>Game Initialization Error</h3>
             <p>Failed to start the game. Please refresh the page and try again.</p>
-            <p><small>${error instanceof Error ? error.message : 'Unknown error'}</small></p>
-        `);
-        document.body.appendChild(errorDiv);
-    }
-            <h3>Game Initialization Error</h3>
-            <p>Failed to start the game. Please refresh the page and try again.</p>
-            <p><small>${error instanceof Error ? error.message : 'Unknown error'}</small></p>
+            <p><small>${errorMessage}</small></p>
         `;
         document.body.appendChild(errorDiv);
     }

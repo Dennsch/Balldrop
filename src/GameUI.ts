@@ -3,15 +3,15 @@ import { CellType, Direction, GameState, Player, Position } from './types.js';
 
 export class GameUI {
     private game: Game;
-    private gridElement: HTMLElement;
-    private columnSelectorsElement: HTMLElement;
-    private player1BallsElement: HTMLElement;
-    private player2BallsElement: HTMLElement;
-    private currentPlayerElement: HTMLElement;
-    private winnerMessageElement: HTMLElement;
-    private gameMessageElement: HTMLElement;
-    private newGameButton: HTMLElement;
-    private resetButton: HTMLElement;
+    private gridElement!: HTMLElement;
+    private columnSelectorsElement!: HTMLElement;
+    private player1BallsElement!: HTMLElement;
+    private player2BallsElement!: HTMLElement;
+    private currentPlayerElement!: HTMLElement;
+    private winnerMessageElement!: HTMLElement;
+    private gameMessageElement!: HTMLElement;
+    private newGameButton!: HTMLElement;
+    private resetButton!: HTMLElement;
 
     constructor(game: Game) {
         this.game = game;
@@ -180,8 +180,6 @@ export class GameUI {
 
         if (state === GameState.FINISHED) {
             const result = this.game.getGameResult();
-if (state === GameState.FINISHED) {
-            const result = this.game.getGameResult();
             this.winnerMessageElement.classList.remove('hidden');
             this.winnerMessageElement.className = 'winner-message';
 
@@ -211,36 +209,6 @@ if (state === GameState.FINISHED) {
     // Helper method to sanitize input
     private sanitizeInput(input: any): string {
         return String(input).replace(/[^\w\s]/gi, '');
-    }
-            this.winnerMessageElement.className = 'winner-message';
-
-            if (result.isTie) {
-                this.winnerMessageElement.classList.add('tie');
-                this.winnerMessageElement.textContent = `It's a tie! Both players control ${result.player1Columns} columns`;
-            } else if (result.winner === Player.PLAYER1) {
-                this.winnerMessageElement.classList.add('player1-wins');
-                this.winnerMessageElement.textContent = `Player 1 wins! Controls ${result.player1Columns} columns vs ${result.player2Columns}`;
-            } else if (result.winner === Player.PLAYER2) {
-                this.winnerMessageElement.classList.add('player2-wins');
-                this.winnerMessageElement.textContent = `Player 2 wins! Controls ${result.player2Columns} columns vs ${result.player1Columns}`;
-            }
-
-            this.gameMessageElement.textContent = 'Game finished! Click "New Game" to play again.';
-        } else {
-            this.winnerMessageElement.classList.add('hidden');
-            
-            if (state === GameState.SETUP) {
-                this.gameMessageElement.textContent = 'Welcome to Balldrop! Click "New Game" to start playing.';
-            } else if (state === GameState.PLAYING) {
-if (state === GameState.SETUP) {
-                this.gameMessageElement.textContent = 'Welcome to Balldrop! Click "New Game" to start playing.';
-            } else if (state === GameState.PLAYING) {
-                this.gameMessageElement.textContent = 'Drop your tokens in columns. Boxes will redirect them!';
-            }
-        }
-    }
-            }
-        }
     }
 
     private getCellElement(row: number, col: number): HTMLElement | null {
