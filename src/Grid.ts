@@ -77,7 +77,40 @@ export class Grid {
         let currentCol = col;
 
         // Find the starting position (first empty cell in the column)
-        while (currentRow < this.size && this.cells[currentRow][currentCol].type !== CellType.EMPTY) {
+public dropBall(col: number, player: Player): Position | null {
+        if (!this.isValidPosition(0, col)) {
+            return null;
+        }
+
+        let currentRow = 0;
+        let currentCol = col;
+
+        // Find the starting position (first empty cell in the column)
+        while (currentRow < this.size && this.isValidPosition(currentRow, currentCol) && this.cells[currentRow][currentCol].type !== CellType.EMPTY) {
+            currentRow++;
+        }
+
+        if (currentRow >= this.size) {
+            return null; // Column is full
+        }
+
+        // Simulate ball falling
+        while (currentRow < this.size) {
+            const nextRow = currentRow + 1;
+
+            // Check if we've reached the bottom
+            if (nextRow >= this.size) {
+                break;
+            }
+
+            if (!this.isValidPosition(nextRow, currentCol)) {
+                break;
+            }
+
+            const nextCell = this.cells[nextRow][currentCol];
+
+            // If next cell is empty, continue falling
+            if (nextCell.type === CellType.EMPTY) {
             currentRow++;
         }
 
