@@ -66,7 +66,27 @@ try {
     console.log(`  ${hasRequiredDeps ? '✅' : '❌'} Required dev dependencies: ${requiredDevDeps.join(', ')}`);
     
 } catch (error) {
-    console.log('  ❌ Error reading package.json:', error.message);
+// Import the DOMPurify library for sanitizing user input
+// const DOMPurify = require('dompurify');
+
+try {
+    const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    
+    const requiredScripts = ['build', 'dev', 'test', 'serve'];
+    const hasAllScripts = requiredScripts.every(script => packageJson.scripts && packageJson.scripts[script]);
+    
+    console.log(`  ${hasAllScripts ? '✅' : '❌'} Required scripts: ${requiredScripts.join(', ')}`);
+    
+    const requiredDevDeps = ['typescript', 'jest', 'ts-jest'];
+    const hasRequiredDeps = requiredDevDeps.every(dep => 
+        packageJson.devDependencies && packageJson.devDependencies[dep]
+    );
+    
+    console.log(`  ${hasRequiredDeps ? '✅' : '❌'} Required dev dependencies: ${requiredDevDeps.join(', ')}`);
+    
+} catch (error) {
+    console.log('  ❌ Error reading package.json:', DOMPurify.sanitize(error.message));
+}
 }
 
 // Check TypeScript configuration
