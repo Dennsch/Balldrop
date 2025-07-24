@@ -232,7 +232,13 @@ if (state === GameState.FINISHED) {
             if (state === GameState.SETUP) {
                 this.gameMessageElement.textContent = 'Welcome to Balldrop! Click "New Game" to start playing.';
             } else if (state === GameState.PLAYING) {
-                this.gameMessageElement.textContent = 'Drop your balls in columns. Boxes will redirect them!';
+if (state === GameState.SETUP) {
+                this.gameMessageElement.textContent = 'Welcome to Balldrop! Click "New Game" to start playing.';
+            } else if (state === GameState.PLAYING) {
+                this.gameMessageElement.textContent = 'Drop your tokens in columns. Boxes will redirect them!';
+            }
+        }
+    }
             }
         }
     }
