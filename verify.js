@@ -83,7 +83,23 @@ try {
     console.log(`  ${hasTarget ? '✅' : '❌'} Target ES version configured`);
     
 } catch (error) {
-    console.log('  ❌ Error reading tsconfig.json:', error.message);
+// Import the DOMPurify library for sanitizing user input
+// const DOMPurify = require('dompurify');
+
+try {
+    const tsConfig = JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
+    
+    const hasOutDir = tsConfig.compilerOptions && tsConfig.compilerOptions.outDir;
+    const hasRootDir = tsConfig.compilerOptions && tsConfig.compilerOptions.rootDir;
+    const hasTarget = tsConfig.compilerOptions && tsConfig.compilerOptions.target;
+    
+    console.log(`  ${hasOutDir ? '✅' : '❌'} Output directory configured`);
+    console.log(`  ${hasRootDir ? '✅' : '❌'} Root directory configured`);
+    console.log(`  ${hasTarget ? '✅' : '❌'} Target ES version configured`);
+    
+} catch (error) {
+    console.log('  ❌ Error reading tsconfig.json:', DOMPurify.sanitize(error.message));
+}
 }
 
 // Check HTML structure
