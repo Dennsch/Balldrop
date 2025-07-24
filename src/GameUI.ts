@@ -180,7 +180,38 @@ export class GameUI {
 
         if (state === GameState.FINISHED) {
             const result = this.game.getGameResult();
+if (state === GameState.FINISHED) {
+            const result = this.game.getGameResult();
             this.winnerMessageElement.classList.remove('hidden');
+            this.winnerMessageElement.className = 'winner-message';
+
+            if (result.isTie) {
+                this.winnerMessageElement.classList.add('tie');
+                this.winnerMessageElement.textContent = `It's a tie! Both players control ${this.sanitizeInput(result.player1Columns)} columns`;
+            } else if (result.winner === Player.PLAYER1) {
+                this.winnerMessageElement.classList.add('player1-wins');
+                this.winnerMessageElement.textContent = `Player 1 wins! Controls ${this.sanitizeInput(result.player1Columns)} columns vs ${this.sanitizeInput(result.player2Columns)}`;
+            } else if (result.winner === Player.PLAYER2) {
+                this.winnerMessageElement.classList.add('player2-wins');
+                this.winnerMessageElement.textContent = `Player 2 wins! Controls ${this.sanitizeInput(result.player2Columns)} columns vs ${this.sanitizeInput(result.player1Columns)}`;
+            }
+
+            this.gameMessageElement.textContent = 'Game finished! Click "New Game" to play again.';
+        } else {
+            this.winnerMessageElement.classList.add('hidden');
+            
+            if (state === GameState.SETUP) {
+                this.gameMessageElement.textContent = 'Welcome to Balldrop! Click "New Game" to start playing.';
+            } else if (state === GameState.PLAYING) {
+                this.gameMessageElement.textContent = 'Drop your balls in columns. Boxes will redirect them!';
+            }
+        }
+    }
+
+    // Helper method to sanitize input
+    private sanitizeInput(input: any): string {
+        return String(input).replace(/[^\w\s]/gi, '');
+    }
             this.winnerMessageElement.className = 'winner-message';
 
             if (result.isTie) {
