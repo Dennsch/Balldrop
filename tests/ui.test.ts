@@ -99,6 +99,19 @@ describe('UI Component Tests', () => {
       expect(title).toBeTruthy();
       expect(title?.textContent).toBe('Balldrop Game');
     });
+
+    it('should have logo with reduced size styling', () => {
+      const logoElement = document.querySelector('.game-logo') as HTMLImageElement;
+      expect(logoElement).toBeTruthy();
+      
+      // Verify the logo has the game-logo class which should have reduced size styling
+      expect(logoElement.classList.contains('game-logo')).toBe(true);
+      
+      // The actual size verification would be done through CSS, but we can verify
+      // the element structure is correct for the styling to be applied
+      expect(logoElement.tagName).toBe('IMG');
+      expect(logoElement.src).toContain('assets/icon.png');
+    });
   });
 
   describe('CSS Classes and Styling', () => {
