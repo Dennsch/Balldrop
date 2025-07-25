@@ -4,6 +4,22 @@
     box-sizing: border-box;
 }
 
+:root {
+    /* Animation timing variables - can be dynamically updated */
+    --ball-transition-duration: 0.35s;
+    --cell-transition-duration: 0.15s;
+    --button-transition-duration: 0.2s;
+    --fall-animation-duration: 0.25s;
+    --box-hit-animation-duration: 0.3s;
+    --arrow-rotate-duration: 0.2s;
+    --arrow-transition-duration: 0.15s;
+    --bottom-row-effect-duration: 0.8s;
+    --ball-place-animation-duration: 0.4s;
+    
+    /* JavaScript timing multipliers (used in GameUI.ts) */
+    --js-timing-multiplier: 1;
+}
+
 body {
     font-family: 'Arial', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -94,7 +110,7 @@ h1 {
     border-radius: 5px;
     cursor: pointer;
     font-size: 12px;
-    transition: background-color 0.2s;
+    transition: background-color var(--button-transition-duration);
 }
 
 .column-selector:hover:not(:disabled) {
@@ -133,7 +149,7 @@ h1 {
     font-size: 16px;
     font-weight: bold;
     position: relative;
-    transition: all 0.15s ease;
+    transition: all var(--cell-transition-duration) ease;
 }
 
 .cell.has-box {
@@ -152,7 +168,7 @@ h1 {
 }
 
 .cell.falling {
-    animation: fall 0.25s ease-in;
+    animation: fall var(--fall-animation-duration) ease-in;
 }
 
 @keyframes fall {
@@ -177,7 +193,7 @@ h1 {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all 0.35s ease-in-out;
+    transition: all var(--ball-transition-duration) ease-in-out;
     border: 2px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5);
 }
@@ -193,7 +209,7 @@ h1 {
 }
 
 .cell.box-hit {
-    animation: boxHit 0.3s ease-out;
+    animation: boxHit var(--box-hit-animation-duration) ease-out;
 }
 
 @keyframes boxHit {
@@ -215,11 +231,11 @@ h1 {
 .arrow {
     font-size: 18px;
     font-weight: bold;
-    transition: transform 0.15s ease-in-out;
+    transition: transform var(--arrow-transition-duration) ease-in-out;
 }
 
 .arrow.arrow-changing {
-    animation: arrowRotate 0.2s ease-in-out;
+    animation: arrowRotate var(--arrow-rotate-duration) ease-in-out;
 }
 
 @keyframes arrowRotate {
@@ -236,7 +252,7 @@ h1 {
 }
 
 .cell.bottom-row-effect {
-    animation: bottomRowHighlight 0.8s ease-out;
+    animation: bottomRowHighlight var(--bottom-row-effect-duration) ease-out;
 }
 
 @keyframes bottomRowHighlight {
@@ -257,7 +273,7 @@ h1 {
 }
 
 .cell.ball-placing {
-    animation: ballPlace 0.4s ease-out;
+    animation: ballPlace var(--ball-place-animation-duration) ease-out;
 }
 
 @keyframes ballPlace {
@@ -278,8 +294,45 @@ h1 {
 .game-controls {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 15px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.animation-speed-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.animation-speed-control label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
+
+.speed-select {
+    padding: 8px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    transition: all var(--button-transition-duration);
+    min-width: 80px;
+}
+
+.speed-select:hover {
+    border-color: #007bff;
+}
+
+.speed-select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 .btn {
@@ -289,7 +342,7 @@ h1 {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--button-transition-duration);
 }
 
 .btn-primary {

@@ -21,6 +21,13 @@ export enum GameState {
     FINISHED = 'FINISHED'
 }
 
+export enum AnimationSpeed {
+    SLOW = 'SLOW',
+    NORMAL = 'NORMAL',
+    FAST = 'FAST',
+    INSTANT = 'INSTANT'
+}
+
 export interface Position {
     row: number;
     col: number;
