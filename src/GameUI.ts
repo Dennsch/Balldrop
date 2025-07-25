@@ -116,8 +116,17 @@ export class GameUI {
                 await this.animateToPosition(animatedBall, step.position, step.action, isLastStep);
                 
                 // Add visual effects for special actions
-                if (step.hitBox) {
-                    await this.animateBoxHit(step.position, step.boxDirection);
+                if (step.hitBox && step.boxPosition && step.boxDirection && step.newBoxDirection) {
+                    // Animate the box hit effect and arrow direction change simultaneously
+                    const boxHitPromise = this.animateBoxHit(step.boxPosition, step.boxDirection);
+                    const arrowChangePromise = this.animateBoxDirectionChange(
+                        step.boxPosition, 
+                        step.boxDirection, 
+                        step.newBoxDirection
+                    );
+                    
+                    // Wait for both animations to complete
+                    await Promise.all([boxHitPromise, arrowChangePromise]);
                 }
             }
 
@@ -145,15 +154,17 @@ export class GameUI {
         // Position it initially off-screen
         ball.style.position = 'absolute';
         ball.style.zIndex = '1000';
-        ball.style.fontSize = '16px';
+        ball.style.fontSize = '20px';
         ball.style.fontWeight = 'bold';
-        ball.style.width = '28px';
-        ball.style.height = '28px';
+        ball.style.width = '32px';
+        ball.style.height = '32px';
         ball.style.display = 'flex';
         ball.style.alignItems = 'center';
         ball.style.justifyContent = 'center';
         ball.style.borderRadius = '50%';
         ball.style.transition = 'all 0.8s ease-in-out';
+        ball.style.border = '2px solid rgba(255, 255, 255, 0.8)';
+        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
         
         if (player === Player.PLAYER1) {
             ball.style.backgroundColor = '#ff6b6b';
@@ -177,19 +188,33 @@ export class GameUI {
             const rect = cellElement.getBoundingClientRect();
             const gridRect = this.gridElement.getBoundingClientRect();
             
-            // Calculate position relative to grid
-            const left = rect.left - gridRect.left + (rect.width - 28) / 2;
-            const top = rect.top - gridRect.top + (rect.height - 28) / 2;
+            // Calculate position relative to grid (updated for new ball size)
+            const left = rect.left - gridRect.left + (rect.width - 32) / 2;
+            const top = rect.top - gridRect.top + (rect.height - 32) / 2;
             
             ball.style.left = `${left}px`;
             ball.style.top = `${top}px`;
 
             // Add visual effects based on action
             if (action === 'redirect') {
-                ball.style.transform = 'scale(1.2)';
+                ball.style.transform = 'scale(1.3) rotate(360deg)';
+                ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 255, 0, 0.8)';
                 setTimeout(() => {
                     ball.style.transform = 'scale(1)';
-                }, 150);
+                    ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
+                }, 300);
+            } else if (action === 'fall') {
+                // Add subtle bounce effect for falling
+                ball.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    ball.style.transform = 'scale(1)';
+                }, 100);
+            } else if (action === 'settle') {
+                // Add settling effect
+                ball.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    ball.style.transform = 'scale(1)';
+                }, 200);
             }
 
             // Adjust timing based on action - slower for better visibility
@@ -212,6 +237,46 @@ export class GameUI {
                 resolve();
             }
         });
+    }
+
+    private async animateBoxDirectionChange(boxPosition: Position, oldDirection: Direction, newDirection: Direction): Promise<void> {
+        return new Promise((resolve) => {
+            const cellElement = this.getCellElement(boxPosition.row, boxPosition.col);
+            if (!cellElement) {
+                resolve();
+                return;
+            }
+
+            const arrowElement = cellElement.querySelector('.arrow') as HTMLElement;
+            if (!arrowElement) {
+                resolve();
+                return;
+            }
+
+            // Add rotation animation class
+            arrowElement.classList.add('arrow-changing');
+            
+            // Change the arrow text after a brief delay to show the rotation effect
+            setTimeout(() => {
+                arrowElement.textContent = newDirection === Direction.LEFT ? '←' : '→';
+                
+                // Remove animation class after animation completes
+                setTimeout(() => {
+                    arrowElement.classList.remove('arrow-changing');
+                    resolve();
+                }, 300);
+            }, 150);
+        });
+    }
+
+    private updateBoxCell(position: Position, newDirection: Direction): void {
+        const cellElement = this.getCellElement(position.row, position.col);
+        if (cellElement) {
+            const arrowElement = cellElement.querySelector('.arrow') as HTMLElement;
+            if (arrowElement) {
+                arrowElement.textContent = newDirection === Direction.LEFT ? '←' : '→';
+            }
+        }
     }
 
     private updateUI(): void {

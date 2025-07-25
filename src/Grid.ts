@@ -123,13 +123,16 @@ export class Grid {
                 
                 // Change the box direction
                 nextCell.direction = nextCell.direction === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
+                const newDirection = nextCell.direction;
 
                 // Add box hit step
                 pathSteps.push({
                     position: { row: currentRow, col: currentCol },
                     action: 'redirect',
                     hitBox: true,
-                    boxDirection: originalDirection
+                    boxDirection: originalDirection,
+                    newBoxDirection: newDirection,
+                    boxPosition: { row: nextRow, col: currentCol }
                 });
 
                 // Redirect the ball
