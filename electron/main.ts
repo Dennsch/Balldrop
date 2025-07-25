@@ -20,7 +20,7 @@ function createWindow(): void {
       webSecurity: true
     },
     icon: path.join(__dirname, '../../assets/icon.png'), // We'll add this later
-    title: 'Balldrop Game',
+    title: 'Dropple',
     show: false // Don't show until ready
   });
 
@@ -143,11 +143,11 @@ function createMenu(): void {
       label: 'Help',
       submenu: [
         {
-          label: 'About Balldrop Game',
+          label: 'About Dropple',
           click: () => {
             if (mainWindow) {
               mainWindow.webContents.executeJavaScript(`
-                alert('Balldrop Game v1.0.0\\n\\nA strategic game where players drop balls in a grid with directional boxes.\\n\\nBuilt with TypeScript and Electron.');
+                alert('Dropple v1.0.0\\n\\nA strategic game where players drop balls in a grid with directional boxes.\\n\\nBuilt with TypeScript and Electron.');
               `);
             }
           }

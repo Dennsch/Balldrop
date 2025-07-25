@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         (window as any).game = game;
         (window as any).gameUI = gameUI;
 
-        console.log('Balldrop game initialized successfully!');
+        console.log('Dropple game initialized successfully!');
     } catch (error) {
         console.error('Failed to initialize game:', error);
         

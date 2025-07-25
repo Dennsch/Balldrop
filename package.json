@@ -1,10 +1,14 @@
 {
-  "name": "balldrop-game",
+{
+  "name": "@amzn/dropple-game",
+  "version": "1.0.0",
+  "description": "A TypeScript browser game where players drop balls in a grid with directional boxes",
+  "main": "dist/electron/main.js",
   "version": "1.0.0",
   "description": "A TypeScript browser game where players drop balls in a grid with directional boxes",
   "main": "dist/electron/main.js",
   "homepage": "./",
-  "author": "Balldrop Game Developer",
+  "author": "Dropple Game Developer",
   "scripts": {
     "build": "tsc",
     "build:electron": "tsc -p tsconfig.electron.json",
@@ -22,8 +26,8 @@
     "dist:win": "npm run build:all && electron-builder --win --publish=never"
   },
   "build": {
-    "appId": "com.balldropgame.app",
-    "productName": "Balldrop Game",
+    "appId": "com.dropplegame.app",
+    "productName": "Dropple Game",
     "directories": {
       "output": "dist-electron"
     },
