@@ -221,15 +221,15 @@ export class Grid {
             return null;
         }
 
-        // Find the bottom-most ball in the column
-        for (let row = this.size - 1; row >= 0; row--) {
-            const cell = this.cells[row][col];
-            if (cell.type === CellType.BALL_P1) {
-                return Player.PLAYER1;
-            }
-            if (cell.type === CellType.BALL_P2) {
-                return Player.PLAYER2;
-            }
+        // Only count balls that made it to the bottom row for points
+        const bottomRow = this.size - 1;
+        const cell = this.cells[bottomRow][col];
+        
+        if (cell.type === CellType.BALL_P1) {
+            return Player.PLAYER1;
+        }
+        if (cell.type === CellType.BALL_P2) {
+            return Player.PLAYER2;
         }
 
         return null;
