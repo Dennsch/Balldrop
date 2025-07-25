@@ -15,9 +15,16 @@ export enum Player {
     PLAYER2 = 2
 }
 
+export enum GameMode {
+    NORMAL = 'NORMAL',
+    HARD_MODE = 'HARD_MODE'
+}
+
 export enum GameState {
     SETUP = 'SETUP',
     PLAYING = 'PLAYING',
+    SELECTING_MOVES = 'SELECTING_MOVES',
+    EXECUTING_MOVES = 'EXECUTING_MOVES',
     FINISHED = 'FINISHED'
 }
 
@@ -44,6 +51,20 @@ export interface GameConfig {
     ballsPerPlayer: number;
     minBoxes: number;
     maxBoxes: number;
+    gameMode: GameMode;
+}
+
+export interface PendingMove {
+    player: Player;
+    column: number;
+    moveIndex: number; // Which ball this is for the player (0-based)
+}
+
+export interface MoveSelection {
+    player1Moves: number[];
+    player2Moves: number[];
+    currentSelectionPlayer: Player;
+    allMovesSelected: boolean;
 }
 
 export interface GameResult {
