@@ -138,16 +138,24 @@ export class Grid {
                     boxPosition: { row: nextRow, col: currentCol }
                 });
 
-                // Check if the new column is valid
+                // Check if the new column is valid and the target cell is empty
                 if (this.isValidPosition(currentRow, newCol)) {
-                    currentCol = newCol;
-                    // Add redirection step
-                    pathSteps.push({
-                        position: { row: currentRow, col: currentCol },
-                        action: 'fall'
-                    });
-                    // Continue falling in the new column
-                    continue;
+                    const targetCell = this.cells[currentRow][newCol];
+                    
+                    // Check if the target cell is empty
+                    if (targetCell.type === CellType.EMPTY) {
+                        currentCol = newCol;
+                        // Add redirection step
+                        pathSteps.push({
+                            position: { row: currentRow, col: currentCol },
+                            action: 'fall'
+                        });
+                        // Continue falling in the new column
+                        continue;
+                    } else {
+                        // Target cell is occupied (by box or ball), ball gets stuck in current position
+                        break;
+                    }
                 } else {
                     // Ball goes out of bounds, place it in current position
                     break;
