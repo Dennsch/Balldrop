@@ -174,7 +174,7 @@ export class GameUI {
         ball.style.alignItems = 'center';
         ball.style.justifyContent = 'center';
         ball.style.borderRadius = '50%';
-        ball.style.transition = 'all 0.8s ease-in-out';
+        ball.style.transition = 'all 0.35s ease-in-out';
         ball.style.border = '2px solid rgba(255, 255, 255, 0.8)';
         ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
         
@@ -214,23 +214,23 @@ export class GameUI {
                 setTimeout(() => {
                     ball.style.transform = 'scale(1)';
                     ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
-                }, 300);
+                }, 120);
             } else if (action === 'fall') {
                 // Add subtle bounce effect for falling
                 ball.style.transform = 'scale(1.05)';
                 setTimeout(() => {
                     ball.style.transform = 'scale(1)';
-                }, 100);
+                }, 40);
             } else if (action === 'settle') {
                 // Add settling effect
                 ball.style.transform = 'scale(1.1)';
                 setTimeout(() => {
                     ball.style.transform = 'scale(1)';
-                }, 200);
+                }, 80);
             }
 
-            // Adjust timing based on action - slower for better visibility
-            const duration = action === 'settle' ? 600 : (action === 'redirect' ? 1000 : 800);
+            // Adjust timing based on action - faster for better responsiveness
+            const duration = action === 'settle' ? 250 : (action === 'redirect' ? 400 : 350);
             
             setTimeout(resolve, duration);
         });
@@ -244,7 +244,7 @@ export class GameUI {
                 setTimeout(() => {
                     cellElement.classList.remove('box-hit');
                     resolve();
-                }, 600);
+                }, 300);
             } else {
                 resolve();
             }
@@ -276,8 +276,8 @@ export class GameUI {
                 setTimeout(() => {
                     arrowElement.classList.remove('arrow-changing');
                     resolve();
-                }, 300);
-            }, 150);
+                }, 120);
+            }, 60);
         });
     }
 

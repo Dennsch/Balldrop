@@ -133,7 +133,7 @@ h1 {
     font-size: 16px;
     font-weight: bold;
     position: relative;
-    transition: all 0.3s ease;
+    transition: all 0.15s ease;
 }
 
 .cell.has-box {
@@ -152,7 +152,7 @@ h1 {
 }
 
 .cell.falling {
-    animation: fall 0.5s ease-in;
+    animation: fall 0.25s ease-in;
 }
 
 @keyframes fall {
@@ -177,7 +177,7 @@ h1 {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: all 0.8s ease-in-out;
+    transition: all 0.35s ease-in-out;
     border: 2px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5);
 }
@@ -193,7 +193,7 @@ h1 {
 }
 
 .cell.box-hit {
-    animation: boxHit 0.6s ease-out;
+    animation: boxHit 0.3s ease-out;
 }
 
 @keyframes boxHit {
@@ -215,11 +215,11 @@ h1 {
 .arrow {
     font-size: 18px;
     font-weight: bold;
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.15s ease-in-out;
 }
 
 .arrow.arrow-changing {
-    animation: arrowRotate 0.45s ease-in-out;
+    animation: arrowRotate 0.2s ease-in-out;
 }
 
 @keyframes arrowRotate {
