@@ -3,6 +3,11 @@ export enum Direction {
     RIGHT = 'RIGHT'
 }
 
+export enum ExecutionDirection {
+    LEFT_TO_RIGHT = 'LEFT_TO_RIGHT',
+    RIGHT_TO_LEFT = 'RIGHT_TO_LEFT'
+}
+
 export enum CellType {
     EMPTY = 'EMPTY',
     BOX = 'BOX',
@@ -65,6 +70,7 @@ export interface MoveSelection {
     player2Moves: number[];
     currentSelectionPlayer: Player;
     allMovesSelected: boolean;
+    columnOwners: Map<number, Player>; // Track which player selected each column
 }
 
 export interface GameResult {
