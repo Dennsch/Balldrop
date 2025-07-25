@@ -12,7 +12,7 @@ Successfully integrated a logo into the Balldrop Game header and implemented a c
 - Created `logo-container` div to house the logo image
 - Integrated logo image element with proper attributes:
   ```html
-  <img src="https://github.com/user-attachments/assets/b96917f5-2137-4a87-a570-afd95931905a" 
+  <img src="assets/icon.png" 
        alt="Balldrop Game Logo" 
        class="game-logo">
   ```

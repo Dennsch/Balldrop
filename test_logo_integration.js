@@ -25,7 +25,7 @@ try {
         { test: htmlContent.includes('class="header-content"'), desc: 'Header content structure' },
         { test: htmlContent.includes('class="logo-container"'), desc: 'Logo container' },
         { test: htmlContent.includes('class="game-logo"'), desc: 'Logo image element' },
-        { test: htmlContent.includes('https://github.com/user-attachments/assets/b96917f5-2137-4a87-a570-afd95931905a'), desc: 'Logo image source' },
+        { test: htmlContent.includes('assets/icon.png'), desc: 'Logo image source' },
         { test: htmlContent.includes('alt="Balldrop Game Logo"'), desc: 'Logo alt text' }
     ];
 
