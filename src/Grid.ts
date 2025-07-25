@@ -108,12 +108,12 @@ export class Grid {
 
             // If next cell has a box, redirect the ball
             if (nextCell.type === CellType.BOX && nextCell.direction) {
-                // Change the box direction
-                nextCell.direction = nextCell.direction === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
-
-                // Redirect the ball
-                const redirectDirection = nextCell.direction === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
+                // Redirect the ball based on the current arrow direction
+                const redirectDirection = nextCell.direction;
                 const newCol = redirectDirection === Direction.LEFT ? currentCol - 1 : currentCol + 1;
+
+                // Change the box direction after redirecting the ball
+                nextCell.direction = nextCell.direction === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
 
                 // Check if the new column is valid
                 if (this.isValidPosition(currentRow, newCol)) {

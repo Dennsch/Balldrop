@@ -150,6 +150,50 @@ describe('Grid', () => {
             // Ball should stay in column 0 since it can't go further left
             expect(position?.col).toBe(0);
         });
+
+        it('should redirect ball LEFT when hitting a LEFT arrow box', () => {
+            // Place a box with LEFT arrow at position (3, 2)
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.LEFT });
+            
+            // Drop ball in column 2
+            const position = grid.dropBall(2, Player.PLAYER1);
+            
+            // Ball should be redirected to column 1 (LEFT direction)
+            expect(position?.col).toBe(1);
+            
+            // Box direction should have changed to RIGHT
+            expect(grid.getCell(3, 2)?.direction).toBe(Direction.RIGHT);
+        });
+
+        it('should redirect ball RIGHT when hitting a RIGHT arrow box', () => {
+            // Place a box with RIGHT arrow at position (3, 1)
+            grid.setCell(3, 1, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            // Drop ball in column 1
+            const position = grid.dropBall(1, Player.PLAYER1);
+            
+            // Ball should be redirected to column 2 (RIGHT direction)
+            expect(position?.col).toBe(2);
+            
+            // Box direction should have changed to LEFT
+            expect(grid.getCell(3, 1)?.direction).toBe(Direction.LEFT);
+        });
+
+        it('should handle multiple redirections in sequence', () => {
+            // Place boxes to create a redirection chain
+            grid.setCell(3, 1, { type: CellType.BOX, direction: Direction.RIGHT }); // Redirects to column 2
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT }); // Redirects to column 3
+            
+            // Drop ball in column 1
+            const position = grid.dropBall(1, Player.PLAYER1);
+            
+            // Ball should end up in column 3 after two redirections
+            expect(position?.col).toBe(3);
+            
+            // Both boxes should have flipped directions
+            expect(grid.getCell(3, 1)?.direction).toBe(Direction.LEFT);
+            expect(grid.getCell(3, 2)?.direction).toBe(Direction.LEFT);
+        });
     });
 
     describe('column analysis', () => {
