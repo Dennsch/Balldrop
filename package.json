@@ -1,9 +1,5 @@
 {
-{
   "name": "@amzn/dropple-game",
-  "version": "1.0.0",
-  "description": "A TypeScript browser game where players drop balls in a grid with directional boxes",
-  "main": "dist/electron/main.js",
   "version": "1.0.0",
   "description": "A TypeScript browser game where players drop balls in a grid with directional boxes",
   "main": "dist/electron/main.js",
