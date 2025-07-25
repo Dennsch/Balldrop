@@ -1,5 +1,6 @@
 import { Game } from './Game.js';
 import { CellType, Direction, GameState, Player, Position, BallPath, GameMode } from './types.js';
+import { CellType, Direction, GameState, Player, Position, BallPath, AnimationSpeed } from './types.js';
 
 export class GameUI {
     private game: Game;
@@ -15,7 +16,29 @@ export class GameUI {
     private gameModeSelector!: HTMLElement;
     private executeMovesButton!: HTMLElement;
     private selectedMovesDisplay!: HTMLElement;
+    private animationSpeedSelect!: HTMLSelectElement;
     private isAnimating: boolean = false;
+    private currentAnimationSpeed: AnimationSpeed = AnimationSpeed.NORMAL;
+
+    // Animation timing configurations
+    private readonly animationTimings = {
+        [AnimationSpeed.SLOW]: {
+            multiplier: 2.0,
+            cssMultiplier: 2.0
+        },
+        [AnimationSpeed.NORMAL]: {
+            multiplier: 1.0,
+            cssMultiplier: 1.0
+        },
+        [AnimationSpeed.FAST]: {
+            multiplier: 0.5,
+            cssMultiplier: 0.5
+        },
+        [AnimationSpeed.INSTANT]: {
+            multiplier: 0,
+            cssMultiplier: 0.01 // Very small value for CSS, but we'll skip animations in JS
+        }
+    };
 
     constructor(game: Game) {
         this.game = game;
@@ -45,6 +68,11 @@ export class GameUI {
         this.createGrid();
         this.createColumnSelectors();
         this.createGameModeSelector();
+        this.animationSpeedSelect = this.getElement('animation-speed-select') as HTMLSelectElement;
+
+        this.createGrid();
+        this.createColumnSelectors();
+        this.initializeAnimationSpeed();
         this.updateUI();
     }
 
@@ -164,6 +192,56 @@ export class GameUI {
         this.resetButton.addEventListener('click', () => {
             this.game.reset();
         });
+
+        this.animationSpeedSelect.addEventListener('change', () => {
+            this.handleAnimationSpeedChange();
+        });
+    }
+
+    private initializeAnimationSpeed(): void {
+        // Load saved animation speed from localStorage or use default
+        const savedSpeed = localStorage.getItem('balldrop-animation-speed') as AnimationSpeed;
+        if (savedSpeed && Object.values(AnimationSpeed).includes(savedSpeed)) {
+            this.currentAnimationSpeed = savedSpeed;
+            this.animationSpeedSelect.value = savedSpeed;
+        } else {
+            this.currentAnimationSpeed = AnimationSpeed.NORMAL;
+            this.animationSpeedSelect.value = AnimationSpeed.NORMAL;
+        }
+        
+        this.updateAnimationTiming();
+    }
+
+    private handleAnimationSpeedChange(): void {
+        const newSpeed = this.animationSpeedSelect.value as AnimationSpeed;
+        if (Object.values(AnimationSpeed).includes(newSpeed)) {
+            this.currentAnimationSpeed = newSpeed;
+            this.updateAnimationTiming();
+            
+            // Save to localStorage
+            localStorage.setItem('balldrop-animation-speed', newSpeed);
+        }
+    }
+
+    private updateAnimationTiming(): void {
+        const timing = this.animationTimings[this.currentAnimationSpeed];
+        const root = document.documentElement;
+        
+        // Update CSS custom properties
+        root.style.setProperty('--ball-transition-duration', `${0.35 * timing.cssMultiplier}s`);
+        root.style.setProperty('--cell-transition-duration', `${0.15 * timing.cssMultiplier}s`);
+        root.style.setProperty('--button-transition-duration', `${0.2 * timing.cssMultiplier}s`);
+        root.style.setProperty('--fall-animation-duration', `${0.25 * timing.cssMultiplier}s`);
+        root.style.setProperty('--box-hit-animation-duration', `${0.3 * timing.cssMultiplier}s`);
+        root.style.setProperty('--arrow-rotate-duration', `${0.2 * timing.cssMultiplier}s`);
+        root.style.setProperty('--arrow-transition-duration', `${0.15 * timing.cssMultiplier}s`);
+        root.style.setProperty('--bottom-row-effect-duration', `${0.8 * timing.cssMultiplier}s`);
+        root.style.setProperty('--ball-place-animation-duration', `${0.4 * timing.cssMultiplier}s`);
+    }
+
+    private getAnimatedDuration(baseDuration: number): number {
+        const timing = this.animationTimings[this.currentAnimationSpeed];
+        return baseDuration * timing.multiplier;
     }
 
     private handleColumnClick(col: number): void {
@@ -290,6 +368,15 @@ export class GameUI {
         this.isAnimating = true;
         this.updateColumnSelectors(); // Disable buttons during animation
 
+        // Handle instant mode - skip animations entirely
+        if (this.currentAnimationSpeed === AnimationSpeed.INSTANT) {
+            // Complete the ball drop immediately without visual animation
+            this.game.completeBallDrop(ballPath);
+            this.isAnimating = false;
+            this.updateColumnSelectors(); // Re-enable buttons
+            return;
+        }
+
         // Create animated ball element
         const animatedBall = this.createAnimatedBall(ballPath.player);
         this.gridElement.appendChild(animatedBall);
@@ -361,7 +448,7 @@ export class GameUI {
         ball.style.alignItems = 'center';
         ball.style.justifyContent = 'center';
         ball.style.borderRadius = '50%';
-        ball.style.transition = 'all 0.35s ease-in-out';
+        ball.style.transition = `all ${0.35 * this.animationTimings[this.currentAnimationSpeed].cssMultiplier}s ease-in-out`;
         ball.style.border = '2px solid rgba(255, 255, 255, 0.8)';
         ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
         
@@ -401,23 +488,24 @@ export class GameUI {
                 setTimeout(() => {
                     ball.style.transform = 'scale(1)';
                     ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
-                }, 120);
+                }, this.getAnimatedDuration(120));
             } else if (action === 'fall') {
                 // Add subtle bounce effect for falling
                 ball.style.transform = 'scale(1.05)';
                 setTimeout(() => {
                     ball.style.transform = 'scale(1)';
-                }, 40);
+                }, this.getAnimatedDuration(40));
             } else if (action === 'settle') {
                 // Add settling effect
                 ball.style.transform = 'scale(1.1)';
                 setTimeout(() => {
                     ball.style.transform = 'scale(1)';
-                }, 80);
+                }, this.getAnimatedDuration(80));
             }
 
             // Adjust timing based on action - faster for better responsiveness
-            const duration = action === 'settle' ? 250 : (action === 'redirect' ? 400 : 350);
+            const baseDuration = action === 'settle' ? 250 : (action === 'redirect' ? 400 : 350);
+            const duration = this.getAnimatedDuration(baseDuration);
             
             setTimeout(resolve, duration);
         });
@@ -431,7 +519,7 @@ export class GameUI {
                 setTimeout(() => {
                     cellElement.classList.remove('box-hit');
                     resolve();
-                }, 300);
+                }, this.getAnimatedDuration(300));
             } else {
                 resolve();
             }
@@ -463,8 +551,8 @@ export class GameUI {
                 setTimeout(() => {
                     arrowElement.classList.remove('arrow-changing');
                     resolve();
-                }, 120);
-            }, 60);
+                }, this.getAnimatedDuration(120));
+            }, this.getAnimatedDuration(60));
         });
     }
 
@@ -477,7 +565,7 @@ export class GameUI {
                 setTimeout(() => {
                     cellElement.classList.remove('bottom-row-effect');
                     resolve();
-                }, 800);
+                }, this.getAnimatedDuration(800));
             } else {
                 resolve();
             }
@@ -501,7 +589,7 @@ export class GameUI {
                 setTimeout(() => {
                     cellElement.classList.remove('ball-placing');
                     resolve();
-                }, 400);
+                }, this.getAnimatedDuration(400));
             } else {
                 resolve();
             }
