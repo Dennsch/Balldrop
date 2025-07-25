@@ -223,6 +223,103 @@ describe('Grid', () => {
         });
     });
 
+    describe('ball path tracking', () => {
+        it('should track simple ball drop path', () => {
+            const result = grid.dropBallWithPath(2, Player.PLAYER1);
+            
+            expect(result.finalPosition).toEqual({ row: 4, col: 2 });
+            expect(result.ballPath).toBeDefined();
+            expect(result.ballPath?.player).toBe(Player.PLAYER1);
+            expect(result.ballPath?.finalPosition).toEqual({ row: 4, col: 2 });
+            
+            // Should have steps for falling and settling
+            const steps = result.ballPath?.steps || [];
+            expect(steps.length).toBeGreaterThan(1);
+            expect(steps[0].action).toBe('fall');
+            expect(steps[steps.length - 1].action).toBe('settle');
+        });
+
+        it('should track ball redirection path when hitting a box', () => {
+            // Place a box with right arrow at position (3, 2)
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            const result = grid.dropBallWithPath(2, Player.PLAYER1);
+            
+            expect(result.finalPosition?.col).toBe(3); // Ball should be redirected to column 3
+            expect(result.ballPath).toBeDefined();
+            
+            const steps = result.ballPath?.steps || [];
+            
+            // Should have a redirect step
+            const redirectStep = steps.find(step => step.action === 'redirect');
+            expect(redirectStep).toBeDefined();
+            expect(redirectStep?.hitBox).toBe(true);
+            expect(redirectStep?.boxDirection).toBe(Direction.RIGHT);
+            
+            // Should have steps in both columns
+            const column2Steps = steps.filter(step => step.position.col === 2);
+            const column3Steps = steps.filter(step => step.position.col === 3);
+            expect(column2Steps.length).toBeGreaterThan(0);
+            expect(column3Steps.length).toBeGreaterThan(0);
+        });
+
+        it('should track path when ball goes out of bounds', () => {
+            // Place a box with left arrow at position (3, 0) - leftmost column
+            grid.setCell(3, 0, { type: CellType.BOX, direction: Direction.LEFT });
+            
+            const result = grid.dropBallWithPath(0, Player.PLAYER1);
+            
+            expect(result.finalPosition?.col).toBe(0); // Ball should stay in column 0
+            expect(result.ballPath).toBeDefined();
+            
+            const steps = result.ballPath?.steps || [];
+            const redirectStep = steps.find(step => step.action === 'redirect');
+            expect(redirectStep).toBeDefined();
+            expect(redirectStep?.hitBox).toBe(true);
+        });
+
+        it('should return null for invalid column', () => {
+            const result = grid.dropBallWithPath(-1, Player.PLAYER1);
+            
+            expect(result.finalPosition).toBeNull();
+            expect(result.ballPath).toBeNull();
+        });
+
+        it('should return null for full column', () => {
+            // Fill the column
+            for (let i = 0; i < 5; i++) {
+                grid.dropBall(2, Player.PLAYER1);
+            }
+            
+            const result = grid.dropBallWithPath(2, Player.PLAYER1);
+            
+            expect(result.finalPosition).toBeNull();
+            expect(result.ballPath).toBeNull();
+        });
+
+        it('should maintain consistency between dropBall and dropBallWithPath', () => {
+            // Test with simple drop
+            const simpleResult = grid.dropBall(1, Player.PLAYER1);
+            grid.clearGrid();
+            
+            const pathResult = grid.dropBallWithPath(1, Player.PLAYER1);
+            
+            expect(pathResult.finalPosition).toEqual(simpleResult);
+            
+            // Test with box redirection
+            grid.clearGrid();
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            const simpleRedirectResult = grid.dropBall(2, Player.PLAYER2);
+            grid.clearGrid();
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            const pathRedirectResult = grid.dropBallWithPath(2, Player.PLAYER2);
+            
+            expect(pathRedirectResult.finalPosition).toEqual(simpleRedirectResult);
+        });
+    });
+
     describe('grid management', () => {
         it('should clear the grid', () => {
             // Add some content

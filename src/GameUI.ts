@@ -153,7 +153,7 @@ export class GameUI {
         ball.style.alignItems = 'center';
         ball.style.justifyContent = 'center';
         ball.style.borderRadius = '50%';
-        ball.style.transition = 'all 0.3s ease-in-out';
+        ball.style.transition = 'all 0.8s ease-in-out';
         
         if (player === Player.PLAYER1) {
             ball.style.backgroundColor = '#ff6b6b';
@@ -192,8 +192,8 @@ export class GameUI {
                 }, 150);
             }
 
-            // Adjust timing based on action
-            const duration = action === 'settle' ? 200 : (action === 'redirect' ? 400 : 300);
+            // Adjust timing based on action - slower for better visibility
+            const duration = action === 'settle' ? 600 : (action === 'redirect' ? 1000 : 800);
             
             setTimeout(resolve, duration);
         });
@@ -207,7 +207,7 @@ export class GameUI {
                 setTimeout(() => {
                     cellElement.classList.remove('box-hit');
                     resolve();
-                }, 300);
+                }, 600);
             } else {
                 resolve();
             }

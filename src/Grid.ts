@@ -1,4 +1,4 @@
-import { Cell, CellType, Direction, Position, Player } from './types.js';
+import { Cell, CellType, Direction, Position, Player, BallPath, BallPathStep } from './types.js';
 
 export class Grid {
     private cells: Cell[][];
@@ -68,13 +68,14 @@ export class Grid {
         }
     }
 
-    public dropBall(col: number, player: Player): Position | null {
+    public dropBallWithPath(col: number, player: Player): { finalPosition: Position | null, ballPath: BallPath | null } {
         if (!this.isValidPosition(0, col)) {
-            return null;
+            return { finalPosition: null, ballPath: null };
         }
 
         let currentRow = 0;
         let currentCol = col;
+        const pathSteps: BallPathStep[] = [];
 
         // Find the starting position (first empty cell in the column)
         while (currentRow < this.size && this.isValidPosition(currentRow, currentCol) && this.cells[currentRow][currentCol].type !== CellType.EMPTY) {
@@ -82,8 +83,14 @@ export class Grid {
         }
 
         if (currentRow >= this.size) {
-            return null; // Column is full
+            return { finalPosition: null, ballPath: null }; // Column is full
         }
+
+        // Add starting position to path
+        pathSteps.push({
+            position: { row: currentRow, col: currentCol },
+            action: 'fall'
+        });
 
         // Simulate ball falling
         while (currentRow < this.size) {
@@ -103,13 +110,27 @@ export class Grid {
             // If next cell is empty, continue falling
             if (nextCell.type === CellType.EMPTY) {
                 currentRow = nextRow;
+                pathSteps.push({
+                    position: { row: currentRow, col: currentCol },
+                    action: 'fall'
+                });
                 continue;
             }
 
             // If next cell has a box, redirect the ball
             if (nextCell.type === CellType.BOX && nextCell.direction) {
+                const originalDirection = nextCell.direction;
+                
                 // Change the box direction
                 nextCell.direction = nextCell.direction === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
+
+                // Add box hit step
+                pathSteps.push({
+                    position: { row: currentRow, col: currentCol },
+                    action: 'redirect',
+                    hitBox: true,
+                    boxDirection: originalDirection
+                });
 
                 // Redirect the ball
                 const redirectDirection = nextCell.direction === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
@@ -118,6 +139,11 @@ export class Grid {
                 // Check if the new column is valid
                 if (this.isValidPosition(currentRow, newCol)) {
                     currentCol = newCol;
+                    // Add redirection step
+                    pathSteps.push({
+                        position: { row: currentRow, col: currentCol },
+                        action: 'fall'
+                    });
                     // Continue falling in the new column
                     continue;
                 } else {
@@ -132,6 +158,12 @@ export class Grid {
             }
         }
 
+        // Add final settling step
+        pathSteps.push({
+            position: { row: currentRow, col: currentCol },
+            action: 'settle'
+        });
+
         // Place the ball at the final position
         const ballType = player === Player.PLAYER1 ? CellType.BALL_P1 : CellType.BALL_P2;
         this.setCell(currentRow, currentCol, {
@@ -139,7 +171,19 @@ export class Grid {
             player: player
         });
 
-        return { row: currentRow, col: currentCol };
+        const finalPosition = { row: currentRow, col: currentCol };
+        const ballPath: BallPath = {
+            steps: pathSteps,
+            finalPosition,
+            player
+        };
+
+        return { finalPosition, ballPath };
+    }
+
+    public dropBall(col: number, player: Player): Position | null {
+        const result = this.dropBallWithPath(col, player);
+        return result.finalPosition;
     }
 
     public getColumnWinner(col: number): Player | null {
