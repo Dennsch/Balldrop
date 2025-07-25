@@ -92,8 +92,8 @@ header {
 }
 
 .game-logo {
-    max-width: 80px;
-    max-height: 80px;
+    max-width: 50px;
+    max-height: 50px;
     width: auto;
     height: auto;
     border-radius: 12px;
@@ -476,8 +476,8 @@ h1 {
     }
     
     .game-logo {
-        max-width: 60px;
-        max-height: 60px;
+        max-width: 40px;
+        max-height: 40px;
     }
     
     h1 {
@@ -510,8 +510,8 @@ h1 {
 
 @media (max-width: 480px) {
     .game-logo {
-        max-width: 50px;
-        max-height: 50px;
+        max-width: 35px;
+        max-height: 35px;
     }
     
     h1 {
