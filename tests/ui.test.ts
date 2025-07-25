@@ -8,7 +8,7 @@ const createMockDOMWithLogo = () => {
       <header>
         <div class="header-content">
           <div class="logo-container">
-            <img src="https://github.com/user-attachments/assets/b96917f5-2137-4a87-a570-afd95931905a" alt="Balldrop Game Logo" class="game-logo">
+            <img src="assets/icon.png" alt="Balldrop Game Logo" class="game-logo">
           </div>
           <h1>Balldrop Game</h1>
         </div>
@@ -76,7 +76,7 @@ describe('UI Component Tests', () => {
 
     it('should have correct logo attributes', () => {
       const logoElement = document.querySelector('.game-logo') as HTMLImageElement;
-      expect(logoElement.src).toBe('https://github.com/user-attachments/assets/b96917f5-2137-4a87-a570-afd95931905a');
+      expect(logoElement.src).toContain('assets/icon.png');
       expect(logoElement.alt).toBe('Balldrop Game Logo');
       expect(logoElement.classList.contains('game-logo')).toBe(true);
     });
