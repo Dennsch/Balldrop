@@ -8,6 +8,7 @@ export class Game {
     private currentPlayer: Player;
     private ballsRemaining: Map<Player, number>;
     private moveSelection: MoveSelection;
+    private usedColumns: Set<number>; // Track which columns have been used (universal restriction)
     private onStateChange?: (game: Game) => void;
     private onBallDropped?: (ballPath: BallPath) => void;
     private onMovesExecuted?: (ballPaths: BallPath[]) => void;
@@ -36,6 +37,8 @@ export class Game {
             allMovesSelected: false,
             columnOwners: new Map<number, Player>()
         };
+        
+        this.usedColumns = new Set<number>();
     }
 
     public startNewGame(): void {
@@ -61,6 +64,9 @@ export class Game {
             columnOwners: new Map<number, Player>()
         };
         
+        // Reset used columns tracking
+        this.usedColumns = new Set<number>();
+        
         this.notifyStateChange();
     }
 
@@ -77,6 +83,11 @@ export class Game {
             return false;
         }
 
+        // Check if column has already been used (universal restriction)
+        if (this.usedColumns.has(col)) {
+            return false;
+        }
+
         const ballsLeft = this.ballsRemaining.get(this.currentPlayer) || 0;
         if (ballsLeft <= 0) {
             return false;
@@ -86,6 +97,9 @@ export class Game {
         const result = this.grid.calculateBallPath(col, this.currentPlayer);
         if (result.finalPosition && result.ballPath) {
             this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
+            
+            // Mark column as used
+            this.usedColumns.add(col);
             
             if (this.onBallDropped) {
                 // Use the detailed ball path from the grid
@@ -267,6 +281,11 @@ export class Game {
             return false;
         }
 
+        // Check if column has already been used (universal restriction)
+        if (this.usedColumns.has(col)) {
+            return false;
+        }
+
         const ballsLeft = this.ballsRemaining.get(this.currentPlayer) || 0;
         if (ballsLeft <= 0) {
             return false;
@@ -276,6 +295,9 @@ export class Game {
         const result = this.grid.dropBallWithPath(col, this.currentPlayer);
         if (result.finalPosition && result.ballPath) {
             this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
+
+            // Mark column as used
+            this.usedColumns.add(col);
 
             // Check if game is finished
             if (this.isGameFinished()) {
@@ -354,6 +376,11 @@ export class Game {
             return false;
         }
 
+        // Check if column has already been used (universal restriction)
+        if (this.usedColumns.has(col)) {
+            return false;
+        }
+
         const ballsLeft = this.ballsRemaining.get(this.currentPlayer) || 0;
         return ballsLeft > 0 && !this.grid.isColumnFull(col);
     }
@@ -394,6 +421,9 @@ export class Game {
             allMovesSelected: false,
             columnOwners: new Map<number, Player>()
         };
+        
+        // Reset used columns tracking
+        this.usedColumns = new Set<number>();
         
         this.notifyStateChange();
     }
@@ -445,6 +475,10 @@ export class Game {
 
     public getColumnOwners(): Map<number, Player> {
         return new Map(this.moveSelection.columnOwners);
+    }
+
+    public getUsedColumns(): Set<number> {
+        return new Set(this.usedColumns);
     }
 
     // Event handlers
