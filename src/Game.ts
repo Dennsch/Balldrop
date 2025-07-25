@@ -51,11 +51,20 @@ export class Game {
             return false;
         }
 
-        const ballPath = this.grid.dropBallWithPath(col, this.currentPlayer);
-        if (ballPath) {
+        const finalPosition = this.grid.dropBall(col, this.currentPlayer);
+        if (finalPosition) {
             this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
             
             if (this.onBallDropped) {
+                // Create a simple ball path for the callback
+                const ballPath: BallPath = {
+                    steps: [{
+                        position: finalPosition,
+                        action: 'settle'
+                    }],
+                    finalPosition,
+                    player: this.currentPlayer
+                };
                 this.onBallDropped(ballPath);
             }
 
