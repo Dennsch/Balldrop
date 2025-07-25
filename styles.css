@@ -235,6 +235,46 @@ h1 {
     }
 }
 
+.cell.bottom-row-effect {
+    animation: bottomRowHighlight 0.8s ease-out;
+}
+
+@keyframes bottomRowHighlight {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(255, 215, 0, 0);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        border: 2px solid #ffd700;
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        border: 1px solid #dee2e6;
+    }
+}
+
+.cell.ball-placing {
+    animation: ballPlace 0.4s ease-out;
+}
+
+@keyframes ballPlace {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
 .game-controls {
     display: flex;
     justify-content: center;

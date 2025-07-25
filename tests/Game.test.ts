@@ -41,14 +41,14 @@ describe('Game', () => {
         });
 
         it('should not allow ball dropping before game starts', () => {
-            expect(game.dropBall(2)).toBe(false);
+            expect(game.dropBallSync(2)).toBe(false);
             expect(game.getState()).toBe(GameState.SETUP);
         });
 
         it('should allow ball dropping during game', () => {
             game.startNewGame();
             
-            const success = game.dropBall(2);
+            const success = game.dropBallSync(2);
             expect(success).toBe(true);
             expect(game.getBallsRemaining(Player.PLAYER1)).toBe(2);
             expect(game.getCurrentPlayer()).toBe(Player.PLAYER2);
@@ -58,10 +58,10 @@ describe('Game', () => {
             game.startNewGame();
             
             expect(game.getCurrentPlayer()).toBe(Player.PLAYER1);
-            game.dropBall(0);
+            game.dropBallSync(0);
             
             expect(game.getCurrentPlayer()).toBe(Player.PLAYER2);
-            game.dropBall(1);
+            game.dropBallSync(1);
             
             expect(game.getCurrentPlayer()).toBe(Player.PLAYER1);
         });
@@ -71,7 +71,7 @@ describe('Game', () => {
             
             // Drop all balls
             for (let i = 0; i < 6; i++) {
-                game.dropBall(i % 5);
+                game.dropBallSync(i % 5);
             }
             
             expect(game.getState()).toBe(GameState.FINISHED);
@@ -83,7 +83,7 @@ describe('Game', () => {
             
             // Fill column 0
             for (let i = 0; i < 5; i++) {
-                game.dropBall(0);
+                game.dropBallSync(0);
             }
             
             // Should not be able to drop more balls in column 0
@@ -96,12 +96,12 @@ describe('Game', () => {
             game.startNewGame();
             
             // Player 1 wins columns 0 and 1
-            game.dropBall(0); // P1
-            game.dropBall(2); // P2
-            game.dropBall(1); // P1
-            game.dropBall(3); // P2
-            game.dropBall(0); // P1 (wins column 0)
-            game.dropBall(1); // P2 (wins column 1, but P1 was there first)
+            game.dropBallSync(0); // P1
+            game.dropBallSync(2); // P2
+            game.dropBallSync(1); // P1
+            game.dropBallSync(3); // P2
+            game.dropBallSync(0); // P1 (wins column 0)
+            game.dropBallSync(1); // P2 (wins column 1, but P1 was there first)
             
             // Actually, let's set up a clearer scenario
             // We need to ensure the bottom-most ball determines the winner
@@ -131,7 +131,7 @@ describe('Game', () => {
     describe('game controls', () => {
         it('should reset game correctly', () => {
             game.startNewGame();
-            game.dropBall(0);
+            game.dropBallSync(0);
             
             game.reset();
             
@@ -149,7 +149,7 @@ describe('Game', () => {
             
             // Fill column
             for (let i = 0; i < 5; i++) {
-                game.dropBall(0);
+                game.dropBallSync(0);
             }
             expect(game.canDropInColumn(0)).toBe(false);
         });
@@ -173,8 +173,11 @@ describe('Game', () => {
             game.dropBall(2);
             
             expect(mockHandler).toHaveBeenCalledWith(
-                expect.objectContaining({ row: expect.any(Number), col: expect.any(Number) }),
-                Player.PLAYER1
+                expect.objectContaining({
+                    steps: expect.any(Array),
+                    finalPosition: expect.objectContaining({ row: expect.any(Number), col: expect.any(Number) }),
+                    player: Player.PLAYER1
+                })
             );
         });
     });

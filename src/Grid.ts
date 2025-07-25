@@ -68,7 +68,7 @@ export class Grid {
         }
     }
 
-    public dropBallWithPath(col: number, player: Player): { finalPosition: Position | null, ballPath: BallPath | null } {
+    public calculateBallPath(col: number, player: Player): { finalPosition: Position | null, ballPath: BallPath | null } {
         if (!this.isValidPosition(0, col)) {
             return { finalPosition: null, ballPath: null };
         }
@@ -125,9 +125,8 @@ export class Grid {
                 const redirectDirection = originalDirection === Direction.LEFT ? Direction.LEFT : Direction.RIGHT;
                 const newCol = redirectDirection === Direction.LEFT ? currentCol - 1 : currentCol + 1;
                 
-                // THEN change the box direction (arrow changes after ball moves)
-                nextCell.direction = originalDirection === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
-                const newDirection = nextCell.direction;
+                // Calculate new direction (arrow changes after ball moves)
+                const newDirection = originalDirection === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
 
                 // Add box hit step
                 pathSteps.push({
@@ -167,13 +166,6 @@ export class Grid {
             action: 'settle'
         });
 
-        // Place the ball at the final position
-        const ballType = player === Player.PLAYER1 ? CellType.BALL_P1 : CellType.BALL_P2;
-        this.setCell(currentRow, currentCol, {
-            type: ballType,
-            player: player
-        });
-
         const finalPosition = { row: currentRow, col: currentCol };
         const ballPath: BallPath = {
             steps: pathSteps,
@@ -182,6 +174,33 @@ export class Grid {
         };
 
         return { finalPosition, ballPath };
+    }
+
+    public applyBallPath(ballPath: BallPath): boolean {
+        // Apply box direction changes from the path
+        for (const step of ballPath.steps) {
+            if (step.hitBox && step.boxPosition && step.newBoxDirection) {
+                const boxCell = this.getCell(step.boxPosition.row, step.boxPosition.col);
+                if (boxCell && boxCell.type === CellType.BOX) {
+                    boxCell.direction = step.newBoxDirection;
+                }
+            }
+        }
+
+        // Place the ball at the final position
+        const ballType = ballPath.player === Player.PLAYER1 ? CellType.BALL_P1 : CellType.BALL_P2;
+        return this.setCell(ballPath.finalPosition.row, ballPath.finalPosition.col, {
+            type: ballType,
+            player: ballPath.player
+        });
+    }
+
+    public dropBallWithPath(col: number, player: Player): { finalPosition: Position | null, ballPath: BallPath | null } {
+        const result = this.calculateBallPath(col, player);
+        if (result.ballPath) {
+            this.applyBallPath(result.ballPath);
+        }
+        return result;
     }
 
     public dropBall(col: number, player: Player): Position | null {

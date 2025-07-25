@@ -115,7 +115,7 @@ export class GameUI {
                 
                 await this.animateToPosition(animatedBall, step.position, step.action, isLastStep);
                 
-                // Add visual effects for special actions
+                // Apply visual effects for special actions during animation
                 if (step.hitBox && step.boxPosition && step.boxDirection && step.newBoxDirection) {
                     // Animate the box hit effect and arrow direction change simultaneously
                     const boxHitPromise = this.animateBoxHit(step.boxPosition, step.boxDirection);
@@ -128,18 +128,30 @@ export class GameUI {
                     // Wait for both animations to complete
                     await Promise.all([boxHitPromise, arrowChangePromise]);
                 }
+
+                // Apply bottom row visual effects when ball settles there
+                if (step.action === 'settle' && step.position.row === this.game.getGrid().getSize() - 1) {
+                    await this.animateBottomRowEffect(step.position);
+                }
             }
 
-            // Remove animated ball and update grid
+            // Remove animated ball
             this.gridElement.removeChild(animatedBall);
-            this.updateGrid();
+            
+            // Place the final ball in the grid visually
+            await this.placeFinalBall(ballPath.finalPosition, ballPath.player);
+            
+            // Complete the ball drop in the game logic
+            this.game.completeBallDrop(ballPath);
+            
         } catch (error) {
             console.error('Animation error:', error);
             // Cleanup on error
             if (this.gridElement.contains(animatedBall)) {
                 this.gridElement.removeChild(animatedBall);
             }
-            this.updateGrid();
+            // Still complete the ball drop even if animation fails
+            this.game.completeBallDrop(ballPath);
         } finally {
             this.isAnimating = false;
             this.updateColumnSelectors(); // Re-enable buttons
@@ -266,6 +278,46 @@ export class GameUI {
                     resolve();
                 }, 300);
             }, 150);
+        });
+    }
+
+    private async animateBottomRowEffect(position: Position): Promise<void> {
+        return new Promise((resolve) => {
+            const cellElement = this.getCellElement(position.row, position.col);
+            if (cellElement) {
+                // Add bottom row highlight effect
+                cellElement.classList.add('bottom-row-effect');
+                setTimeout(() => {
+                    cellElement.classList.remove('bottom-row-effect');
+                    resolve();
+                }, 800);
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    private async placeFinalBall(position: Position, player: Player): Promise<void> {
+        return new Promise((resolve) => {
+            const cellElement = this.getCellElement(position.row, position.col);
+            if (cellElement) {
+                // Clear any existing content
+                cellElement.innerHTML = '';
+                cellElement.className = 'cell';
+                
+                // Add the ball with a placement animation
+                const ballClass = player === Player.PLAYER1 ? 'has-ball-p1' : 'has-ball-p2';
+                cellElement.classList.add(ballClass, 'ball-placing');
+                cellElement.textContent = '●';
+                
+                // Remove placement animation class after animation
+                setTimeout(() => {
+                    cellElement.classList.remove('ball-placing');
+                    resolve();
+                }, 400);
+            } else {
+                resolve();
+            }
         });
     }
 

@@ -51,7 +51,8 @@ export class Game {
             return false;
         }
 
-        const result = this.grid.dropBallWithPath(col, this.currentPlayer);
+        // Calculate the ball path without applying changes to the grid yet
+        const result = this.grid.calculateBallPath(col, this.currentPlayer);
         if (result.finalPosition && result.ballPath) {
             this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
             
@@ -59,6 +60,32 @@ export class Game {
                 // Use the detailed ball path from the grid
                 this.onBallDropped(result.ballPath);
             }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    // Synchronous version for testing - immediately applies the ball drop
+    public dropBallSync(col: number): boolean {
+        if (this.state !== GameState.PLAYING) {
+            return false;
+        }
+
+        if (this.grid.isColumnFull(col)) {
+            return false;
+        }
+
+        const ballsLeft = this.ballsRemaining.get(this.currentPlayer) || 0;
+        if (ballsLeft <= 0) {
+            return false;
+        }
+
+        // Use the original synchronous method for testing
+        const result = this.grid.dropBallWithPath(col, this.currentPlayer);
+        if (result.finalPosition && result.ballPath) {
+            this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
 
             // Check if game is finished
             if (this.isGameFinished()) {
@@ -73,6 +100,21 @@ export class Game {
         }
 
         return false;
+    }
+
+    public completeBallDrop(ballPath: BallPath): void {
+        // Apply the ball path changes to the grid after animation completes
+        this.grid.applyBallPath(ballPath);
+
+        // Check if game is finished
+        if (this.isGameFinished()) {
+            this.state = GameState.FINISHED;
+        } else {
+            // Switch to next player
+            this.currentPlayer = this.currentPlayer === Player.PLAYER1 ? Player.PLAYER2 : Player.PLAYER1;
+        }
+
+        this.notifyStateChange();
     }
 
     public isGameFinished(): boolean {
