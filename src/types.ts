@@ -51,6 +51,8 @@ export interface BallPathStep {
     action: 'fall' | 'redirect' | 'settle';
     hitBox?: boolean;
     boxDirection?: Direction;
+    newBoxDirection?: Direction;
+    boxPosition?: Position;
 }
 
 export interface BallPath {

@@ -255,6 +255,8 @@ describe('Grid', () => {
             expect(redirectStep).toBeDefined();
             expect(redirectStep?.hitBox).toBe(true);
             expect(redirectStep?.boxDirection).toBe(Direction.RIGHT);
+            expect(redirectStep?.newBoxDirection).toBe(Direction.LEFT); // Box direction should flip
+            expect(redirectStep?.boxPosition).toEqual({ row: 3, col: 2 }); // Box position should be recorded
             
             // Should have steps in both columns
             const column2Steps = steps.filter(step => step.position.col === 2);
