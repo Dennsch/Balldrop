@@ -192,7 +192,7 @@ h1 {
 }
 
 .cell.box-hit {
-    animation: boxHit 0.3s ease-out;
+    animation: boxHit 0.6s ease-out;
 }
 
 @keyframes boxHit {
