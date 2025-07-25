@@ -1,5 +1,5 @@
 import { Grid } from './Grid.js';
-import { GameConfig, GameState, Player, GameResult, Position, BallPath, GameMode, MoveSelection } from './types.js';
+import { GameConfig, GameState, Player, GameResult, Position, BallPath, GameMode, MoveSelection, ExecutionDirection } from './types.js';
 
 export class Game {
     private grid: Grid;
@@ -33,7 +33,8 @@ export class Game {
             player1Moves: [],
             player2Moves: [],
             currentSelectionPlayer: Player.PLAYER1,
-            allMovesSelected: false
+            allMovesSelected: false,
+            columnOwners: new Map<number, Player>()
         };
     }
 
@@ -56,7 +57,8 @@ export class Game {
             player1Moves: [],
             player2Moves: [],
             currentSelectionPlayer: Player.PLAYER1,
-            allMovesSelected: false
+            allMovesSelected: false,
+            columnOwners: new Map<number, Player>()
         };
         
         this.notifyStateChange();
@@ -105,6 +107,11 @@ export class Game {
             return false;
         }
 
+        // Hard mode rule: only one ball per column is allowed
+        if (this.moveSelection.columnOwners.has(col)) {
+            return false; // Column already selected by a player
+        }
+
         const currentMoves = this.currentPlayer === Player.PLAYER1 
             ? this.moveSelection.player1Moves 
             : this.moveSelection.player2Moves;
@@ -113,8 +120,9 @@ export class Game {
             return false;
         }
 
-        // Add the move
+        // Add the move and track column ownership
         currentMoves.push(col);
+        this.moveSelection.columnOwners.set(col, this.currentPlayer);
 
         // Check if current player has selected all moves
         if (currentMoves.length === this.config.ballsPerPlayer) {
@@ -170,10 +178,79 @@ export class Game {
         return true;
     }
 
+    public executeMovesLeftToRight(): boolean {
+        return this.executeMovesDirectional(ExecutionDirection.LEFT_TO_RIGHT);
+    }
+
+    public executeMovesRightToLeft(): boolean {
+        return this.executeMovesDirectional(ExecutionDirection.RIGHT_TO_LEFT);
+    }
+
+    private executeMovesDirectional(direction: ExecutionDirection): boolean {
+        if (this.state !== GameState.SELECTING_MOVES || !this.moveSelection.allMovesSelected) {
+            return false;
+        }
+
+        this.state = GameState.EXECUTING_MOVES;
+        this.notifyStateChange();
+
+        // Get all selected columns and sort them based on execution direction
+        const allColumns: Array<{col: number, player: Player}> = [];
+        
+        // Add player 1 moves
+        for (const col of this.moveSelection.player1Moves) {
+            allColumns.push({col, player: Player.PLAYER1});
+        }
+        
+        // Add player 2 moves
+        for (const col of this.moveSelection.player2Moves) {
+            allColumns.push({col, player: Player.PLAYER2});
+        }
+
+        // Sort columns based on execution direction
+        if (direction === ExecutionDirection.LEFT_TO_RIGHT) {
+            allColumns.sort((a, b) => a.col - b.col); // Ascending order (left to right)
+        } else {
+            allColumns.sort((a, b) => b.col - a.col); // Descending order (right to left)
+        }
+
+        // Execute moves in the specified order
+        const allBallPaths: BallPath[] = [];
+        for (const {col, player} of allColumns) {
+            const result = this.grid.calculateBallPath(col, player);
+            if (result.ballPath) {
+                allBallPaths.push(result.ballPath);
+                // Apply the ball path immediately to affect subsequent ball calculations
+                this.grid.applyBallPath(result.ballPath);
+            }
+        }
+
+        // Set balls remaining to 0 for both players
+        this.ballsRemaining.set(Player.PLAYER1, 0);
+        this.ballsRemaining.set(Player.PLAYER2, 0);
+
+        if (this.onMovesExecuted) {
+            this.onMovesExecuted(allBallPaths);
+        }
+
+        return true;
+    }
+
     public completeMovesExecution(ballPaths: BallPath[]): void {
-        // Apply all ball paths to the grid
-        for (const ballPath of ballPaths) {
-            this.grid.applyBallPath(ballPath);
+        // For directional execution, ball paths are already applied during execution
+        // For simultaneous execution (executeAllMoves), we need to apply them here
+        if (ballPaths.length > 0) {
+            // Check if paths are already applied by looking at the grid
+            const firstPath = ballPaths[0];
+            const cell = this.grid.getCell(firstPath.finalPosition.row, firstPath.finalPosition.col);
+            
+            // If the cell doesn't have the expected ball, apply all paths
+            const expectedBallType = firstPath.player === Player.PLAYER1 ? 'BALL_P1' : 'BALL_P2';
+            if (!cell || cell.type !== expectedBallType) {
+                for (const ballPath of ballPaths) {
+                    this.grid.applyBallPath(ballPath);
+                }
+            }
         }
 
         this.state = GameState.FINISHED;
@@ -290,6 +367,11 @@ export class Game {
             return false;
         }
 
+        // Hard mode rule: only one ball per column is allowed
+        if (this.moveSelection.columnOwners.has(col)) {
+            return false; // Column already selected by a player
+        }
+
         const currentMoves = this.currentPlayer === Player.PLAYER1 
             ? this.moveSelection.player1Moves 
             : this.moveSelection.player2Moves;
@@ -309,7 +391,8 @@ export class Game {
             player1Moves: [],
             player2Moves: [],
             currentSelectionPlayer: Player.PLAYER1,
-            allMovesSelected: false
+            allMovesSelected: false,
+            columnOwners: new Map<number, Player>()
         };
         
         this.notifyStateChange();
@@ -358,6 +441,10 @@ export class Game {
         return player === Player.PLAYER1 
             ? this.moveSelection.player1Moves.length 
             : this.moveSelection.player2Moves.length;
+    }
+
+    public getColumnOwners(): Map<number, Player> {
+        return new Map(this.moveSelection.columnOwners);
     }
 
     // Event handlers
