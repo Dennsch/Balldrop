@@ -217,6 +217,77 @@ describe('Grid', () => {
             // Ball should stay in column 0 since it can't go further left
             expect(position?.col).toBe(0);
         });
+
+        it('should handle ball getting stuck when target cell is occupied by a box', () => {
+            // Place a box with right arrow at position (3, 2)
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            // Place another box at the target position (3, 3) where the ball would be redirected
+            grid.setCell(3, 3, { type: CellType.BOX, direction: Direction.LEFT });
+            
+            // Drop ball in column 2
+            const position = grid.dropBall(2, Player.PLAYER1);
+            
+            // Ball should stay in column 2 at row 2 (above the arrow box) since target cell is occupied
+            expect(position).toEqual({ row: 2, col: 2 });
+            expect(grid.getCell(2, 2)?.type).toBe(CellType.BALL_P1);
+            
+            // The arrow box should still change direction even though ball couldn't move
+            expect(grid.getCell(3, 2)?.direction).toBe(Direction.LEFT);
+        });
+
+        it('should handle ball getting stuck when target cell is occupied by another ball', () => {
+            // Place a box with left arrow at position (3, 2)
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.LEFT });
+            
+            // Place a ball at the target position (3, 1) where the ball would be redirected
+            grid.setCell(3, 1, { type: CellType.BALL_P2, player: Player.PLAYER2 });
+            
+            // Drop ball in column 2
+            const position = grid.dropBall(2, Player.PLAYER1);
+            
+            // Ball should stay in column 2 at row 2 (above the arrow box) since target cell is occupied
+            expect(position).toEqual({ row: 2, col: 2 });
+            expect(grid.getCell(2, 2)?.type).toBe(CellType.BALL_P1);
+            
+            // The arrow box should still change direction even though ball couldn't move
+            expect(grid.getCell(3, 2)?.direction).toBe(Direction.RIGHT);
+            
+            // The existing ball should remain unchanged
+            expect(grid.getCell(3, 1)?.type).toBe(CellType.BALL_P2);
+        });
+
+        it('should track path correctly when ball gets stuck due to occupied target cell', () => {
+            // Place a box with right arrow at position (3, 2)
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            // Place another box at the target position (3, 3)
+            grid.setCell(3, 3, { type: CellType.BOX, direction: Direction.LEFT });
+            
+            // Drop ball with path tracking
+            const result = grid.dropBallWithPath(2, Player.PLAYER1);
+            
+            // Ball should stay in column 2 at row 2
+            expect(result.finalPosition).toEqual({ row: 2, col: 2 });
+            expect(result.ballPath).toBeDefined();
+            
+            const steps = result.ballPath?.steps || [];
+            
+            // Should have a redirect step that shows the box was hit
+            const redirectStep = steps.find(step => step.action === 'redirect');
+            expect(redirectStep).toBeDefined();
+            expect(redirectStep?.hitBox).toBe(true);
+            expect(redirectStep?.boxDirection).toBe(Direction.RIGHT);
+            expect(redirectStep?.newBoxDirection).toBe(Direction.LEFT);
+            
+            // Should not have any steps in column 3 since ball couldn't move there
+            const column3Steps = steps.filter(step => step.position.col === 3);
+            expect(column3Steps.length).toBe(0);
+            
+            // All steps should be in column 2
+            const column2Steps = steps.filter(step => step.position.col === 2);
+            expect(column2Steps.length).toBeGreaterThan(0);
+        });
     });
 
     describe('column analysis', () => {
