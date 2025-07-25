@@ -8,9 +8,8 @@ const createMockDOMWithLogo = () => {
       <header>
         <div class="header-content">
           <div class="logo-container">
-            <img src="assets/icon.png" alt="Balldrop Game Logo" class="game-logo">
+            <img src="assets/icon.png" alt="Dropple Game Logo" class="game-logo">
           </div>
-          <h1>Balldrop Game</h1>
         </div>
         <div class="game-info">
           <div class="player-info">
@@ -38,6 +37,15 @@ const createMockDOMWithLogo = () => {
         <div class="game-controls">
           <button id="new-game-btn" class="btn btn-primary">New Game</button>
           <button id="reset-btn" class="btn btn-secondary">Reset</button>
+          <div class="animation-speed-control">
+            <label for="animation-speed-select">Animation Speed:</label>
+            <select id="animation-speed-select" class="speed-select">
+              <option value="SLOW">Slow</option>
+              <option value="NORMAL" selected>Normal</option>
+              <option value="FAST">Fast</option>
+              <option value="INSTANT">Instant</option>
+            </select>
+          </div>
         </div>
         <div class="game-status">
           <div id="winner-message" class="winner-message hidden"></div>
@@ -77,7 +85,7 @@ describe('UI Component Tests', () => {
     it('should have correct logo attributes', () => {
       const logoElement = document.querySelector('.game-logo') as HTMLImageElement;
       expect(logoElement.src).toContain('assets/icon.png');
-      expect(logoElement.alt).toBe('Balldrop Game Logo');
+      expect(logoElement.alt).toBe('Dropple Game Logo');
       expect(logoElement.classList.contains('game-logo')).toBe(true);
     });
 
@@ -90,21 +98,11 @@ describe('UI Component Tests', () => {
       expect(headerContent?.contains(logoContainer as Node)).toBe(true);
     });
 
-    it('should maintain header structure with logo and title', () => {
-      const headerContent = document.querySelector('.header-content');
-      const logoContainer = headerContent?.querySelector('.logo-container');
-      const title = headerContent?.querySelector('h1');
-      
-      expect(logoContainer).toBeTruthy();
-      expect(title).toBeTruthy();
-      expect(title?.textContent).toBe('Balldrop Game');
-    });
-
-    it('should have logo with reduced size styling', () => {
+    it('should have logo with modern styling', () => {
       const logoElement = document.querySelector('.game-logo') as HTMLImageElement;
       expect(logoElement).toBeTruthy();
       
-      // Verify the logo has the game-logo class which should have reduced size styling
+      // Verify the logo has the game-logo class which should have modern styling
       expect(logoElement.classList.contains('game-logo')).toBe(true);
       
       // The actual size verification would be done through CSS, but we can verify
@@ -137,6 +135,21 @@ describe('UI Component Tests', () => {
       expect(newGameBtn?.classList.contains('btn-primary')).toBe(true);
       expect(resetBtn?.classList.contains('btn')).toBe(true);
       expect(resetBtn?.classList.contains('btn-secondary')).toBe(true);
+    });
+
+    it('should have modern speed select dropdown with correct styling', () => {
+      const speedSelect = document.getElementById('animation-speed-select');
+      const speedControl = document.querySelector('.animation-speed-control');
+      
+      expect(speedSelect).toBeTruthy();
+      expect(speedControl).toBeTruthy();
+      expect(speedSelect?.classList.contains('speed-select')).toBe(true);
+      expect(speedSelect?.tagName).toBe('SELECT');
+      
+      // Check if options are present
+      const options = speedSelect?.querySelectorAll('option');
+      expect(options?.length).toBe(4);
+      expect(options?.[1].selected).toBe(true); // Normal should be selected
     });
   });
 
