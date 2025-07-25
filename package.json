@@ -2,16 +2,68 @@
   "name": "balldrop-game",
   "version": "1.0.0",
   "description": "A TypeScript browser game where players drop balls in a grid with directional boxes",
-  "main": "dist/index.js",
+  "main": "dist/electron/main.js",
+  "homepage": "./",
+  "author": "Balldrop Game Developer",
   "scripts": {
     "build": "tsc",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "build:all": "npm run build && npm run build:electron",
     "dev": "tsc --watch",
     "test": "jest",
     "serve": "http-server . -p 8080",
-    "verify": "node verify.js"
+    "verify": "node verify.js",
+    "electron:dev": "npm run build:all && electron .",
+    "electron:pack": "npm run build:all && electron-builder",
+    "electron:pack:mac": "npm run build:all && electron-builder --mac",
+    "electron:pack:win": "npm run build:all && electron-builder --win",
+    "dist": "npm run build:all && electron-builder --publish=never",
+    "dist:mac": "npm run build:all && electron-builder --mac --publish=never",
+    "dist:win": "npm run build:all && electron-builder --win --publish=never"
+  },
+  "build": {
+    "appId": "com.balldropgame.app",
+    "productName": "Balldrop Game",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "index.html",
+      "styles.css",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.games",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ]
+    }
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.0",
     "http-server": "^14.1.0",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^30.0.5",

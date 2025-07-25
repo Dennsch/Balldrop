@@ -2,18 +2,19 @@
 
 A TypeScript browser-based game where two players compete by dropping balls in a 20x20 grid with directional boxes that redirect the balls.
 
+**Now available as desktop executables for Mac and Windows!**
+
 ## Game Rules
 
 - **Grid**: 20x20 grid of cells
 - **Players**: 2 players, each with 10 balls
-- **Objective**: Control the most columns by getting your balls to the bottom row
+- **Objective**: Control the most columns by having your ball at the bottom
 - **Mechanics**: 
   - Each column acts like Connect 4 - balls fall to the bottom
   - Random boxes with arrows (← or →) are placed on the grid before the game starts
   - When a ball hits a box, it gets redirected in the arrow's direction
   - The box then changes its arrow direction
-  - **Scoring**: Only balls that reach the bottom row (row 20) count for points
-  - The player with the most columns (determined by balls in the bottom row) wins
+  - The player with the most columns (determined by the bottom-most ball) wins
 
 ## Installation
 
@@ -23,7 +24,38 @@ A TypeScript browser-based game where two players compete by dropping balls in a
    npm install
    ```
 
-## Development
+## Desktop Executables
+
+### Quick Start - Download Executables
+
+Build executable files for your platform:
+
+```bash
+# For macOS (creates .app and .dmg)
+npm run dist:mac
+
+# For Windows (creates .exe installer)  
+npm run dist:win
+
+# For current platform
+npm run dist
+```
+
+Built executables will be in the `dist-electron/` folder.
+
+### Desktop Development
+
+```bash
+# Run as desktop app during development
+npm run electron:dev
+
+# Test the Electron setup
+node verify_electron_build.js
+```
+
+📖 **See [ELECTRON_PACKAGING.md](ELECTRON_PACKAGING.md) for detailed desktop packaging instructions.**
+
+## Web Browser Version
 
 ### Building the Game
 ```bash
@@ -78,9 +110,8 @@ npm test -- --coverage
 3. Player 1 goes first (red balls)
 4. Click on a column number to drop your ball
 5. Watch as balls fall and potentially get redirected by boxes
-6. **Important**: Only balls that reach the bottom row count for points!
-7. Players alternate turns until all balls are used
-8. The player controlling the most columns (with balls in the bottom row) wins!
+6. Players alternate turns until all balls are used
+7. The player controlling the most columns wins!
 
 ## Features
 
