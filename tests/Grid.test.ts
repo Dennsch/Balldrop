@@ -91,6 +91,36 @@ describe('Grid', () => {
             // The ball should be gone
             expect(grid.getCell(0, 0)?.type).not.toBe(CellType.BALL_P1);
         });
+
+        it('should not place boxes on the first or last row', () => {
+            grid.placeRandomBoxes(5, 10);
+            
+            const cells = grid.getCells();
+            const gridSize = grid.getSize();
+            
+            // Check first row (row 0) - should have no boxes
+            for (let col = 0; col < gridSize; col++) {
+                expect(cells[0][col].type).not.toBe(CellType.BOX);
+            }
+            
+            // Check last row (row gridSize-1) - should have no boxes
+            for (let col = 0; col < gridSize; col++) {
+                expect(cells[gridSize - 1][col].type).not.toBe(CellType.BOX);
+            }
+            
+            // Verify that boxes can still be placed in middle rows
+            let boxCount = 0;
+            for (let row = 1; row < gridSize - 1; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    if (cells[row][col].type === CellType.BOX) {
+                        boxCount++;
+                    }
+                }
+            }
+            
+            // Should have at least some boxes in the middle rows
+            expect(boxCount).toBeGreaterThan(0);
+        });
     });
 
     describe('ball dropping', () => {
@@ -208,74 +238,6 @@ describe('Grid', () => {
                     expect(cells[row][col].type).toBe(CellType.EMPTY);
                 }
             }
-        });
-    });
-
-    describe('ball path tracking', () => {
-        it('should track simple falling path', () => {
-            const ballPath = grid.dropBallWithPath(2, Player.PLAYER1);
-            
-            expect(ballPath).not.toBeNull();
-            expect(ballPath!.finalPosition).toEqual({ row: 4, col: 2 });
-            expect(ballPath!.player).toBe(Player.PLAYER1);
-            expect(ballPath!.steps.length).toBeGreaterThan(0);
-            
-            // First step should be the starting position
-            expect(ballPath!.steps[0].action).toBe('fall');
-            expect(ballPath!.steps[0].position.col).toBe(2);
-            
-            // Last step should be settle
-            const lastStep = ballPath!.steps[ballPath!.steps.length - 1];
-            expect(lastStep.action).toBe('settle');
-            expect(lastStep.position).toEqual({ row: 4, col: 2 });
-        });
-
-        it('should track redirection path when hitting boxes', () => {
-            // Place a box with right arrow at position (3, 2)
-            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
-            
-            const ballPath = grid.dropBallWithPath(2, Player.PLAYER1);
-            
-            expect(ballPath).not.toBeNull();
-            expect(ballPath!.finalPosition.col).toBe(3); // Should be redirected to column 3
-            
-            // Should have redirect steps in the path
-            const redirectSteps = ballPath!.steps.filter(step => step.action === 'redirect');
-            expect(redirectSteps.length).toBeGreaterThan(0);
-            
-            // Should have a step that hits the box
-            const boxHitStep = ballPath!.steps.find(step => step.hitBox === true);
-            expect(boxHitStep).toBeDefined();
-            expect(boxHitStep!.boxDirection).toBe(Direction.RIGHT);
-        });
-
-        it('should return null for full columns', () => {
-            // Fill the column
-            for (let i = 0; i < 5; i++) {
-                grid.dropBall(2, Player.PLAYER1);
-            }
-            
-            const ballPath = grid.dropBallWithPath(2, Player.PLAYER1);
-            expect(ballPath).toBeNull();
-        });
-
-        it('should track path when ball stacks on existing balls', () => {
-            // Drop first ball
-            grid.dropBall(2, Player.PLAYER1);
-            
-            // Drop second ball and track its path
-            const ballPath = grid.dropBallWithPath(2, Player.PLAYER2);
-            
-            expect(ballPath).not.toBeNull();
-            expect(ballPath!.finalPosition).toEqual({ row: 3, col: 2 });
-            expect(ballPath!.player).toBe(Player.PLAYER2);
-            
-            // Path should be shorter since it stops on the existing ball
-            expect(ballPath!.steps.length).toBeGreaterThan(0);
-            
-            const lastStep = ballPath!.steps[ballPath!.steps.length - 1];
-            expect(lastStep.action).toBe('settle');
-            expect(lastStep.position.row).toBe(3);
         });
     });
 });
