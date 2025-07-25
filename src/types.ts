@@ -45,3 +45,16 @@ export interface GameResult {
     player2Columns: number;
     isTie: boolean;
 }
+
+export interface BallPathStep {
+    position: Position;
+    action: 'fall' | 'redirect' | 'settle';
+    hitBox?: boolean;
+    boxDirection?: Direction;
+}
+
+export interface BallPath {
+    steps: BallPathStep[];
+    finalPosition: Position;
+    player: Player;
+}

@@ -1,5 +1,5 @@
 import { Grid } from './Grid.js';
-import { GameConfig, GameState, Player, GameResult, Position } from './types.js';
+import { GameConfig, GameState, Player, GameResult, Position, BallPath } from './types.js';
 
 export class Game {
     private grid: Grid;
@@ -8,7 +8,7 @@ export class Game {
     private currentPlayer: Player;
     private ballsRemaining: Map<Player, number>;
     private onStateChange?: (game: Game) => void;
-    private onBallDropped?: (position: Position, player: Player) => void;
+    private onBallDropped?: (ballPath: BallPath) => void;
 
     constructor(config: Partial<GameConfig> = {}) {
         this.config = {
@@ -51,12 +51,12 @@ export class Game {
             return false;
         }
 
-        const position = this.grid.dropBall(col, this.currentPlayer);
-        if (position) {
+        const ballPath = this.grid.dropBallWithPath(col, this.currentPlayer);
+        if (ballPath) {
             this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
             
             if (this.onBallDropped) {
-                this.onBallDropped(position, this.currentPlayer);
+                this.onBallDropped(ballPath);
             }
 
             // Check if game is finished
@@ -156,7 +156,7 @@ export class Game {
         this.onStateChange = callback;
     }
 
-    public onBallDroppedHandler(callback: (position: Position, player: Player) => void): void {
+    public onBallDroppedHandler(callback: (ballPath: BallPath) => void): void {
         this.onBallDropped = callback;
     }
 
