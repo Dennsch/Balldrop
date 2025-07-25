@@ -67,8 +67,8 @@ describe('Integration Tests', () => {
       // Start game
       game.startNewGame();
       
-      // Drop a ball
-      game.dropBall(0);
+      // Drop a ball using sync method for testing
+      game.dropBallSync(0);
       
       // Check if UI reflects the change
       expect(player1BallsElement?.textContent).toBe('2'); // Should have 2 balls left
@@ -89,7 +89,7 @@ describe('Integration Tests', () => {
     it('should handle reset button click', () => {
       // Start and play a bit
       game.startNewGame();
-      game.dropBall(0);
+      game.dropBallSync(0);
       
       const resetButton = document.getElementById('reset-btn') as HTMLButtonElement;
       
@@ -123,7 +123,7 @@ describe('Integration Tests', () => {
       
       // Fill the column (5 cells in our test grid)
       for (let i = 0; i < 5; i++) {
-        game.dropBall(0);
+        game.dropBallSync(0);
       }
       
       // Button should be disabled
@@ -135,7 +135,7 @@ describe('Integration Tests', () => {
       
       // Play a complete game
       for (let i = 0; i < 6; i++) { // 3 balls per player
-        game.dropBall(i % 5);
+        game.dropBallSync(i % 5);
       }
       
       const winnerMessage = document.getElementById('winner-message');
@@ -145,8 +145,8 @@ describe('Integration Tests', () => {
     it('should update grid visually when balls are dropped', () => {
       game.startNewGame();
       
-      // Drop a ball
-      game.dropBall(0);
+      // Drop a ball using sync method for testing
+      game.dropBallSync(0);
       
       // Check if grid cell has the correct class
       const gridElement = document.getElementById('game-grid');
@@ -175,20 +175,20 @@ describe('Integration Tests', () => {
       game.startNewGame();
       expect(game.getState()).toBe(GameState.PLAYING);
       
-      // Play alternating turns
+      // Play alternating turns using sync method for testing
       let currentPlayer = game.getCurrentPlayer();
-      game.dropBall(0);
+      game.dropBallSync(0);
       expect(game.getCurrentPlayer()).not.toBe(currentPlayer);
       
       currentPlayer = game.getCurrentPlayer();
-      game.dropBall(1);
+      game.dropBallSync(1);
       expect(game.getCurrentPlayer()).not.toBe(currentPlayer);
       
       // Continue until game ends
-      game.dropBall(2);
-      game.dropBall(3);
-      game.dropBall(4);
-      game.dropBall(0); // This should finish the game
+      game.dropBallSync(2);
+      game.dropBallSync(3);
+      game.dropBallSync(4);
+      game.dropBallSync(0); // This should finish the game
       
       expect(game.getState()).toBe(GameState.FINISHED);
       
