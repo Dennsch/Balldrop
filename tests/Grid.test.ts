@@ -210,4 +210,72 @@ describe('Grid', () => {
             }
         });
     });
+
+    describe('ball path tracking', () => {
+        it('should track simple falling path', () => {
+            const ballPath = grid.dropBallWithPath(2, Player.PLAYER1);
+            
+            expect(ballPath).not.toBeNull();
+            expect(ballPath!.finalPosition).toEqual({ row: 4, col: 2 });
+            expect(ballPath!.player).toBe(Player.PLAYER1);
+            expect(ballPath!.steps.length).toBeGreaterThan(0);
+            
+            // First step should be the starting position
+            expect(ballPath!.steps[0].action).toBe('fall');
+            expect(ballPath!.steps[0].position.col).toBe(2);
+            
+            // Last step should be settle
+            const lastStep = ballPath!.steps[ballPath!.steps.length - 1];
+            expect(lastStep.action).toBe('settle');
+            expect(lastStep.position).toEqual({ row: 4, col: 2 });
+        });
+
+        it('should track redirection path when hitting boxes', () => {
+            // Place a box with right arrow at position (3, 2)
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            const ballPath = grid.dropBallWithPath(2, Player.PLAYER1);
+            
+            expect(ballPath).not.toBeNull();
+            expect(ballPath!.finalPosition.col).toBe(3); // Should be redirected to column 3
+            
+            // Should have redirect steps in the path
+            const redirectSteps = ballPath!.steps.filter(step => step.action === 'redirect');
+            expect(redirectSteps.length).toBeGreaterThan(0);
+            
+            // Should have a step that hits the box
+            const boxHitStep = ballPath!.steps.find(step => step.hitBox === true);
+            expect(boxHitStep).toBeDefined();
+            expect(boxHitStep!.boxDirection).toBe(Direction.RIGHT);
+        });
+
+        it('should return null for full columns', () => {
+            // Fill the column
+            for (let i = 0; i < 5; i++) {
+                grid.dropBall(2, Player.PLAYER1);
+            }
+            
+            const ballPath = grid.dropBallWithPath(2, Player.PLAYER1);
+            expect(ballPath).toBeNull();
+        });
+
+        it('should track path when ball stacks on existing balls', () => {
+            // Drop first ball
+            grid.dropBall(2, Player.PLAYER1);
+            
+            // Drop second ball and track its path
+            const ballPath = grid.dropBallWithPath(2, Player.PLAYER2);
+            
+            expect(ballPath).not.toBeNull();
+            expect(ballPath!.finalPosition).toEqual({ row: 3, col: 2 });
+            expect(ballPath!.player).toBe(Player.PLAYER2);
+            
+            // Path should be shorter since it stops on the existing ball
+            expect(ballPath!.steps.length).toBeGreaterThan(0);
+            
+            const lastStep = ballPath!.steps[ballPath!.steps.length - 1];
+            expect(lastStep.action).toBe('settle');
+            expect(lastStep.position.row).toBe(3);
+        });
+    });
 });

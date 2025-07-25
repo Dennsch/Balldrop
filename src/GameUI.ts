@@ -1,5 +1,5 @@
 import { Game } from './Game.js';
-import { CellType, Direction, GameState, Player, Position } from './types.js';
+import { CellType, Direction, GameState, Player, Position, BallPath } from './types.js';
 
 export class GameUI {
     private game: Game;
@@ -12,6 +12,7 @@ export class GameUI {
     private gameMessageElement!: HTMLElement;
     private newGameButton!: HTMLElement;
     private resetButton!: HTMLElement;
+    private isAnimating: boolean = false;
 
     constructor(game: Game) {
         this.game = game;
@@ -85,7 +86,7 @@ export class GameUI {
     }
 
     private handleColumnClick(col: number): void {
-        if (this.game.canDropInColumn(col)) {
+        if (this.game.canDropInColumn(col) && !this.isAnimating) {
             this.game.dropBall(col);
         }
     }
@@ -94,15 +95,123 @@ export class GameUI {
         this.updateUI();
     }
 
-    private handleBallDropped(position: Position, player: Player): void {
-        // Add animation class to the cell
-        const cellElement = this.getCellElement(position.row, position.col);
-        if (cellElement) {
-            cellElement.classList.add('falling');
-            setTimeout(() => {
-                cellElement.classList.remove('falling');
-            }, 500);
+    private handleBallDropped(ballPath: BallPath): void {
+        this.animateBallPath(ballPath);
+    }
+
+    private async animateBallPath(ballPath: BallPath): Promise<void> {
+        this.isAnimating = true;
+        this.updateColumnSelectors(); // Disable buttons during animation
+
+        // Create animated ball element
+        const animatedBall = this.createAnimatedBall(ballPath.player);
+        this.gridElement.appendChild(animatedBall);
+
+        try {
+            // Animate through each step of the path
+            for (let i = 0; i < ballPath.steps.length; i++) {
+                const step = ballPath.steps[i];
+                const isLastStep = i === ballPath.steps.length - 1;
+                
+                await this.animateToPosition(animatedBall, step.position, step.action, isLastStep);
+                
+                // Add visual effects for special actions
+                if (step.hitBox) {
+                    await this.animateBoxHit(step.position, step.boxDirection);
+                }
+            }
+
+            // Remove animated ball and update grid
+            this.gridElement.removeChild(animatedBall);
+            this.updateGrid();
+        } catch (error) {
+            console.error('Animation error:', error);
+            // Cleanup on error
+            if (this.gridElement.contains(animatedBall)) {
+                this.gridElement.removeChild(animatedBall);
+            }
+            this.updateGrid();
+        } finally {
+            this.isAnimating = false;
+            this.updateColumnSelectors(); // Re-enable buttons
         }
+    }
+
+    private createAnimatedBall(player: Player): HTMLElement {
+        const ball = document.createElement('div');
+        ball.className = `animated-ball ${player === Player.PLAYER1 ? 'player1' : 'player2'}`;
+        ball.textContent = '●';
+        
+        // Position it initially off-screen
+        ball.style.position = 'absolute';
+        ball.style.zIndex = '1000';
+        ball.style.fontSize = '16px';
+        ball.style.fontWeight = 'bold';
+        ball.style.width = '28px';
+        ball.style.height = '28px';
+        ball.style.display = 'flex';
+        ball.style.alignItems = 'center';
+        ball.style.justifyContent = 'center';
+        ball.style.borderRadius = '50%';
+        ball.style.transition = 'all 0.3s ease-in-out';
+        
+        if (player === Player.PLAYER1) {
+            ball.style.backgroundColor = '#ff6b6b';
+            ball.style.color = 'white';
+        } else {
+            ball.style.backgroundColor = '#4ecdc4';
+            ball.style.color = 'white';
+        }
+        
+        return ball;
+    }
+
+    private async animateToPosition(ball: HTMLElement, position: Position, action: string, isLastStep: boolean): Promise<void> {
+        return new Promise((resolve) => {
+            const cellElement = this.getCellElement(position.row, position.col);
+            if (!cellElement) {
+                resolve();
+                return;
+            }
+
+            const rect = cellElement.getBoundingClientRect();
+            const gridRect = this.gridElement.getBoundingClientRect();
+            
+            // Calculate position relative to grid
+            const left = rect.left - gridRect.left + (rect.width - 28) / 2;
+            const top = rect.top - gridRect.top + (rect.height - 28) / 2;
+            
+            ball.style.left = `${left}px`;
+            ball.style.top = `${top}px`;
+
+            // Add visual effects based on action
+            if (action === 'redirect') {
+                ball.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    ball.style.transform = 'scale(1)';
+                }, 150);
+            }
+
+            // Adjust timing based on action
+            const duration = action === 'settle' ? 200 : (action === 'redirect' ? 400 : 300);
+            
+            setTimeout(resolve, duration);
+        });
+    }
+
+    private async animateBoxHit(position: Position, boxDirection?: Direction): Promise<void> {
+        return new Promise((resolve) => {
+            const cellElement = this.getCellElement(position.row, position.col);
+            if (cellElement) {
+                cellElement.classList.add('box-hit');
+                setTimeout(() => {
+                    cellElement.classList.remove('box-hit');
+                    resolve();
+                }, 300);
+            } else {
+                resolve();
+            }
+        });
     }
 
     private updateUI(): void {
@@ -171,7 +280,7 @@ export class GameUI {
         const buttons = this.columnSelectorsElement.querySelectorAll('.column-selector');
         buttons.forEach((button, col) => {
             const buttonElement = button as HTMLButtonElement;
-            buttonElement.disabled = !this.game.canDropInColumn(col);
+            buttonElement.disabled = !this.game.canDropInColumn(col) || this.isAnimating;
         });
     }
 
