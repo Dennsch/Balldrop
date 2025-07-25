@@ -170,6 +170,43 @@ describe('Grid', () => {
             expect(grid.getCell(3, 2)?.direction).toBe(Direction.LEFT);
         });
 
+        it('should redirect ball based on original box direction, then change arrow', () => {
+            // Test with RIGHT arrow box
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            const result = grid.dropBallWithPath(2, Player.PLAYER1);
+            
+            // Ball should be redirected RIGHT (to column 3) based on original direction
+            expect(result.finalPosition?.col).toBe(3);
+            
+            // Box direction should have changed to LEFT after ball moved
+            expect(grid.getCell(3, 2)?.direction).toBe(Direction.LEFT);
+            
+            // Check path tracking shows correct sequence
+            const steps = result.ballPath?.steps || [];
+            const redirectStep = steps.find(step => step.action === 'redirect');
+            expect(redirectStep?.boxDirection).toBe(Direction.RIGHT); // Original direction
+            expect(redirectStep?.newBoxDirection).toBe(Direction.LEFT); // New direction
+            
+            // Clear and test with LEFT arrow box
+            grid.clearGrid();
+            grid.setCell(3, 2, { type: CellType.BOX, direction: Direction.LEFT });
+            
+            const result2 = grid.dropBallWithPath(2, Player.PLAYER2);
+            
+            // Ball should be redirected LEFT (to column 1) based on original direction
+            expect(result2.finalPosition?.col).toBe(1);
+            
+            // Box direction should have changed to RIGHT after ball moved
+            expect(grid.getCell(3, 2)?.direction).toBe(Direction.RIGHT);
+            
+            // Check path tracking shows correct sequence
+            const steps2 = result2.ballPath?.steps || [];
+            const redirectStep2 = steps2.find(step => step.action === 'redirect');
+            expect(redirectStep2?.boxDirection).toBe(Direction.LEFT); // Original direction
+            expect(redirectStep2?.newBoxDirection).toBe(Direction.RIGHT); // New direction
+        });
+
         it('should handle ball going out of bounds during redirection', () => {
             // Place a box with left arrow at position (3, 0) - leftmost column
             grid.setCell(3, 0, { type: CellType.BOX, direction: Direction.LEFT });
