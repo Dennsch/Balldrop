@@ -6,13 +6,14 @@ A TypeScript browser-based game where two players compete by dropping balls in a
 
 - **Grid**: 20x20 grid of cells
 - **Players**: 2 players, each with 10 balls
-- **Objective**: Control the most columns by having your ball at the bottom
+- **Objective**: Control the most columns by getting your balls to the bottom row
 - **Mechanics**: 
   - Each column acts like Connect 4 - balls fall to the bottom
   - Random boxes with arrows (← or →) are placed on the grid before the game starts
   - When a ball hits a box, it gets redirected in the arrow's direction
   - The box then changes its arrow direction
-  - The player with the most columns (determined by the bottom-most ball) wins
+  - **Scoring**: Only balls that reach the bottom row (row 20) count for points
+  - The player with the most columns (determined by balls in the bottom row) wins
 
 ## Installation
 
@@ -77,8 +78,9 @@ npm test -- --coverage
 3. Player 1 goes first (red balls)
 4. Click on a column number to drop your ball
 5. Watch as balls fall and potentially get redirected by boxes
-6. Players alternate turns until all balls are used
-7. The player controlling the most columns wins!
+6. **Important**: Only balls that reach the bottom row count for points!
+7. Players alternate turns until all balls are used
+8. The player controlling the most columns (with balls in the bottom row) wins!
 
 ## Features
 

@@ -291,13 +291,21 @@ describe('Grid', () => {
     });
 
     describe('column analysis', () => {
-        it('should identify column winner correctly', () => {
-            // Place balls in column 2
+        it('should identify column winner correctly - only bottom row counts', () => {
+            // Place balls in column 2 - only the ball in the bottom row (row 4) should count
             grid.setCell(4, 2, { type: CellType.BALL_P1, player: Player.PLAYER1 });
             grid.setCell(3, 2, { type: CellType.BALL_P2, player: Player.PLAYER2 });
             
-            // Player 1 should win column 2 (bottom-most ball)
+            // Player 1 should win column 2 (ball in bottom row)
             expect(grid.getColumnWinner(2)).toBe(Player.PLAYER1);
+        });
+
+        it('should not count balls that did not reach the bottom row', () => {
+            // Place ball in column 1 but not in bottom row
+            grid.setCell(3, 1, { type: CellType.BALL_P1, player: Player.PLAYER1 });
+            
+            // Should return null since ball is not in bottom row
+            expect(grid.getColumnWinner(1)).toBeNull();
         });
 
         it('should return null for empty columns', () => {
@@ -305,18 +313,39 @@ describe('Grid', () => {
         });
 
         it('should get winners for all columns', () => {
-            // Set up some column winners
+            // Set up some column winners - only balls in bottom row (row 4) count
             grid.setCell(4, 0, { type: CellType.BALL_P1, player: Player.PLAYER1 });
             grid.setCell(4, 2, { type: CellType.BALL_P2, player: Player.PLAYER2 });
+            // Place a ball not in bottom row - should not count
+            grid.setCell(3, 1, { type: CellType.BALL_P1, player: Player.PLAYER1 });
             
             const winners = grid.getColumnWinners();
             
             expect(winners).toHaveLength(5);
-            expect(winners[0]).toBe(Player.PLAYER1);
-            expect(winners[1]).toBeNull();
-            expect(winners[2]).toBe(Player.PLAYER2);
-            expect(winners[3]).toBeNull();
-            expect(winners[4]).toBeNull();
+            expect(winners[0]).toBe(Player.PLAYER1); // Ball in bottom row
+            expect(winners[1]).toBeNull(); // Ball not in bottom row
+            expect(winners[2]).toBe(Player.PLAYER2); // Ball in bottom row
+            expect(winners[3]).toBeNull(); // Empty column
+            expect(winners[4]).toBeNull(); // Empty column
+        });
+
+        it('should only count balls in the bottom row for scoring', () => {
+            // Test scenario: multiple balls in same column, only bottom one counts
+            grid.setCell(1, 0, { type: CellType.BALL_P2, player: Player.PLAYER2 });
+            grid.setCell(2, 0, { type: CellType.BALL_P1, player: Player.PLAYER1 });
+            grid.setCell(3, 0, { type: CellType.BALL_P2, player: Player.PLAYER2 });
+            grid.setCell(4, 0, { type: CellType.BALL_P1, player: Player.PLAYER1 }); // Bottom row
+            
+            // Only the ball in the bottom row (Player 1) should count
+            expect(grid.getColumnWinner(0)).toBe(Player.PLAYER1);
+            
+            // Test another column with ball not in bottom row
+            grid.setCell(2, 1, { type: CellType.BALL_P2, player: Player.PLAYER2 });
+            expect(grid.getColumnWinner(1)).toBeNull();
+            
+            // Test column with ball in bottom row
+            grid.setCell(4, 3, { type: CellType.BALL_P2, player: Player.PLAYER2 });
+            expect(grid.getColumnWinner(3)).toBe(Player.PLAYER2);
         });
 
         it('should detect full columns correctly', () => {
