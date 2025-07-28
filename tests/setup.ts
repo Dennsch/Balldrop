@@ -1,4 +1,5 @@
 // Jest setup file for additional configuration
+import '@testing-library/jest-dom';
 
 // Mock DOM methods that might not be available in jsdom
 Object.defineProperty(window, 'matchMedia', {

@@ -7,63 +7,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="game-container">
-        <header>
-            <div class="header-content">
-                <div class="logo-container">
-                    <img src="assets/icon.png" alt="Dropple Game Logo" class="game-logo">
-                </div>
-            </div>
-            <div class="game-info">
-                <div class="player-info">
-                    <div class="player player-1">
-                        <span class="player-name">Player 1</span>
-                        <span class="balls-remaining">Balls: <span id="player1-balls">10</span></span>
-                    </div>
-                    <div class="current-turn">
-                        <span id="current-player">Player 1's Turn</span>
-                    </div>
-                    <div class="player player-2">
-                        <span class="player-name">Player 2</span>
-                        <span class="balls-remaining">Balls: <span id="player2-balls">10</span></span>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <main>
-            <div class="game-board">
-                <div class="column-selectors" id="column-selectors">
-                    <!-- Column selector buttons will be generated here -->
-                </div>
-                <div class="grid-container">
-                    <div class="grid" id="game-grid">
-                        <!-- 20x20 grid will be generated here -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="game-controls">
-                <button id="new-game-btn" class="btn btn-primary">New Game</button>
-                <button id="reset-btn" class="btn btn-secondary">Reset</button>
-                <div class="animation-speed-control">
-                    <label for="animation-speed-select">Animation Speed:</label>
-                    <select id="animation-speed-select" class="speed-select">
-                        <option value="SLOW">Slow</option>
-                        <option value="NORMAL" selected>Normal</option>
-                        <option value="FAST">Fast</option>
-                        <option value="INSTANT">Instant</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="game-status">
-                <div id="winner-message" class="winner-message hidden"></div>
-                <div id="game-message" class="game-message"></div>
-            </div>
-        </main>
-    </div>
-
+    <div id="root"></div>
     <script type="module" src="dist/index.js"></script>
 </body>
 </html>
