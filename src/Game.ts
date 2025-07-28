@@ -1,5 +1,5 @@
 import { Grid } from './Grid.js';
-import { GameConfig, GameState, Player, GameResult, Position, BallPath, GameMode, MoveSelection, ExecutionDirection } from './types.js';
+import { GameConfig, GameState, Player, GameResult, Position, BallPath, GameMode, MoveSelection, ExecutionDirection, BallReleaseSelection, DormantBall } from './types.js';
 
 export class Game {
     private grid: Grid;
@@ -8,6 +8,7 @@ export class Game {
     private currentPlayer: Player;
     private ballsRemaining: Map<Player, number>;
     private moveSelection: MoveSelection;
+    private ballReleaseSelection: BallReleaseSelection;
     private usedColumns: Set<number>; // Track which columns have been used (universal restriction)
     private onStateChange?: (game: Game) => void;
     private onBallDropped?: (ballPath: BallPath) => void;
@@ -38,6 +39,14 @@ export class Game {
             columnOwners: new Map<number, Player>()
         };
         
+        this.ballReleaseSelection = {
+            player1ReleasedBalls: new Set<string>(),
+            player2ReleasedBalls: new Set<string>(),
+            currentReleasePlayer: Player.PLAYER1,
+            allBallsReleased: false,
+            dormantBalls: new Map<string, DormantBall>()
+        };
+        
         this.usedColumns = new Set<number>();
     }
 
@@ -46,7 +55,7 @@ export class Game {
         this.grid.placeRandomBoxes(this.config.minBoxes, this.config.maxBoxes);
         
         if (this.config.gameMode === GameMode.HARD_MODE) {
-            this.state = GameState.SELECTING_MOVES;
+            this.state = GameState.BALL_PLACEMENT_PHASE;
         } else {
             this.state = GameState.PLAYING;
         }
@@ -62,6 +71,15 @@ export class Game {
             currentSelectionPlayer: Player.PLAYER1,
             allMovesSelected: false,
             columnOwners: new Map<number, Player>()
+        };
+        
+        // Reset ball release selection
+        this.ballReleaseSelection = {
+            player1ReleasedBalls: new Set<string>(),
+            player2ReleasedBalls: new Set<string>(),
+            currentReleasePlayer: Player.PLAYER1,
+            allBallsReleased: false,
+            dormantBalls: new Map<string, DormantBall>()
         };
         
         // Reset used columns tracking
@@ -113,7 +131,7 @@ export class Game {
     }
 
     public selectMove(col: number): boolean {
-        if (this.state !== GameState.SELECTING_MOVES) {
+        if (this.state !== GameState.BALL_PLACEMENT_PHASE) {
             return false;
         }
 
@@ -145,8 +163,12 @@ export class Game {
                 this.currentPlayer = Player.PLAYER2;
                 this.moveSelection.currentSelectionPlayer = Player.PLAYER2;
             } else {
-                // Both players have selected all moves
+                // Both players have selected all moves - place dormant balls and transition to release phase
                 this.moveSelection.allMovesSelected = true;
+                this.placeDormantBalls();
+                this.state = GameState.BALL_RELEASE_PHASE;
+                this.currentPlayer = Player.PLAYER1; // Reset to player 1 for release phase
+                this.ballReleaseSelection.currentReleasePlayer = Player.PLAYER1;
             }
         }
 
@@ -154,8 +176,103 @@ export class Game {
         return true;
     }
 
+    private placeDormantBalls(): void {
+        // Place all selected balls as dormant balls
+        const allBallPaths: BallPath[] = [];
+        
+        // Place player 1 balls as dormant
+        for (const col of this.moveSelection.player1Moves) {
+            const result = this.grid.calculateBallPath(col, Player.PLAYER1);
+            if (result.ballPath) {
+                this.grid.applyBallPath(result.ballPath, true); // true = dormant
+                allBallPaths.push(result.ballPath);
+            }
+        }
+        
+        // Place player 2 balls as dormant
+        for (const col of this.moveSelection.player2Moves) {
+            const result = this.grid.calculateBallPath(col, Player.PLAYER2);
+            if (result.ballPath) {
+                this.grid.applyBallPath(result.ballPath, true); // true = dormant
+                allBallPaths.push(result.ballPath);
+            }
+        }
+
+        // Update dormant balls tracking
+        const dormantBalls = this.grid.getDormantBalls();
+        this.ballReleaseSelection.dormantBalls.clear();
+        for (const ball of dormantBalls) {
+            this.ballReleaseSelection.dormantBalls.set(ball.ballId, ball);
+        }
+
+        // Set balls remaining to 0 for both players (they're all placed now)
+        this.ballsRemaining.set(Player.PLAYER1, 0);
+        this.ballsRemaining.set(Player.PLAYER2, 0);
+    }
+
+    public releaseBall(row: number, col: number): boolean {
+        if (this.state !== GameState.BALL_RELEASE_PHASE) {
+            return false;
+        }
+
+        // Check if there's a dormant ball at this position
+        if (!this.grid.isDormantBall(row, col)) {
+            return false;
+        }
+
+        // Find the dormant ball at this position
+        let targetBallId: string | null = null;
+        for (const [ballId, ball] of this.ballReleaseSelection.dormantBalls) {
+            if (ball.position.row === row && ball.position.col === col) {
+                // Check if this ball belongs to the current player
+                if (ball.player !== this.currentPlayer) {
+                    return false; // Players can only release their own balls
+                }
+                targetBallId = ballId;
+                break;
+            }
+        }
+
+        if (!targetBallId) {
+            return false;
+        }
+
+        // Release the ball (activate it)
+        if (this.grid.activateDormantBall({ row, col })) {
+            // Track that this ball has been released
+            if (this.currentPlayer === Player.PLAYER1) {
+                this.ballReleaseSelection.player1ReleasedBalls.add(targetBallId);
+            } else {
+                this.ballReleaseSelection.player2ReleasedBalls.add(targetBallId);
+            }
+
+            // Remove from dormant balls tracking
+            this.ballReleaseSelection.dormantBalls.delete(targetBallId);
+
+            // Check if all balls have been released
+            const totalBalls = this.config.ballsPerPlayer * 2;
+            const releasedBalls = this.ballReleaseSelection.player1ReleasedBalls.size + 
+                                this.ballReleaseSelection.player2ReleasedBalls.size;
+            
+            if (releasedBalls >= totalBalls) {
+                this.ballReleaseSelection.allBallsReleased = true;
+                this.state = GameState.FINISHED;
+            } else {
+                // Switch to the other player
+                this.currentPlayer = this.currentPlayer === Player.PLAYER1 ? Player.PLAYER2 : Player.PLAYER1;
+                this.ballReleaseSelection.currentReleasePlayer = this.currentPlayer;
+            }
+
+            this.notifyStateChange();
+            return true;
+        }
+
+        return false;
+    }
+
     public executeAllMoves(): boolean {
-        if (this.state !== GameState.SELECTING_MOVES || !this.moveSelection.allMovesSelected) {
+        if ((this.state !== GameState.SELECTING_MOVES && this.state !== GameState.BALL_PLACEMENT_PHASE) || 
+            !this.moveSelection.allMovesSelected) {
             return false;
         }
 
@@ -201,7 +318,8 @@ export class Game {
     }
 
     private executeMovesDirectional(direction: ExecutionDirection): boolean {
-        if (this.state !== GameState.SELECTING_MOVES || !this.moveSelection.allMovesSelected) {
+        if ((this.state !== GameState.SELECTING_MOVES && this.state !== GameState.BALL_PLACEMENT_PHASE) || 
+            !this.moveSelection.allMovesSelected) {
             return false;
         }
 
@@ -386,7 +504,7 @@ export class Game {
     }
 
     public canSelectMove(col: number): boolean {
-        if (this.state !== GameState.SELECTING_MOVES) {
+        if (this.state !== GameState.BALL_PLACEMENT_PHASE) {
             return false;
         }
 
@@ -420,6 +538,15 @@ export class Game {
             currentSelectionPlayer: Player.PLAYER1,
             allMovesSelected: false,
             columnOwners: new Map<number, Player>()
+        };
+        
+        // Reset ball release selection
+        this.ballReleaseSelection = {
+            player1ReleasedBalls: new Set<string>(),
+            player2ReleasedBalls: new Set<string>(),
+            currentReleasePlayer: Player.PLAYER1,
+            allBallsReleased: false,
+            dormantBalls: new Map<string, DormantBall>()
         };
         
         // Reset used columns tracking
@@ -464,7 +591,8 @@ export class Game {
     }
 
     public canExecuteAllMoves(): boolean {
-        return this.state === GameState.SELECTING_MOVES && this.moveSelection.allMovesSelected;
+        return (this.state === GameState.SELECTING_MOVES || this.state === GameState.BALL_PLACEMENT_PHASE) && 
+               this.moveSelection.allMovesSelected;
     }
 
     public getSelectedMovesCount(player: Player): number {
@@ -479,6 +607,52 @@ export class Game {
 
     public getUsedColumns(): Set<number> {
         return new Set(this.usedColumns);
+    }
+
+    public getBallReleaseSelection(): BallReleaseSelection {
+        return {
+            player1ReleasedBalls: new Set(this.ballReleaseSelection.player1ReleasedBalls),
+            player2ReleasedBalls: new Set(this.ballReleaseSelection.player2ReleasedBalls),
+            currentReleasePlayer: this.ballReleaseSelection.currentReleasePlayer,
+            allBallsReleased: this.ballReleaseSelection.allBallsReleased,
+            dormantBalls: new Map(this.ballReleaseSelection.dormantBalls)
+        };
+    }
+
+    public canReleaseBall(row: number, col: number): boolean {
+        if (this.state !== GameState.BALL_RELEASE_PHASE) {
+            return false;
+        }
+
+        // Check if there's a dormant ball at this position
+        if (!this.grid.isDormantBall(row, col)) {
+            return false;
+        }
+
+        // Find the dormant ball at this position and check if it belongs to current player
+        for (const [ballId, ball] of this.ballReleaseSelection.dormantBalls) {
+            if (ball.position.row === row && ball.position.col === col) {
+                return ball.player === this.currentPlayer;
+            }
+        }
+
+        return false;
+    }
+
+    public getDormantBallsForPlayer(player: Player): DormantBall[] {
+        const playerBalls: DormantBall[] = [];
+        for (const ball of this.ballReleaseSelection.dormantBalls.values()) {
+            if (ball.player === player) {
+                playerBalls.push(ball);
+            }
+        }
+        return playerBalls;
+    }
+
+    public getReleasedBallsCount(player: Player): number {
+        return player === Player.PLAYER1 
+            ? this.ballReleaseSelection.player1ReleasedBalls.size
+            : this.ballReleaseSelection.player2ReleasedBalls.size;
     }
 
     // Event handlers

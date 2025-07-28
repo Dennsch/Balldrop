@@ -1,4 +1,4 @@
-import { Cell, CellType, Direction, Position, Player, BallPath, BallPathStep } from './types.js';
+import { Cell, CellType, Direction, Position, Player, BallPath, BallPathStep, DormantBall } from './types.js';
 
 export class Grid {
     private cells: Cell[][];
@@ -162,8 +162,9 @@ export class Grid {
                 }
             }
 
-            // If next cell has a ball, stop here
-            if (nextCell.type === CellType.BALL_P1 || nextCell.type === CellType.BALL_P2) {
+            // If next cell has a ball (active or dormant), stop here
+            if (nextCell.type === CellType.BALL_P1 || nextCell.type === CellType.BALL_P2 || 
+                nextCell.type === CellType.DORMANT_BALL_P1 || nextCell.type === CellType.DORMANT_BALL_P2) {
                 break;
             }
         }
@@ -184,19 +185,27 @@ export class Grid {
         return { finalPosition, ballPath };
     }
 
-    public applyBallPath(ballPath: BallPath): boolean {
-        // Apply box direction changes from the path
-        for (const step of ballPath.steps) {
-            if (step.hitBox && step.boxPosition && step.newBoxDirection) {
-                const boxCell = this.getCell(step.boxPosition.row, step.boxPosition.col);
-                if (boxCell && boxCell.type === CellType.BOX) {
-                    boxCell.direction = step.newBoxDirection;
+    public applyBallPath(ballPath: BallPath, isDormant: boolean = false): boolean {
+        // Apply box direction changes from the path only if ball is not dormant
+        if (!isDormant) {
+            for (const step of ballPath.steps) {
+                if (step.hitBox && step.boxPosition && step.newBoxDirection) {
+                    const boxCell = this.getCell(step.boxPosition.row, step.boxPosition.col);
+                    if (boxCell && boxCell.type === CellType.BOX) {
+                        boxCell.direction = step.newBoxDirection;
+                    }
                 }
             }
         }
 
         // Place the ball at the final position
-        const ballType = ballPath.player === Player.PLAYER1 ? CellType.BALL_P1 : CellType.BALL_P2;
+        let ballType: CellType;
+        if (isDormant) {
+            ballType = ballPath.player === Player.PLAYER1 ? CellType.DORMANT_BALL_P1 : CellType.DORMANT_BALL_P2;
+        } else {
+            ballType = ballPath.player === Player.PLAYER1 ? CellType.BALL_P1 : CellType.BALL_P2;
+        }
+        
         return this.setCell(ballPath.finalPosition.row, ballPath.finalPosition.col, {
             type: ballType,
             player: ballPath.player
@@ -221,7 +230,8 @@ export class Grid {
             return null;
         }
 
-        // Only count balls that made it to the bottom row for points
+        // Only count active balls that made it to the bottom row for points
+        // Dormant balls don't count for scoring
         const bottomRow = this.size - 1;
         const cell = this.cells[bottomRow][col];
         
@@ -241,6 +251,68 @@ export class Grid {
             winners.push(this.getColumnWinner(col));
         }
         return winners;
+    }
+
+    public activateDormantBall(position: Position): boolean {
+        const cell = this.getCell(position.row, position.col);
+        if (!cell) {
+            return false;
+        }
+
+        // Convert dormant ball to active ball and apply box effects
+        if (cell.type === CellType.DORMANT_BALL_P1) {
+            cell.type = CellType.BALL_P1;
+            this.applyDormantBallEffects(position, Player.PLAYER1);
+            return true;
+        } else if (cell.type === CellType.DORMANT_BALL_P2) {
+            cell.type = CellType.BALL_P2;
+            this.applyDormantBallEffects(position, Player.PLAYER2);
+            return true;
+        }
+
+        return false;
+    }
+
+    private applyDormantBallEffects(ballPosition: Position, player: Player): void {
+        // Recalculate the ball path to determine what box effects should be applied
+        // We need to trace back how this ball got to its position and apply box changes
+        
+        // For now, we'll implement a simplified version that checks if the ball
+        // is directly above a box and applies the effect
+        const belowRow = ballPosition.row + 1;
+        if (this.isValidPosition(belowRow, ballPosition.col)) {
+            const belowCell = this.getCell(belowRow, ballPosition.col);
+            if (belowCell && belowCell.type === CellType.BOX && belowCell.direction) {
+                // Flip the box direction as if the ball had just hit it
+                belowCell.direction = belowCell.direction === Direction.LEFT ? Direction.RIGHT : Direction.LEFT;
+            }
+        }
+    }
+
+    public getDormantBalls(): DormantBall[] {
+        const dormantBalls: DormantBall[] = [];
+        let ballIdCounter = 0;
+
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
+                const cell = this.cells[row][col];
+                if (cell.type === CellType.DORMANT_BALL_P1 || cell.type === CellType.DORMANT_BALL_P2) {
+                    const player = cell.type === CellType.DORMANT_BALL_P1 ? Player.PLAYER1 : Player.PLAYER2;
+                    dormantBalls.push({
+                        position: { row, col },
+                        player,
+                        ballId: `ball_${player}_${ballIdCounter++}`
+                    });
+                }
+            }
+        }
+
+        return dormantBalls;
+    }
+
+    public isDormantBall(row: number, col: number): boolean {
+        const cell = this.getCell(row, col);
+        return cell !== null && (cell.type === CellType.DORMANT_BALL_P1 || cell.type === CellType.DORMANT_BALL_P2);
     }
 
     public clearGrid(): void {
