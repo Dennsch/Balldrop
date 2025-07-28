@@ -12,7 +12,9 @@ export enum CellType {
     EMPTY = 'EMPTY',
     BOX = 'BOX',
     BALL_P1 = 'BALL_P1',
-    BALL_P2 = 'BALL_P2'
+    BALL_P2 = 'BALL_P2',
+    DORMANT_BALL_P1 = 'DORMANT_BALL_P1',
+    DORMANT_BALL_P2 = 'DORMANT_BALL_P2'
 }
 
 export enum Player {
@@ -29,6 +31,8 @@ export enum GameState {
     SETUP = 'SETUP',
     PLAYING = 'PLAYING',
     SELECTING_MOVES = 'SELECTING_MOVES',
+    BALL_PLACEMENT_PHASE = 'BALL_PLACEMENT_PHASE',
+    BALL_RELEASE_PHASE = 'BALL_RELEASE_PHASE',
     EXECUTING_MOVES = 'EXECUTING_MOVES',
     FINISHED = 'FINISHED'
 }
@@ -93,4 +97,18 @@ export interface BallPath {
     steps: BallPathStep[];
     finalPosition: Position;
     player: Player;
+}
+
+export interface DormantBall {
+    position: Position;
+    player: Player;
+    ballId: string; // Unique identifier for the ball
+}
+
+export interface BallReleaseSelection {
+    player1ReleasedBalls: Set<string>; // Ball IDs that have been released
+    player2ReleasedBalls: Set<string>;
+    currentReleasePlayer: Player;
+    allBallsReleased: boolean;
+    dormantBalls: Map<string, DormantBall>; // Map of ball ID to dormant ball info
 }
