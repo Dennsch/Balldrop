@@ -10,6 +10,7 @@ export class Game {
     private moveSelection: MoveSelection;
     private ballReleaseSelection: BallReleaseSelection;
     private usedColumns: Set<number>; // Track which columns have been used (universal restriction)
+    private columnOwners: Map<number, Player>; // Track which player clicked each column (for normal mode)
     private onStateChange?: (game: Game) => void;
     private onBallDropped?: (ballPath: BallPath) => void;
     private onMovesExecuted?: (ballPaths: BallPath[]) => void;
@@ -48,6 +49,7 @@ export class Game {
         };
         
         this.usedColumns = new Set<number>();
+        this.columnOwners = new Map<number, Player>();
     }
 
     public startNewGame(): void {
@@ -84,6 +86,7 @@ export class Game {
         
         // Reset used columns tracking
         this.usedColumns = new Set<number>();
+        this.columnOwners = new Map<number, Player>();
         
         this.notifyStateChange();
     }
@@ -116,8 +119,9 @@ export class Game {
         if (result.finalPosition && result.ballPath) {
             this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
             
-            // Mark column as used
+            // Mark column as used and track ownership
             this.usedColumns.add(col);
+            this.columnOwners.set(col, this.currentPlayer);
             
             if (this.onBallDropped) {
                 // Use the detailed ball path from the grid
@@ -551,6 +555,7 @@ export class Game {
         
         // Reset used columns tracking
         this.usedColumns = new Set<number>();
+        this.columnOwners = new Map<number, Player>();
         
         this.notifyStateChange();
     }
@@ -602,7 +607,11 @@ export class Game {
     }
 
     public getColumnOwners(): Map<number, Player> {
-        return new Map(this.moveSelection.columnOwners);
+        if (this.config.gameMode === GameMode.HARD_MODE) {
+            return new Map(this.moveSelection.columnOwners);
+        } else {
+            return new Map(this.columnOwners);
+        }
     }
 
     public getUsedColumns(): Set<number> {

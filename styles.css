@@ -194,6 +194,43 @@ header {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Player-specific column selector styling */
+.column-selector.selected-p1 {
+    background: linear-gradient(135deg, var(--player-1-color), #D14A32);
+    color: var(--text-light);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.column-selector.selected-p1:hover:not(:disabled) {
+    background: linear-gradient(135deg, #D14A32, var(--player-1-color));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(242, 92, 60, 0.3);
+}
+
+.column-selector.selected-p2 {
+    background: linear-gradient(135deg, var(--player-2-color), #5BB8E0);
+    color: var(--text-light);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.column-selector.selected-p2:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5BB8E0, var(--player-2-color));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(110, 207, 246, 0.3);
+}
+
+.column-selector.selected-both {
+    background: linear-gradient(135deg, var(--player-1-color), var(--player-2-color));
+    color: var(--text-light);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.column-selector.selected-both:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--player-2-color), var(--player-1-color));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(176, 149, 153, 0.3);
+}
+
 .grid-container {
     border: 3px solid var(--text-primary);
     border-radius: 10px;
