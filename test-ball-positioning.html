@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Ball Positioning</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .positioning-debug {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            max-width: 300px;
+        }
+        .positioning-debug h3 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+        .test-controls {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.9);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 2000;
+        }
+        .test-controls button {
+            margin: 5px;
+            padding: 8px 12px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-ball {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            background: #ff6b6b;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .grid-container {
+            position: relative !important;
+            border: 2px solid #ff0000 !important; /* Red border to see container */
+        }
+        .grid {
+            border: 2px solid #00ff00 !important; /* Green border to see grid */
+        }
+    </style>
+</head>
+<body>
+    <div id="positioning-debug" class="positioning-debug">
+        <h3>📍 Positioning Debug</h3>
+        <div id="debug-content">Ready to test positioning...</div>
+    </div>
+
+    <div class="test-controls">
+        <h4>Positioning Tests:</h4>
+        <button onclick="testCellPositioning()">Test Cell Positioning</button>
+        <button onclick="testBallPlacement()">Test Ball Placement</button>
+        <button onclick="showGridBounds()">Show Grid Bounds</button>
+        <button onclick="clearTestBalls()">Clear Test Balls</button>
+    </div>
+
+    <div class="game-container">
+        <header>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="assets/icon.png" alt="Dropple Game Logo" class="game-logo">
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="game-board">
+                <div class="column-selectors" id="column-selectors">
+                    <button class="column-selector" onclick="testColumnBall(0)">1</button>
+                    <button class="column-selector" onclick="testColumnBall(1)">2</button>
+                    <button class="column-selector" onclick="testColumnBall(2)">3</button>
+                    <button class="column-selector" onclick="testColumnBall(3)">4</button>
+                    <button class="column-selector" onclick="testColumnBall(4)">5</button>
+                </div>
+                <div class="grid-container" id="grid-container" style="position: relative;">
+                    <div class="grid" id="game-grid">
+                        <!-- Create a test grid -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let debugLog = [];
+        let testBallCount = 0;
+
+        function addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.push(`[${timestamp}] ${message}`);
+            updateDebugPanel();
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateDebugPanel() {
+            const debugContent = document.getElementById('debug-content');
+            const maxLogs = 8;
+            const recentLogs = debugLog.slice(-maxLogs);
+            debugContent.innerHTML = recentLogs.join('<br>');
+        }
+
+        // Create test grid
+        function createTestGrid() {
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(20, 1fr)';
+            grid.style.gap = '1px';
+            
+            for (let row = 0; row < 20; row++) {
+                for (let col = 0; col < 20; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row.toString();
+                    cell.dataset.col = col.toString();
+                    cell.style.minHeight = '20px';
+                    cell.style.border = '1px solid #ddd';
+                    
+                    // Highlight some cells for testing
+                    if (row === 0) {
+                        cell.style.backgroundColor = '#e3f2fd'; // Top row
+                    }
+                    if (col < 5) {
+                        cell.style.backgroundColor = '#f3e5f5'; // First 5 columns
+                    }
+                    
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Create test ball positioned relative to container
+        function createTestBall(row, col, color = '#ff6b6b') {
+            const ball = document.createElement('div');
+            ball.className = 'test-ball';
+            ball.textContent = '●';
+            ball.style.backgroundColor = color;
+            ball.id = `test-ball-${testBallCount++}`;
+            
+            // Position relative to grid container
+            const cellElement = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            const gridContainer = document.getElementById('grid-container');
+            
+            if (cellElement && gridContainer) {
+                const cellRect = cellElement.getBoundingClientRect();
+                const containerRect = gridContainer.getBoundingClientRect();
+                
+                const left = cellRect.left - containerRect.left + (cellRect.width - 32) / 2;
+                const top = cellRect.top - containerRect.top + (cellRect.height - 32) / 2;
+                
+                ball.style.left = `${left}px`;
+                ball.style.top = `${top}px`;
+                
+                addDebugLog(`Ball placed at row ${row}, col ${col}: left=${left.toFixed(1)}px, top=${top.toFixed(1)}px`);
+                
+                gridContainer.appendChild(ball);
+                return ball;
+            }
+            
+            addDebugLog(`Failed to place ball at row ${row}, col ${col}`);
+            return null;
+        }
+
+        // Test functions
+        window.testCellPositioning = function() {
+            addDebugLog('📍 Testing cell positioning...');
+            
+            // Test positioning in different areas
+            const testPositions = [
+                [0, 0], [0, 4], [0, 9],  // Top row
+                [5, 0], [5, 4], [5, 9],  // Middle
+                [10, 0], [10, 4], [10, 9] // Bottom area
+            ];
+            
+            testPositions.forEach(([row, col], index) => {
+                setTimeout(() => {
+                    const color = index % 2 === 0 ? '#ff6b6b' : '#4ecdc4';
+                    createTestBall(row, col, color);
+                }, index * 200);
+            });
+        };
+
+        window.testBallPlacement = function() {
+            addDebugLog('📍 Testing ball placement in first column...');
+            
+            // Place balls down the first column
+            for (let row = 0; row < 10; row++) {
+                setTimeout(() => {
+                    createTestBall(row, 0, '#ff6b6b');
+                }, row * 100);
+            }
+        };
+
+        window.testColumnBall = function(col) {
+            addDebugLog(`📍 Testing ball in column ${col}...`);
+            createTestBall(0, col, '#4ecdc4');
+        };
+
+        window.showGridBounds = function() {
+            const gridContainer = document.getElementById('grid-container');
+            const grid = document.getElementById('game-grid');
+            
+            const containerRect = gridContainer.getBoundingClientRect();
+            const gridRect = grid.getBoundingClientRect();
+            
+            addDebugLog(`Container: ${containerRect.width.toFixed(0)}x${containerRect.height.toFixed(0)} at (${containerRect.left.toFixed(0)}, ${containerRect.top.toFixed(0)})`);
+            addDebugLog(`Grid: ${gridRect.width.toFixed(0)}x${gridRect.height.toFixed(0)} at (${gridRect.left.toFixed(0)}, ${gridRect.top.toFixed(0)})`);
+        };
+
+        window.clearTestBalls = function() {
+            const balls = document.querySelectorAll('.test-ball');
+            balls.forEach(ball => ball.remove());
+            addDebugLog('All test balls cleared');
+        };
+
+        // Initialize
+        createTestGrid();
+        addDebugLog('Positioning test page loaded');
+        addDebugLog('Grid container has position: relative');
+        addDebugLog('Click buttons to test ball positioning');
+    </script>
+</body>
+</html>

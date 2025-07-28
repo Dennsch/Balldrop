@@ -179,7 +179,8 @@ export class Grid {
         const ballPath: BallPath = {
             steps: pathSteps,
             finalPosition,
-            player
+            player,
+            startColumn: col
         };
 
         return { finalPosition, ballPath };

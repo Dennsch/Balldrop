@@ -457,6 +457,22 @@ export class Game {
         return p1Balls === 0 && p2Balls === 0;
     }
 
+    public getCurrentScore(): { player1Columns: number; player2Columns: number } {
+        const columnWinners = this.grid.getColumnWinners();
+        let player1Columns = 0;
+        let player2Columns = 0;
+
+        columnWinners.forEach(winner => {
+            if (winner === Player.PLAYER1) {
+                player1Columns++;
+            } else if (winner === Player.PLAYER2) {
+                player2Columns++;
+            }
+        });
+
+        return { player1Columns, player2Columns };
+    }
+
     public getGameResult(): GameResult {
         const columnWinners = this.grid.getColumnWinners();
         let player1Columns = 0;

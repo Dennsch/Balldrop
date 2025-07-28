@@ -1,17 +1,29 @@
 import React from 'react';
-import { Player } from '../types.js';
+import { Player, GameMode } from '../types.js';
 
 interface GameHeaderProps {
   currentPlayer: Player;
   player1Balls: number;
   player2Balls: number;
+  gameMode: GameMode;
+  onGameModeChange: (mode: GameMode) => void;
+  player1Score: number;
+  player2Score: number;
 }
 
 const GameHeader: React.FC<GameHeaderProps> = ({
   currentPlayer,
   player1Balls,
-  player2Balls
+  player2Balls,
+  gameMode,
+  onGameModeChange,
+  player1Score,
+  player2Score
 }) => {
+  const handleModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onGameModeChange(event.target.value as GameMode);
+  };
+
   return (
     <header>
       <div className="header-content">
@@ -37,6 +49,47 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             </span>
           </div>
         </div>
+        
+        <div className="score-display">
+          <div className="score-title">Current Score</div>
+          <div className="score-info">
+            <div className="player-score player-1-score">
+              <span className="score-label">Player 1:</span>
+              <span id="player1-score" className="score-value">{player1Score}</span>
+              <span className="score-unit">columns</span>
+            </div>
+            <div className="score-separator">-</div>
+            <div className="player-score player-2-score">
+              <span className="score-label">Player 2:</span>
+              <span id="player2-score" className="score-value">{player2Score}</span>
+              <span className="score-unit">columns</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="game-mode-selector">
+        <label>Game Mode: </label>
+        <label style={{ marginRight: '15px' }}>
+          <input
+            type="radio"
+            name="gameMode"
+            value={GameMode.NORMAL}
+            checked={gameMode === GameMode.NORMAL}
+            onChange={handleModeChange}
+          />
+          Normal
+        </label>
+        <label>
+          <input
+            type="radio"
+            name="gameMode"
+            value={GameMode.HARD_MODE}
+            checked={gameMode === GameMode.HARD_MODE}
+            onChange={handleModeChange}
+          />
+          Hard Mode
+        </label>
       </div>
     </header>
   );

@@ -16,24 +16,38 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
   const columns = Array.from({ length: gridSize }, (_, i) => i);
 
   const handleColumnClick = (column: number) => {
-    if (!isAnimating) {
+    console.log(`🔘 Column ${column} clicked!`);
+    console.log(`   - isAnimating: ${isAnimating}`);
+    console.log(`   - game.canDropInColumn(${column}): ${game.canDropInColumn(column)}`);
+    console.log(`   - game.getState(): ${game.getState()}`);
+    console.log(`   - game.getCurrentPlayer(): ${game.getCurrentPlayer()}`);
+    
+    if (!isAnimating && game.canDropInColumn(column)) {
+      console.log(`✅ Calling onColumnClick(${column})`);
       onColumnClick(column);
+    } else {
+      console.log(`❌ Click blocked - animating: ${isAnimating}, canDrop: ${game.canDropInColumn(column)}`);
     }
   };
 
   return (
     <div className="column-selectors" id="column-selectors">
-      {columns.map(column => (
-        <button
-          key={column}
-          className={`column-selector ${isAnimating ? 'disabled' : ''}`}
-          onClick={() => handleColumnClick(column)}
-          disabled={isAnimating}
-          title={`Drop ball in column ${column + 1}`}
-        >
-          {column + 1}
-        </button>
-      ))}
+      {columns.map(column => {
+        const canDrop = game.canDropInColumn(column);
+        const isDisabled = isAnimating || !canDrop;
+        
+        return (
+          <button
+            key={column}
+            className={`column-selector ${isDisabled ? 'disabled' : ''} ${!canDrop ? 'used-column' : ''}`}
+            onClick={() => handleColumnClick(column)}
+            disabled={isDisabled}
+            title={`Drop ball in column ${column + 1}${!canDrop ? ' (unavailable)' : ''}`}
+          >
+            {column + 1}{!canDrop ? ' ✓' : ''}
+          </button>
+        );
+      })}
     </div>
   );
 };

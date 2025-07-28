@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Game } from "./Game.js";
-import { GameState, Player, AnimationSpeed, BallPath } from "./types.js";
+import { GameState, Player, AnimationSpeed, BallPath, GameMode } from "./types.js";
 import GameHeader from "./components/GameHeader.js";
 import GameBoard from "./components/GameBoard.js";
 import GameControls from "./components/GameControls.js";
 import GameStatus from "./components/GameStatus.js";
+import AnimatedBall from "./components/AnimatedBall.js";
 
 const App: React.FC = () => {
   const [game, setGame] = useState<Game | null>(null);
@@ -19,6 +20,10 @@ const App: React.FC = () => {
   );
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [gridKey, setGridKey] = useState<number>(0); // Force grid re-render
+  const [gameMode, setGameMode] = useState<GameMode>(GameMode.NORMAL);
+  const [player1Score, setPlayer1Score] = useState<number>(0);
+  const [player2Score, setPlayer2Score] = useState<number>(0);
+  const [animatedBalls, setAnimatedBalls] = useState<BallPath[]>([]);
 
   // Initialize game
   useEffect(() => {
@@ -35,6 +40,14 @@ const App: React.FC = () => {
       setCurrentPlayer(updatedGame.getCurrentPlayer());
       setPlayer1Balls(updatedGame.getBallsRemaining(Player.PLAYER1));
       setPlayer2Balls(updatedGame.getBallsRemaining(Player.PLAYER2));
+      
+      // Update current score
+      const currentScore = updatedGame.getCurrentScore();
+      setPlayer1Score(currentScore.player1Columns);
+      setPlayer2Score(currentScore.player2Columns);
+      
+      // Update game mode
+      setGameMode(updatedGame.getGameMode());
 
       // Update game message based on state
       updateGameMessage(updatedGame);
@@ -68,13 +81,17 @@ const App: React.FC = () => {
     gameInstance.onBallDroppedHandler((ballPath: BallPath) => {
       // Handle individual ball drop animation
       setIsAnimating(true);
-      // Animation will be handled by the Grid component
+      console.log('Ball dropped, starting animation for column:', ballPath.startColumn);
+      
+      // Add the ball to animated balls state to trigger animation
+      setAnimatedBalls(prev => [...prev, ballPath]);
     });
 
     gameInstance.onMovesExecutedHandler((ballPaths: BallPath[]) => {
       // Handle batch move execution
       setIsAnimating(false);
       setGridKey((prev) => prev + 1);
+      console.log('Moves executed, re-enabling interactions');
     });
 
     // Initialize the game
@@ -83,6 +100,18 @@ const App: React.FC = () => {
 
     // Make game available globally for debugging
     (window as any).game = gameInstance;
+    
+    // Debug logging
+    console.log('Game initialized:', {
+      state: gameInstance.getState(),
+      mode: gameInstance.getGameMode(),
+      currentPlayer: gameInstance.getCurrentPlayer(),
+      canDropCol0: gameInstance.canDropInColumn(0),
+      canDropCol1: gameInstance.canDropInColumn(1)
+    });
+    
+    // Force reset animation state to ensure it's not stuck
+    setIsAnimating(false);
 
     return () => {
       // Cleanup if needed
@@ -144,13 +173,20 @@ const App: React.FC = () => {
     (column: number) => {
       if (game && !isAnimating) {
         try {
-          game.dropBall(column);
+          console.log(`Attempting to drop ball in column ${column}, game state: ${game.getState()}, can drop: ${game.canDropInColumn(column)}`);
+          const success = game.dropBall(column);
+          console.log(`Drop result: ${success}`);
+          if (!success) {
+            setGameMessage(`Cannot drop ball in column ${column + 1}`);
+          }
         } catch (error) {
           console.error("Error dropping ball:", error);
           setGameMessage(
             error instanceof Error ? error.message : "Error dropping ball"
           );
         }
+      } else {
+        console.log(`Column click blocked - game: ${!!game}, isAnimating: ${isAnimating}`);
       }
     },
     [game, isAnimating]
@@ -159,6 +195,36 @@ const App: React.FC = () => {
   const handleAnimationSpeedChange = useCallback((speed: AnimationSpeed) => {
     setAnimationSpeed(speed);
   }, []);
+
+  const handleGameModeChange = useCallback((mode: GameMode) => {
+    if (game) {
+      console.log(`Changing game mode to: ${mode}`);
+      game.setGameMode(mode);
+      setGameMode(mode);
+      // Force grid re-render
+      setGridKey((prev) => prev + 1);
+    }
+  }, [game]);
+
+  const handleAnimationComplete = useCallback((ballPath: BallPath) => {
+    if (game) {
+      console.log('Animation completed for column:', ballPath.startColumn);
+      
+      // Complete the ball drop in the game logic
+      game.completeBallDrop(ballPath);
+      
+      // Remove this ball from animated balls
+      setAnimatedBalls(prev => prev.filter(ball => ball !== ballPath));
+      
+      // Re-enable interactions if no more balls are animating
+      setAnimatedBalls(prev => {
+        if (prev.length <= 1) { // Will be 0 after filter above
+          setIsAnimating(false);
+        }
+        return prev.filter(ball => ball !== ballPath);
+      });
+    }
+  }, [game]);
 
   if (!game) {
     return (
@@ -184,6 +250,10 @@ const App: React.FC = () => {
         currentPlayer={currentPlayer}
         player1Balls={player1Balls}
         player2Balls={player2Balls}
+        gameMode={gameMode}
+        onGameModeChange={handleGameModeChange}
+        player1Score={player1Score}
+        player2Score={player2Score}
       />
 
       <main>
@@ -193,6 +263,8 @@ const App: React.FC = () => {
           animationSpeed={animationSpeed}
           isAnimating={isAnimating}
           gridKey={gridKey}
+          animatedBalls={animatedBalls}
+          onAnimationComplete={handleAnimationComplete}
         />
 
         <GameControls

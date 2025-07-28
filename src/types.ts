@@ -97,6 +97,7 @@ export interface BallPath {
     steps: BallPathStep[];
     finalPosition: Position;
     player: Player;
+    startColumn: number;
 }
 
 export interface DormantBall {
