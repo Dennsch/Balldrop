@@ -27,6 +27,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
   return (
     <div className="game-board">
       <ColumnSelectors
+        key={gridKey}
         game={game}
         onColumnClick={onColumnClick}
         isAnimating={isAnimating}

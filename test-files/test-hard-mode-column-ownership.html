@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Hard Mode Column Ownership</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-overlay {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 2000;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .test-overlay h3 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+        .test-controls {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 8px;
+            z-index: 2000;
+        }
+        .test-controls button {
+            margin: 3px;
+            padding: 6px 10px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .player1-test { background: #F25C3C !important; }
+        .player2-test { background: #6ECFF6 !important; }
+    </style>
+</head>
+<body>
+    <div id="test-overlay" class="test-overlay">
+        <h3>🎮 Hard Mode Column Ownership Test</h3>
+        <div id="debug-content">Ready to test Hard Mode...</div>
+    </div>
+
+    <div class="test-controls">
+        <h4>Hard Mode Tests:</h4>
+        <button onclick="testHardModeSetup()">Setup Hard Mode</button>
+        <button onclick="simulateGamePlay()">Simulate Gameplay</button>
+        <button onclick="testColumnOwnership()">Test Ownership</button>
+        <button onclick="showOwnershipInfo()">Show Ownership Info</button>
+        <button onclick="resetTest()">Reset Test</button>
+    </div>
+
+    <div class="game-container">
+        <header>
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="assets/icon.png" alt="Dropple Game Logo" class="game-logo">
+                </div>
+            </div>
+            <div class="game-info">
+                <div class="player-info">
+                    <div class="player player-1">
+                        <span class="player-name">Player 1</span>
+                        <span class="balls-remaining">Balls: <span id="player1-balls">10</span></span>
+                    </div>
+                    <div class="current-turn">
+                        <span id="current-player">Hard Mode Test</span>
+                    </div>
+                    <div class="player player-2">
+                        <span class="player-name">Player 2</span>
+                        <span class="balls-remaining">Balls: <span id="player2-balls">10</span></span>
+                    </div>
+                </div>
+                
+                <div class="score-display">
+                    <div class="score-title">Current Score</div>
+                    <div class="score-info">
+                        <div class="player-score player-1-score">
+                            <span class="score-label">Player 1:</span>
+                            <span id="player1-score" class="score-value">0</span>
+                            <span class="score-unit">columns</span>
+                        </div>
+                        <div class="score-separator">-</div>
+                        <div class="player-score player-2-score">
+                            <span class="score-label">Player 2:</span>
+                            <span id="player2-score" class="score-value">0</span>
+                            <span class="score-unit">columns</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="game-mode-selector">
+                <label>Game Mode: </label>
+                <label style="margin-right: 15px;">
+                    <input type="radio" name="gameMode" value="NORMAL" id="normal-mode">
+                    Normal
+                </label>
+                <label>
+                    <input type="radio" name="gameMode" value="HARD_MODE" id="hard-mode" checked>
+                    Hard Mode
+                </label>
+            </div>
+        </header>
+
+        <main>
+            <div class="game-board">
+                <div class="column-selectors" id="column-selectors">
+                    <!-- Column selector buttons will be generated here -->
+                </div>
+                <div class="grid-container" id="grid-container" style="position: relative;">
+                    <div class="grid" id="game-grid">
+                        <!-- Grid will be created by script -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <button id="new-game-btn" class="btn btn-primary">New Game</button>
+                <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                <button id="execute-left-to-right-btn" class="btn btn-execute-directional">Execute Left → Right</button>
+                <button id="execute-right-to-left-btn" class="btn btn-execute-directional">Execute Right → Left</button>
+            </div>
+
+            <div class="game-status">
+                <div id="selected-moves-display" class="selected-moves-display">
+                    <div>Player 1: 0/10 moves selected</div>
+                    <div>Player 2: 0/10 moves selected</div>
+                </div>
+                <div id="winner-message" class="winner-message hidden"></div>
+                <div id="game-message" class="game-message">Hard Mode: Select your moves!</div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { Game } from './dist/Game.js';
+        import { GameState, Player, GameMode } from './dist/types.js';
+
+        let debugLog = [];
+        let testGame = null;
+
+        function addDebugLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.push(`[${timestamp}] ${message}`);
+            updateDebugPanel();
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateDebugPanel() {
+            const debugContent = document.getElementById('debug-content');
+            const maxLogs = 15;
+            const recentLogs = debugLog.slice(-maxLogs);
+            debugContent.innerHTML = recentLogs.join('<br>');
+        }
+
+        // Create test grid
+        function createTestGrid() {
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+            grid.style.display = 'grid';
+            grid.style.gridTemplateColumns = 'repeat(20, 1fr)';
+            grid.style.gap = '1px';
+            
+            for (let row = 0; row < 20; row++) {
+                for (let col = 0; col < 20; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row.toString();
+                    cell.dataset.col = col.toString();
+                    cell.style.minHeight = '20px';
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        // Create column selectors
+        function createColumnSelectors() {
+            const container = document.getElementById('column-selectors');
+            container.innerHTML = '';
+            
+            for (let col = 0; col < 20; col++) {
+                const button = document.createElement('button');
+                button.className = 'column-selector';
+                button.textContent = (col + 1).toString();
+                button.dataset.col = col.toString();
+                button.addEventListener('click', () => testColumnClick(col));
+                container.appendChild(button);
+            }
+        }
+
+        // Simulate column ownership by manually adding classes
+        function simulateColumnOwnership() {
+            const buttons = document.querySelectorAll('.column-selector');
+            
+            // Simulate some columns secured by each player
+            const player1Columns = [0, 2, 4, 6, 8]; // Columns 1, 3, 5, 7, 9
+            const player2Columns = [1, 3, 5, 7, 9]; // Columns 2, 4, 6, 8, 10
+            
+            player1Columns.forEach(col => {
+                const button = buttons[col];
+                button.classList.add('secured-by-player1', 'used-column', 'disabled');
+                button.disabled = true;
+                button.textContent = `${col + 1} ✓`;
+                button.title = `Column ${col + 1} - Secured by Player 1`;
+            });
+            
+            player2Columns.forEach(col => {
+                const button = buttons[col];
+                button.classList.add('secured-by-player2', 'used-column', 'disabled');
+                button.disabled = true;
+                button.textContent = `${col + 1} ✓`;
+                button.title = `Column ${col + 1} - Secured by Player 2`;
+            });
+            
+            addDebugLog(`Simulated ownership: P1 secured ${player1Columns.length} columns, P2 secured ${player2Columns.length} columns`);
+        }
+
+        // Test functions
+        window.testHardModeSetup = function() {
+            addDebugLog('🎮 Setting up Hard Mode test...');
+            
+            testGame = new Game({
+                gridSize: 20,
+                ballsPerPlayer: 10,
+                gameMode: GameMode.HARD_MODE
+            });
+            
+            testGame.startNewGame();
+            addDebugLog(`Game state: ${testGame.getState()}`);
+            addDebugLog(`Game mode: ${testGame.getGameMode()}`);
+            addDebugLog('Hard Mode game initialized');
+        };
+
+        window.simulateGamePlay = function() {
+            addDebugLog('🎮 Simulating Hard Mode gameplay...');
+            
+            if (!testGame) {
+                testHardModeSetup();
+            }
+            
+            // Simulate move selection
+            addDebugLog('Simulating Player 1 move selection...');
+            for (let i = 0; i < 10; i++) {
+                testGame.selectMove(i);
+            }
+            
+            addDebugLog('Simulating Player 2 move selection...');
+            for (let i = 10; i < 20; i++) {
+                testGame.selectMove(i);
+            }
+            
+            addDebugLog('All moves selected, executing...');
+            testGame.executeAllMoves();
+            
+            // Complete the moves execution
+            setTimeout(() => {
+                testGame.completeMovesExecution([]);
+                addDebugLog('Moves execution completed');
+                testColumnOwnership();
+            }, 100);
+        };
+
+        window.testColumnOwnership = function() {
+            addDebugLog('🎮 Testing column ownership visualization...');
+            
+            if (!testGame) {
+                addDebugLog('No game instance, creating simulation...');
+                simulateColumnOwnership();
+                return;
+            }
+            
+            const columnWinners = testGame.getGrid().getColumnWinners();
+            const buttons = document.querySelectorAll('.column-selector');
+            
+            addDebugLog('Applying column ownership styling...');
+            
+            columnWinners.forEach((winner, col) => {
+                const button = buttons[col];
+                if (!button) return;
+                
+                // Reset classes
+                button.classList.remove('secured-by-player1', 'secured-by-player2');
+                
+                if (winner === Player.PLAYER1) {
+                    button.classList.add('secured-by-player1', 'used-column');
+                    button.title = `Column ${col + 1} - Secured by Player 1`;
+                    addDebugLog(`Column ${col + 1}: Secured by Player 1`);
+                } else if (winner === Player.PLAYER2) {
+                    button.classList.add('secured-by-player2', 'used-column');
+                    button.title = `Column ${col + 1} - Secured by Player 2`;
+                    addDebugLog(`Column ${col + 1}: Secured by Player 2`);
+                } else {
+                    addDebugLog(`Column ${col + 1}: No winner`);
+                }
+            });
+        };
+
+        window.showOwnershipInfo = function() {
+            addDebugLog('🎮 Showing ownership information...');
+            
+            const buttons = document.querySelectorAll('.column-selector');
+            let player1Count = 0;
+            let player2Count = 0;
+            
+            buttons.forEach((button, col) => {
+                if (button.classList.contains('secured-by-player1')) {
+                    player1Count++;
+                } else if (button.classList.contains('secured-by-player2')) {
+                    player2Count++;
+                }
+            });
+            
+            addDebugLog(`Player 1 secured: ${player1Count} columns`);
+            addDebugLog(`Player 2 secured: ${player2Count} columns`);
+            addDebugLog(`Neutral columns: ${20 - player1Count - player2Count}`);
+            
+            // Update score display
+            document.getElementById('player1-score').textContent = player1Count;
+            document.getElementById('player2-score').textContent = player2Count;
+        };
+
+        window.testColumnClick = function(col) {
+            addDebugLog(`Clicked column ${col + 1}`);
+        };
+
+        window.resetTest = function() {
+            addDebugLog('🎮 Resetting test...');
+            
+            const buttons = document.querySelectorAll('.column-selector');
+            buttons.forEach((button, col) => {
+                button.classList.remove('secured-by-player1', 'secured-by-player2', 'used-column', 'disabled');
+                button.disabled = false;
+                button.textContent = (col + 1).toString();
+                button.title = `Drop ball in column ${col + 1}`;
+            });
+            
+            document.getElementById('player1-score').textContent = '0';
+            document.getElementById('player2-score').textContent = '0';
+            
+            addDebugLog('Test reset completed');
+        };
+
+        // Initialize
+        createTestGrid();
+        createColumnSelectors();
+        addDebugLog('Hard Mode column ownership test loaded');
+        addDebugLog('Click buttons to test different scenarios');
+    </script>
+</body>
+</html>

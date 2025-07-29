@@ -1,24 +1,23 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.js';
+import { createRoot } from "react-dom/client";
+import App from "./App.js";
 
 // Initialize the React app when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   try {
-    const container = document.getElementById('root');
+    const container = document.getElementById("root");
     if (!container) {
-      throw new Error('Root element not found');
+      throw new Error("Root element not found");
     }
 
     const root = createRoot(container);
     root.render(<App />);
 
-    console.log('Dropple React app initialized successfully!');
+    console.log("Dropple React app initialized successfully!");
   } catch (error) {
-    console.error('Failed to initialize React app:', error);
-    
+    console.error("Failed to initialize React app:", error);
+
     // Show error message to user
-    const errorDiv = document.createElement('div');
+    const errorDiv = document.createElement("div");
     errorDiv.style.cssText = `
       position: fixed;
       top: 50%;
@@ -31,8 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
       text-align: center;
       z-index: 1000;
     `;
-    
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     errorDiv.innerHTML = `
       <h3>App Initialization Error</h3>
       <p>Failed to start the React app. Please refresh the page and try again.</p>
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Export classes for potential external use
-export { Game } from './Game.js';
-export { GameUI } from './GameUI.js';
-export { Grid } from './Grid.js';
-export * from './types.js';
+export { Game } from "./Game.js";
+export { GameUI } from "./GameUI.js";
+export { Grid } from "./Grid.js";
+export * from "./types.js";

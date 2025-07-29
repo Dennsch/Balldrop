@@ -231,6 +231,45 @@ header {
     box-shadow: 0 4px 12px rgba(176, 149, 153, 0.3);
 }
 
+/* Hard Mode: Player-secured column styling */
+.column-selector.secured-by-player1 {
+    background: linear-gradient(135deg, var(--player-1-color), #D14A32) !important;
+    color: var(--text-light) !important;
+    border: 2px solid var(--player-1-color) !important;
+    font-weight: 700;
+}
+
+.column-selector.secured-by-player1:hover:not(:disabled) {
+    background: linear-gradient(135deg, #D14A32, var(--player-1-color)) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(242, 92, 60, 0.4) !important;
+}
+
+.column-selector.secured-by-player2 {
+    background: linear-gradient(135deg, var(--player-2-color), #5BB8E5) !important;
+    color: var(--text-light) !important;
+    border: 2px solid var(--player-2-color) !important;
+    font-weight: 700;
+}
+
+.column-selector.secured-by-player2:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5BB8E5, var(--player-2-color)) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(110, 207, 246, 0.4) !important;
+}
+
+/* Ensure secured columns are still disabled if used */
+.column-selector.secured-by-player1.disabled,
+.column-selector.secured-by-player2.disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+.column-selector.secured-by-player1.disabled:hover,
+.column-selector.secured-by-player2.disabled:hover {
+    transform: none !important;
+}
+
 .grid-container {
     border: 3px solid var(--text-primary);
     border-radius: 10px;

@@ -35,23 +35,6 @@ const GameControls: React.FC<GameControlsProps> = ({
       >
         Reset
       </button>
-      <button 
-        className="btn btn-secondary"
-        onClick={() => {
-          console.log('🔧 DEBUG: React click handler working!');
-          console.log('🔧 Game available:', !!(window as any).game);
-          if ((window as any).game) {
-            const game = (window as any).game;
-            console.log('🔧 Game state:', game.getState());
-            console.log('🔧 Can drop col 0:', game.canDropInColumn(0));
-            console.log('🔧 Attempting manual drop...');
-            const result = game.dropBall(0);
-            console.log('🔧 Manual drop result:', result);
-          }
-        }}
-      >
-        🔧 Debug Test
-      </button>
       <div className="animation-speed-control">
         <label htmlFor="animation-speed-select">Animation Speed:</label>
         <select 
