@@ -208,162 +208,176 @@ describe('Game', () => {
         });
     });
 
-    describe('hard mode - two phase system', () => {
+    describe('hard mode - three phase system', () => {
         let hardModeGame: Game;
 
         beforeEach(() => {
             hardModeGame = new Game({
                 gridSize: 5,
-                ballsPerPlayer: 3,
+                ballsPerPlayer: 2, // Use 2 balls per player for easier testing
                 minBoxes: 1,
                 maxBoxes: 3,
                 gameMode: GameMode.HARD_MODE
             });
         });
 
-        describe('ball placement phase', () => {
-            it('should start in ball placement phase for hard mode', () => {
+        describe('column reservation phase', () => {
+            it('should start in column reservation phase for hard mode', () => {
                 hardModeGame.startNewGame();
-                expect(hardModeGame.getState()).toBe(GameState.BALL_PLACEMENT_PHASE);
+                expect(hardModeGame.getState()).toBe(GameState.COLUMN_RESERVATION_PHASE);
                 expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
             });
 
-            it('should allow players to select moves in placement phase', () => {
+            it('should allow players to reserve columns', () => {
                 hardModeGame.startNewGame();
                 
-                // Player 1 selects columns
-                expect(hardModeGame.selectMove(0)).toBe(true);
-                expect(hardModeGame.selectMove(1)).toBe(true);
-                expect(hardModeGame.selectMove(2)).toBe(true);
-                
-                // Should switch to player 2
+                // Player 1 reserves columns
+                expect(hardModeGame.dropBall(0)).toBe(true); // Uses reserveColumn internally
                 expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2);
                 
-                // Player 2 selects columns
-                expect(hardModeGame.selectMove(3)).toBe(true);
-                expect(hardModeGame.selectMove(4)).toBe(true);
-                expect(hardModeGame.selectMove(0)).toBe(false); // Column already taken
+                // Player 2 reserves columns
+                expect(hardModeGame.dropBall(1)).toBe(true);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+                
+                // Check reservations
+                const columnReservation = hardModeGame.getColumnReservation();
+                expect(columnReservation.player1ReservedColumns).toContain(0);
+                expect(columnReservation.player2ReservedColumns).toContain(1);
             });
 
-            it('should transition to ball release phase after all moves selected', () => {
+            it('should not allow same column reservation by different players', () => {
                 hardModeGame.startNewGame();
                 
-                // Player 1 selects all moves
-                hardModeGame.selectMove(0);
-                hardModeGame.selectMove(1);
-                hardModeGame.selectMove(2);
+                // Player 1 reserves column 0
+                expect(hardModeGame.dropBall(0)).toBe(true);
                 
-                // Player 2 selects all moves
-                hardModeGame.selectMove(3);
-                hardModeGame.selectMove(4);
-                hardModeGame.selectMove(0); // This should fail, but let's try column 1
+                // Player 2 should not be able to reserve column 0
+                expect(hardModeGame.dropBall(0)).toBe(false);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2); // Should still be player 2's turn
+            });
+
+            it('should transition to ball placement phase after all columns reserved', () => {
+                hardModeGame.startNewGame();
                 
-                // Actually, let's use different columns for player 2
-                const moveSelection = hardModeGame.getMoveSelection();
-                if (moveSelection.player2Moves.length < 3) {
-                    // Find available columns for player 2
-                    for (let col = 0; col < 5; col++) {
-                        if (hardModeGame.canSelectMove(col)) {
-                            hardModeGame.selectMove(col);
-                            if (hardModeGame.getMoveSelection().player2Moves.length === 3) {
-                                break;
-                            }
-                        }
-                    }
-                }
+                // Reserve all columns (2 per player = 4 total)
+                hardModeGame.dropBall(0); // P1
+                hardModeGame.dropBall(1); // P2
+                hardModeGame.dropBall(2); // P1
+                hardModeGame.dropBall(3); // P2
+                
+                // Should transition to ball placement phase
+                expect(hardModeGame.getState()).toBe(GameState.BALL_PLACEMENT_PHASE);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+            });
+        });
+
+        describe('ball placement phase', () => {
+            beforeEach(() => {
+                // Set up game in ball placement phase
+                hardModeGame.startNewGame();
+                
+                // Reserve columns first
+                hardModeGame.dropBall(0); // P1
+                hardModeGame.dropBall(1); // P2
+                hardModeGame.dropBall(2); // P1
+                hardModeGame.dropBall(3); // P2
+                
+                // Should now be in ball placement phase
+                expect(hardModeGame.getState()).toBe(GameState.BALL_PLACEMENT_PHASE);
+            });
+
+            it('should allow players to place balls in their reserved columns', () => {
+                // Player 1 should be able to place in columns 0 and 2
+                expect(hardModeGame.dropBall(0)).toBe(true); // Uses selectMove internally
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2);
+                
+                // Player 2 should be able to place in columns 1 and 3
+                expect(hardModeGame.dropBall(1)).toBe(true);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+            });
+
+            it('should not allow players to place balls in opponent reserved columns', () => {
+                // Player 1 should not be able to place in Player 2's reserved columns (1, 3)
+                expect(hardModeGame.dropBall(1)).toBe(false);
+                expect(hardModeGame.dropBall(3)).toBe(false);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1); // Should still be player 1's turn
+            });
+
+            it('should transition to ball release phase after all balls placed', () => {
+                // Place all balls
+                hardModeGame.dropBall(0); // P1
+                hardModeGame.dropBall(1); // P2
+                hardModeGame.dropBall(2); // P1
+                hardModeGame.dropBall(3); // P2
                 
                 // Should transition to ball release phase
                 expect(hardModeGame.getState()).toBe(GameState.BALL_RELEASE_PHASE);
                 expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
             });
 
-            it('should not allow same column selection by different players', () => {
-                hardModeGame.startNewGame();
+            it('should create dormant balls when placing', () => {
+                // Place a ball
+                hardModeGame.dropBall(0); // P1 places in column 0
                 
-                // Player 1 selects column 0
-                expect(hardModeGame.selectMove(0)).toBe(true);
-                
-                // Complete player 1's moves
-                hardModeGame.selectMove(1);
-                hardModeGame.selectMove(2);
-                
-                // Player 2 should not be able to select column 0
-                expect(hardModeGame.selectMove(0)).toBe(false);
+                // Check if dormant ball was created
+                const player1Balls = hardModeGame.getDormantBallsForPlayer(Player.PLAYER1);
+                expect(player1Balls.length).toBe(1);
+                expect(player1Balls[0].position.col).toBe(0);
             });
         });
 
         describe('ball release phase', () => {
             beforeEach(() => {
-                // Set up a game in ball release phase
+                // Set up game in ball release phase
                 hardModeGame.startNewGame();
                 
-                // Player 1 selects moves
-                hardModeGame.selectMove(0);
-                hardModeGame.selectMove(1);
-                hardModeGame.selectMove(2);
+                // Reserve columns
+                hardModeGame.dropBall(0); // P1
+                hardModeGame.dropBall(1); // P2
+                hardModeGame.dropBall(2); // P1
+                hardModeGame.dropBall(3); // P2
                 
-                // Player 2 selects moves (using remaining columns)
-                hardModeGame.selectMove(3);
-                hardModeGame.selectMove(4);
-                // Need one more column for player 2, but we only have 5 columns total
-                // Let's modify the test setup to have more columns
-            });
-
-            it('should allow players to release their own dormant balls', () => {
-                // This test needs to be implemented once we have dormant balls placed
-                // For now, let's test the basic structure
+                // Place balls
+                hardModeGame.dropBall(0); // P1
+                hardModeGame.dropBall(1); // P2
+                hardModeGame.dropBall(2); // P1
+                hardModeGame.dropBall(3); // P2
+                
+                // Should now be in ball release phase
                 expect(hardModeGame.getState()).toBe(GameState.BALL_RELEASE_PHASE);
-                
-                const ballReleaseSelection = hardModeGame.getBallReleaseSelection();
-                expect(ballReleaseSelection.currentReleasePlayer).toBe(Player.PLAYER1);
-                expect(ballReleaseSelection.allBallsReleased).toBe(false);
             });
 
-            it('should not allow players to release opponent balls', () => {
-                // Get dormant balls for testing
-                const dormantBalls = hardModeGame.getDormantBallsForPlayer(Player.PLAYER2);
+            it('should allow players to release their own balls', () => {
+                // Player 1 should be able to release balls in columns 0 and 2
+                expect(hardModeGame.canDropInColumn(0)).toBe(true);
+                expect(hardModeGame.canDropInColumn(2)).toBe(true);
                 
-                if (dormantBalls.length > 0) {
-                    const opponentBall = dormantBalls[0];
-                    // Current player is Player 1, should not be able to release Player 2's ball
-                    expect(hardModeGame.canReleaseBall(opponentBall.position.row, opponentBall.position.col)).toBe(false);
-                }
+                // Player 1 should not be able to release Player 2's balls
+                expect(hardModeGame.canDropInColumn(1)).toBe(false);
+                expect(hardModeGame.canDropInColumn(3)).toBe(false);
             });
 
             it('should switch players after each ball release', () => {
-                const initialPlayer = hardModeGame.getCurrentPlayer();
-                const playerBalls = hardModeGame.getDormantBallsForPlayer(initialPlayer);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
                 
-                if (playerBalls.length > 0) {
-                    const ball = playerBalls[0];
-                    if (hardModeGame.releaseBall(ball.position.row, ball.position.col)) {
-                        const newPlayer = hardModeGame.getCurrentPlayer();
-                        expect(newPlayer).not.toBe(initialPlayer);
-                    }
-                }
+                // Player 1 releases a ball
+                hardModeGame.releaseBall(0);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2);
+                
+                // Player 2 releases a ball
+                hardModeGame.releaseBall(1);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
             });
 
             it('should finish game when all balls are released', () => {
-                // Release all balls for both players
-                let currentPlayer = hardModeGame.getCurrentPlayer();
-                let attempts = 0;
-                const maxAttempts = 20; // Prevent infinite loop
+                // Release all balls
+                hardModeGame.releaseBall(0); // P1
+                hardModeGame.releaseBall(1); // P2
+                hardModeGame.releaseBall(2); // P1
+                hardModeGame.releaseBall(3); // P2
                 
-                while (!hardModeGame.getBallReleaseSelection().allBallsReleased && attempts < maxAttempts) {
-                    const playerBalls = hardModeGame.getDormantBallsForPlayer(currentPlayer);
-                    
-                    if (playerBalls.length > 0) {
-                        const ball = playerBalls[0];
-                        hardModeGame.releaseBall(ball.position.row, ball.position.col);
-                    }
-                    
-                    currentPlayer = hardModeGame.getCurrentPlayer();
-                    attempts++;
-                }
-                
-                if (hardModeGame.getBallReleaseSelection().allBallsReleased) {
-                    expect(hardModeGame.getState()).toBe(GameState.FINISHED);
-                }
+                // Should finish the game
+                expect(hardModeGame.getState()).toBe(GameState.FINISHED);
             });
         });
 
@@ -371,30 +385,37 @@ describe('Game', () => {
             it('should place balls as dormant during placement phase', () => {
                 hardModeGame.startNewGame();
                 
-                // Complete ball placement phase
-                hardModeGame.selectMove(0);
-                hardModeGame.selectMove(1);
-                hardModeGame.selectMove(2);
-                hardModeGame.selectMove(3);
-                hardModeGame.selectMove(4);
+                // Reserve columns
+                hardModeGame.dropBall(0); // P1
+                hardModeGame.dropBall(1); // P2
+                hardModeGame.dropBall(2); // P1
+                hardModeGame.dropBall(3); // P2
+                
+                // Place balls
+                hardModeGame.dropBall(0); // P1
+                hardModeGame.dropBall(1); // P2
                 
                 // Check if we have dormant balls
                 const player1Balls = hardModeGame.getDormantBallsForPlayer(Player.PLAYER1);
                 const player2Balls = hardModeGame.getDormantBallsForPlayer(Player.PLAYER2);
                 
-                expect(player1Balls.length).toBeGreaterThan(0);
-                expect(player2Balls.length).toBeGreaterThan(0);
+                expect(player1Balls.length).toBe(1);
+                expect(player2Balls.length).toBe(1);
             });
 
             it('should not count dormant balls for scoring', () => {
                 hardModeGame.startNewGame();
                 
-                // Complete ball placement phase
-                hardModeGame.selectMove(0);
-                hardModeGame.selectMove(1);
-                hardModeGame.selectMove(2);
-                hardModeGame.selectMove(3);
-                hardModeGame.selectMove(4);
+                // Complete column reservation and ball placement
+                hardModeGame.dropBall(0); // P1 reserves
+                hardModeGame.dropBall(1); // P2 reserves
+                hardModeGame.dropBall(2); // P1 reserves
+                hardModeGame.dropBall(3); // P2 reserves
+                
+                hardModeGame.dropBall(0); // P1 places
+                hardModeGame.dropBall(1); // P2 places
+                hardModeGame.dropBall(2); // P1 places
+                hardModeGame.dropBall(3); // P2 places
                 
                 // Get game result - should not count dormant balls
                 const result = hardModeGame.getGameResult();
@@ -424,4 +445,5 @@ describe('Game', () => {
             });
         });
     });
+
 });
