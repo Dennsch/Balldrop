@@ -6,9 +6,10 @@ import Cell from './Cell.js';
 interface GridProps {
   game: Game;
   animationSpeed: AnimationSpeed;
+  onCellClick?: (row: number, col: number) => void;
 }
 
-const Grid: React.FC<GridProps> = ({ game, animationSpeed }) => {
+const Grid: React.FC<GridProps> = ({ game, animationSpeed, onCellClick }) => {
   const [gridData, setGridData] = useState(game.getGrid().getCells());
   const gridSize = game.getGrid().getSize();
 
@@ -90,6 +91,7 @@ const Grid: React.FC<GridProps> = ({ game, animationSpeed }) => {
           row={row}
           col={col}
           cell={gridData[row][col]}
+          onCellClick={onCellClick}
         />
       );
     }
