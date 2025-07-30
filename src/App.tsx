@@ -207,10 +207,10 @@ const App: React.FC = () => {
       if (game && !isAnimating) {
         try {
           console.log(`Attempting to release ball at row ${row}, col ${col}, game state: ${game.getState()}`);
-          const success = game.releaseBall(row, col);
+          const success = game.releaseBall(col);
           console.log(`Release result: ${success}`);
           if (!success) {
-            setGameMessage(`Cannot release ball at row ${row + 1}, column ${col + 1}`);
+            setGameMessage(`Cannot release ball in column ${col + 1}`);
           }
         } catch (error) {
           console.error("Error releasing ball:", error);
