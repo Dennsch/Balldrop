@@ -32,6 +32,7 @@ export enum GameState {
     PLAYING = 'PLAYING',
     SELECTING_MOVES = 'SELECTING_MOVES',
     BALL_PLACEMENT_PHASE = 'BALL_PLACEMENT_PHASE',
+    COLUMN_RESERVATION_PHASE = 'COLUMN_RESERVATION_PHASE',
     BALL_RELEASE_PHASE = 'BALL_RELEASE_PHASE',
     EXECUTING_MOVES = 'EXECUTING_MOVES',
     FINISHED = 'FINISHED'
@@ -112,4 +113,12 @@ export interface BallReleaseSelection {
     currentReleasePlayer: Player;
     allBallsReleased: boolean;
     dormantBalls: Map<string, DormantBall>; // Map of ball ID to dormant ball info
+}
+
+export interface ColumnReservation {
+    player1ReservedColumns: number[];
+    player2ReservedColumns: number[];
+    currentReservationPlayer: Player;
+    allColumnsReserved: boolean;
+    reservedColumnOwners: Map<number, Player>; // Track which player reserved each column
 }

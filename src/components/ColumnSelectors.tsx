@@ -1,6 +1,6 @@
 import React from 'react';
 import { Game } from '../Game.js';
-import { Player, GameMode } from '../types.js';
+import { Player, GameMode, GameState } from '../types.js';
 
 interface ColumnSelectorsProps {
   game: Game;
@@ -23,7 +23,9 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
   };
 
   const gameMode = game.getGameMode();
+  const gameState = game.getState();
   const columnWinners = game.getGrid().getColumnWinners();
+  const columnReservation = game.getColumnReservation();
 
   return (
     <div className="column-selectors" id="column-selectors">
@@ -31,6 +33,8 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
         const canDrop = game.canDropInColumn(column);
         const isDisabled = isAnimating || !canDrop;
         const columnWinner = columnWinners[column];
+        const isReserved = columnReservation.reservedColumnOwners.has(column);
+        const reservedBy = columnReservation.reservedColumnOwners.get(column);
         
         // Determine button styling based on game mode and column status
         let buttonClasses = 'column-selector';
@@ -41,20 +45,65 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
           buttonClasses += ' disabled';
         }
         
-        if (!canDrop) {
-          buttonClasses += ' used-column';
-          buttonText += ' ✓';
-          titleText += ' (unavailable)';
-        }
-        
-        // In Hard Mode, show which player secured the column
-        if (gameMode === GameMode.HARD_MODE && columnWinner !== null) {
-          if (columnWinner === Player.PLAYER1) {
-            buttonClasses += ' secured-by-player1';
-            titleText += ' - Secured by Player 1';
-          } else if (columnWinner === Player.PLAYER2) {
-            buttonClasses += ' secured-by-player2';
-            titleText += ' - Secured by Player 2';
+        // Handle different states for hard mode
+        if (gameMode === GameMode.HARD_MODE) {
+          if (gameState === GameState.COLUMN_RESERVATION_PHASE && isReserved) {
+            // Show reserved columns with hovering ball indicator
+            buttonClasses += ' reserved-column';
+            if (reservedBy === Player.PLAYER1) {
+              buttonClasses += ' reserved-by-player1';
+              buttonText += ' 🔴'; // Red ball hovering
+              titleText = `Column ${column + 1} - Reserved by Player 1`;
+            } else if (reservedBy === Player.PLAYER2) {
+              buttonClasses += ' reserved-by-player2';
+              buttonText += ' 🔵'; // Blue ball hovering
+              titleText = `Column ${column + 1} - Reserved by Player 2`;
+            }
+          } else if (gameState === GameState.BALL_RELEASE_PHASE && isReserved) {
+            // Show reserved columns that can be released
+            buttonClasses += ' reserved-column';
+            if (reservedBy === Player.PLAYER1) {
+              buttonClasses += ' reserved-by-player1';
+              buttonText += ' 🔴'; // Red ball ready to release
+              titleText = `Column ${column + 1} - Player 1 ball ready to release`;
+            } else if (reservedBy === Player.PLAYER2) {
+              buttonClasses += ' reserved-by-player2';
+              buttonText += ' 🔵'; // Blue ball ready to release
+              titleText = `Column ${column + 1} - Player 2 ball ready to release`;
+            }
+            
+            // Highlight if it's the current player's turn and they can release this ball
+            if (reservedBy === game.getCurrentPlayer() && canDrop) {
+              buttonClasses += ' can-release';
+            }
+          } else if (columnWinner !== null) {
+            // Show completed columns
+            buttonClasses += ' used-column';
+            buttonText += ' ✓';
+            if (columnWinner === Player.PLAYER1) {
+              buttonClasses += ' secured-by-player1';
+              titleText = `Column ${column + 1} - Secured by Player 1`;
+            } else if (columnWinner === Player.PLAYER2) {
+              buttonClasses += ' secured-by-player2';
+              titleText = `Column ${column + 1} - Secured by Player 2`;
+            }
+          }
+        } else {
+          // Normal mode behavior
+          if (!canDrop) {
+            buttonClasses += ' used-column';
+            buttonText += ' ✓';
+            titleText += ' (unavailable)';
+          }
+          
+          if (columnWinner !== null) {
+            if (columnWinner === Player.PLAYER1) {
+              buttonClasses += ' secured-by-player1';
+              titleText += ' - Secured by Player 1';
+            } else if (columnWinner === Player.PLAYER2) {
+              buttonClasses += ' secured-by-player2';
+              titleText += ' - Secured by Player 2';
+            }
           }
         }
         

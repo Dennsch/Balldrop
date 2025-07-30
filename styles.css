@@ -270,6 +270,48 @@ header {
     transform: none !important;
 }
 
+/* Reserved column styles for hard mode */
+.column-selector.reserved-column {
+    position: relative;
+    border: 2px solid;
+    animation: pulse-reserved 2s infinite;
+}
+
+.column-selector.reserved-by-player1 {
+    border-color: var(--player-1-color);
+    background: linear-gradient(135deg, var(--player-1-color) 20%, transparent 20%);
+}
+
+.column-selector.reserved-by-player2 {
+    border-color: var(--player-2-color);
+    background: linear-gradient(135deg, var(--player-2-color) 20%, transparent 20%);
+}
+
+.column-selector.can-release {
+    animation: pulse-can-release 1.5s infinite;
+    box-shadow: 0 0 15px rgba(255, 204, 51, 0.6);
+}
+
+@keyframes pulse-reserved {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 204, 51, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(255, 204, 51, 0.6);
+    }
+}
+
+@keyframes pulse-can-release {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(255, 204, 51, 0.5);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 204, 51, 0.8);
+        transform: scale(1.05);
+    }
+}
+
 .grid-container {
     border: 3px solid var(--text-primary);
     border-radius: 10px;

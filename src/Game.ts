@@ -1,5 +1,5 @@
 import { Grid } from './Grid.js';
-import { GameConfig, GameState, Player, GameResult, Position, BallPath, GameMode, MoveSelection, ExecutionDirection, BallReleaseSelection, DormantBall } from './types.js';
+import { GameConfig, GameState, Player, GameResult, Position, BallPath, GameMode, MoveSelection, ExecutionDirection, BallReleaseSelection, DormantBall, ColumnReservation } from './types.js';
 
 export class Game {
     private grid: Grid;
@@ -9,6 +9,7 @@ export class Game {
     private ballsRemaining: Map<Player, number>;
     private moveSelection: MoveSelection;
     private ballReleaseSelection: BallReleaseSelection;
+    private columnReservation: ColumnReservation;
     private usedColumns: Set<number>; // Track which columns have been used (universal restriction)
     private columnOwners: Map<number, Player>; // Track which player clicked each column (for normal mode)
     private onStateChange?: (game: Game) => void;
@@ -48,6 +49,14 @@ export class Game {
             dormantBalls: new Map<string, DormantBall>()
         };
         
+        this.columnReservation = {
+            player1ReservedColumns: [],
+            player2ReservedColumns: [],
+            currentReservationPlayer: Player.PLAYER1,
+            allColumnsReserved: false,
+            reservedColumnOwners: new Map<number, Player>()
+        };
+        
         this.usedColumns = new Set<number>();
         this.columnOwners = new Map<number, Player>();
     }
@@ -57,7 +66,7 @@ export class Game {
         this.grid.placeRandomBoxes(this.config.minBoxes, this.config.maxBoxes);
         
         if (this.config.gameMode === GameMode.HARD_MODE) {
-            this.state = GameState.BALL_PLACEMENT_PHASE;
+            this.state = GameState.COLUMN_RESERVATION_PHASE;
         } else {
             this.state = GameState.PLAYING;
         }
@@ -84,6 +93,15 @@ export class Game {
             dormantBalls: new Map<string, DormantBall>()
         };
         
+        // Reset column reservation
+        this.columnReservation = {
+            player1ReservedColumns: [],
+            player2ReservedColumns: [],
+            currentReservationPlayer: Player.PLAYER1,
+            allColumnsReserved: false,
+            reservedColumnOwners: new Map<number, Player>()
+        };
+        
         // Reset used columns tracking
         this.usedColumns = new Set<number>();
         this.columnOwners = new Map<number, Player>();
@@ -93,7 +111,16 @@ export class Game {
 
     public dropBall(col: number): boolean {
         if (this.config.gameMode === GameMode.HARD_MODE) {
-            return this.selectMove(col);
+            // In hard mode, handle different phases differently
+            if (this.state === GameState.COLUMN_RESERVATION_PHASE) {
+                return this.reserveColumn(col);
+            } else if (this.state === GameState.BALL_RELEASE_PHASE) {
+                // In release phase, this method shouldn't be called directly
+                // Ball release is handled by releaseBall method with row/col coordinates
+                return false;
+            } else {
+                return this.selectMove(col);
+            }
         }
         
         if (this.state !== GameState.PLAYING) {
@@ -132,6 +159,53 @@ export class Game {
         }
 
         return false;
+    }
+
+    public reserveColumn(col: number): boolean {
+        if (this.state !== GameState.COLUMN_RESERVATION_PHASE) {
+            return false;
+        }
+
+        if (this.grid.isColumnFull(col)) {
+            return false;
+        }
+
+        // Hard mode rule: only one ball per column is allowed
+        if (this.columnReservation.reservedColumnOwners.has(col)) {
+            return false; // Column already reserved by a player
+        }
+
+        const currentReservedColumns = this.currentPlayer === Player.PLAYER1 
+            ? this.columnReservation.player1ReservedColumns 
+            : this.columnReservation.player2ReservedColumns;
+
+        if (currentReservedColumns.length >= this.config.ballsPerPlayer) {
+            return false;
+        }
+
+        // Reserve the column (don't place ball yet)
+        currentReservedColumns.push(col);
+        this.columnReservation.reservedColumnOwners.set(col, this.currentPlayer);
+
+        // Check if all columns have been reserved by both players
+        const totalColumnsReserved = this.columnReservation.player1ReservedColumns.length + 
+                                   this.columnReservation.player2ReservedColumns.length;
+        const totalColumnsNeeded = this.config.ballsPerPlayer * 2;
+
+        if (totalColumnsReserved >= totalColumnsNeeded) {
+            // All columns reserved - transition to release phase
+            this.columnReservation.allColumnsReserved = true;
+            this.state = GameState.BALL_RELEASE_PHASE;
+            this.currentPlayer = Player.PLAYER1; // Reset to player 1 for release phase
+            this.ballReleaseSelection.currentReleasePlayer = Player.PLAYER1;
+        } else {
+            // Switch to the other player for next column reservation
+            this.currentPlayer = this.currentPlayer === Player.PLAYER1 ? Player.PLAYER2 : Player.PLAYER1;
+            this.columnReservation.currentReservationPlayer = this.currentPlayer;
+        }
+
+        this.notifyStateChange();
+        return true;
     }
 
     public selectMove(col: number): boolean {
@@ -232,52 +306,56 @@ export class Game {
         this.ballsRemaining.set(Player.PLAYER2, 0);
     }
 
-    public releaseBall(row: number, col: number): boolean {
+    public releaseBall(col: number): boolean {
         if (this.state !== GameState.BALL_RELEASE_PHASE) {
             return false;
         }
 
-        // Check if there's a dormant ball at this position
-        if (!this.grid.isDormantBall(row, col)) {
+        // Check if this column was reserved by the current player
+        if (!this.columnReservation.reservedColumnOwners.has(col)) {
+            return false; // Column was not reserved
+        }
+
+        const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
+        if (columnOwner !== this.currentPlayer) {
+            return false; // Players can only release their own reserved balls
+        }
+
+        // Check if column is full
+        if (this.grid.isColumnFull(col)) {
             return false;
         }
 
-        // Find the dormant ball at this position
-        let targetBallId: string | null = null;
-        for (const [ballId, ball] of this.ballReleaseSelection.dormantBalls) {
-            if (ball.position.row === row && ball.position.col === col) {
-                // Check if this ball belongs to the current player
-                if (ball.player !== this.currentPlayer) {
-                    return false; // Players can only release their own balls
-                }
-                targetBallId = ballId;
-                break;
+        // Calculate and place the ball immediately (not as dormant)
+        const result = this.grid.calculateBallPath(col, this.currentPlayer);
+        if (result.finalPosition && result.ballPath) {
+            // Apply the ball path immediately (active ball, not dormant)
+            this.grid.applyBallPath(result.ballPath, false);
+            
+            // Decrease balls remaining
+            const ballsLeft = this.ballsRemaining.get(this.currentPlayer) || 0;
+            this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
+            
+            // Remove the column from reserved columns
+            const currentReservedColumns = this.currentPlayer === Player.PLAYER1 
+                ? this.columnReservation.player1ReservedColumns 
+                : this.columnReservation.player2ReservedColumns;
+            
+            const columnIndex = currentReservedColumns.indexOf(col);
+            if (columnIndex > -1) {
+                currentReservedColumns.splice(columnIndex, 1);
             }
-        }
-
-        if (!targetBallId) {
-            return false;
-        }
-
-        // Release the ball (activate it)
-        if (this.grid.activateDormantBall({ row, col })) {
-            // Track that this ball has been released
-            if (this.currentPlayer === Player.PLAYER1) {
-                this.ballReleaseSelection.player1ReleasedBalls.add(targetBallId);
-            } else {
-                this.ballReleaseSelection.player2ReleasedBalls.add(targetBallId);
-            }
-
-            // Remove from dormant balls tracking
-            this.ballReleaseSelection.dormantBalls.delete(targetBallId);
+            
+            // Mark column as used
+            this.usedColumns.add(col);
+            this.columnOwners.set(col, this.currentPlayer);
 
             // Check if all balls have been released
+            const totalBallsReleased = (this.config.ballsPerPlayer - this.ballsRemaining.get(Player.PLAYER1)!) + 
+                                     (this.config.ballsPerPlayer - this.ballsRemaining.get(Player.PLAYER2)!);
             const totalBalls = this.config.ballsPerPlayer * 2;
-            const releasedBalls = this.ballReleaseSelection.player1ReleasedBalls.size + 
-                                this.ballReleaseSelection.player2ReleasedBalls.size;
             
-            if (releasedBalls >= totalBalls) {
-                this.ballReleaseSelection.allBallsReleased = true;
+            if (totalBallsReleased >= totalBalls) {
                 this.state = GameState.FINISHED;
             } else {
                 // Switch to the other player
@@ -285,11 +363,23 @@ export class Game {
                 this.ballReleaseSelection.currentReleasePlayer = this.currentPlayer;
             }
 
+            // Trigger ball dropped callback for animation
+            if (this.onBallDropped) {
+                this.onBallDropped(result.ballPath);
+            }
+
             this.notifyStateChange();
             return true;
         }
 
         return false;
+    }
+
+    // Legacy method for backward compatibility - now redirects to column-based release
+    public releaseBallAtPosition(row: number, col: number): boolean {
+        // For the new system, we release balls by column, not by position
+        // This method is kept for backward compatibility but redirects to the new system
+        return this.releaseBall(col);
     }
 
     public executeAllMoves(): boolean {
@@ -525,7 +615,13 @@ export class Game {
 
     public canDropInColumn(col: number): boolean {
         if (this.config.gameMode === GameMode.HARD_MODE) {
-            return this.canSelectMove(col);
+            if (this.state === GameState.COLUMN_RESERVATION_PHASE) {
+                return this.canReserveColumn(col);
+            } else if (this.state === GameState.BALL_RELEASE_PHASE) {
+                return this.canReleaseBall(col);
+            } else {
+                return this.canSelectMove(col);
+            }
         }
         
         if (this.state !== GameState.PLAYING) {
@@ -539,6 +635,46 @@ export class Game {
 
         const ballsLeft = this.ballsRemaining.get(this.currentPlayer) || 0;
         return ballsLeft > 0 && !this.grid.isColumnFull(col);
+    }
+
+    public canReserveColumn(col: number): boolean {
+        if (this.state !== GameState.COLUMN_RESERVATION_PHASE) {
+            return false;
+        }
+
+        if (this.grid.isColumnFull(col)) {
+            return false;
+        }
+
+        // Hard mode rule: only one ball per column is allowed
+        if (this.columnReservation.reservedColumnOwners.has(col)) {
+            return false; // Column already reserved by a player
+        }
+
+        const currentReservedColumns = this.currentPlayer === Player.PLAYER1 
+            ? this.columnReservation.player1ReservedColumns 
+            : this.columnReservation.player2ReservedColumns;
+
+        return currentReservedColumns.length < this.config.ballsPerPlayer;
+    }
+
+    public canReleaseBall(col: number): boolean {
+        if (this.state !== GameState.BALL_RELEASE_PHASE) {
+            return false;
+        }
+
+        // Check if this column was reserved by the current player
+        if (!this.columnReservation.reservedColumnOwners.has(col)) {
+            return false; // Column was not reserved
+        }
+
+        const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
+        if (columnOwner !== this.currentPlayer) {
+            return false; // Players can only release their own reserved balls
+        }
+
+        // Check if column is full
+        return !this.grid.isColumnFull(col);
     }
 
     public canSelectMove(col: number): boolean {
@@ -585,6 +721,15 @@ export class Game {
             currentReleasePlayer: Player.PLAYER1,
             allBallsReleased: false,
             dormantBalls: new Map<string, DormantBall>()
+        };
+        
+        // Reset column reservation
+        this.columnReservation = {
+            player1ReservedColumns: [],
+            player2ReservedColumns: [],
+            currentReservationPlayer: Player.PLAYER1,
+            allColumnsReserved: false,
+            reservedColumnOwners: new Map<number, Player>()
         };
         
         // Reset used columns tracking
@@ -662,24 +807,26 @@ export class Game {
         };
     }
 
-    public canReleaseBall(row: number, col: number): boolean {
-        if (this.state !== GameState.BALL_RELEASE_PHASE) {
-            return false;
-        }
+    public getColumnReservation(): ColumnReservation {
+        return {
+            player1ReservedColumns: [...this.columnReservation.player1ReservedColumns],
+            player2ReservedColumns: [...this.columnReservation.player2ReservedColumns],
+            currentReservationPlayer: this.columnReservation.currentReservationPlayer,
+            allColumnsReserved: this.columnReservation.allColumnsReserved,
+            reservedColumnOwners: new Map(this.columnReservation.reservedColumnOwners)
+        };
+    }
 
-        // Check if there's a dormant ball at this position
-        if (!this.grid.isDormantBall(row, col)) {
-            return false;
-        }
+    public getReservedColumnsCount(player: Player): number {
+        return player === Player.PLAYER1 
+            ? this.columnReservation.player1ReservedColumns.length
+            : this.columnReservation.player2ReservedColumns.length;
+    }
 
-        // Find the dormant ball at this position and check if it belongs to current player
-        for (const [ballId, ball] of this.ballReleaseSelection.dormantBalls) {
-            if (ball.position.row === row && ball.position.col === col) {
-                return ball.player === this.currentPlayer;
-            }
-        }
-
-        return false;
+    public getReservedColumnsForPlayer(player: Player): number[] {
+        return player === Player.PLAYER1 
+            ? [...this.columnReservation.player1ReservedColumns]
+            : [...this.columnReservation.player2ReservedColumns];
     }
 
     public getDormantBallsForPlayer(player: Player): DormantBall[] {
