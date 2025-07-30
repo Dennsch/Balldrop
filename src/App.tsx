@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const [winnerMessage, setWinnerMessage] = useState<string>("");
   const [gameMessage, setGameMessage] = useState<string>("");
   const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeed>(
-    AnimationSpeed.NORMAL
+    AnimationSpeed.FAST
   );
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [gridKey, setGridKey] = useState<number>(0); // Force grid re-render
