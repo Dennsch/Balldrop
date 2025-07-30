@@ -13,6 +13,10 @@ export default defineConfig({
       input: 'index-react.html'
     }
   },
+  preview: {
+    port: 8080,
+    open: true,
+  },
   server: {
     port: 3001,
     open: true,
