@@ -5,9 +5,10 @@ interface CellProps {
   row: number;
   col: number;
   cell: CellType;
+  onCellClick?: (row: number, col: number) => void;
 }
 
-const Cell: React.FC<CellProps> = ({ row, col, cell }) => {
+const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick }) => {
   const getCellClasses = () => {
     const classes = ['cell'];
     
@@ -23,9 +24,11 @@ const Cell: React.FC<CellProps> = ({ row, col, cell }) => {
         break;
       case CellTypeEnum.DORMANT_BALL_P1:
         classes.push('has-dormant-ball-p1');
+        if (onCellClick) classes.push('clickable');
         break;
       case CellTypeEnum.DORMANT_BALL_P2:
         classes.push('has-dormant-ball-p2');
+        if (onCellClick) classes.push('clickable');
         break;
       default:
         // Empty cell - no additional classes
@@ -53,11 +56,19 @@ const Cell: React.FC<CellProps> = ({ row, col, cell }) => {
     }
   };
 
+  const handleClick = () => {
+    if (onCellClick && (cell.type === CellTypeEnum.DORMANT_BALL_P1 || cell.type === CellTypeEnum.DORMANT_BALL_P2)) {
+      onCellClick(row, col);
+    }
+  };
+
   return (
     <div 
       className={getCellClasses()}
       data-row={row}
       data-col={col}
+      onClick={handleClick}
+      style={{ cursor: (cell.type === CellTypeEnum.DORMANT_BALL_P1 || cell.type === CellTypeEnum.DORMANT_BALL_P2) && onCellClick ? 'pointer' : 'default' }}
     >
       {getCellContent()}
     </div>

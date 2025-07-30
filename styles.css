@@ -315,6 +315,32 @@ header {
     color: var(--text-light);
 }
 
+.cell.has-dormant-ball-p1 {
+    background: var(--player-1-color);
+    color: var(--text-light);
+    opacity: 0.7;
+    border: 2px dashed rgba(255, 255, 255, 0.8);
+}
+
+.cell.has-dormant-ball-p2 {
+    background: var(--player-2-color);
+    color: var(--text-light);
+    opacity: 0.7;
+    border: 2px dashed rgba(255, 255, 255, 0.8);
+}
+
+.cell.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cell.clickable:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    border: 2px solid rgba(255, 255, 255, 1);
+}
+
 .cell.falling {
     animation: fall var(--fall-animation-duration) ease-in;
 }

@@ -8,6 +8,7 @@ import AnimatedBall from './AnimatedBall.js';
 interface GameBoardProps {
   game: Game;
   onColumnClick: (column: number) => void;
+  onCellClick?: (row: number, col: number) => void;
   animationSpeed: AnimationSpeed;
   isAnimating: boolean;
   gridKey: number;
@@ -18,6 +19,7 @@ interface GameBoardProps {
 const GameBoard: React.FC<GameBoardProps> = ({
   game,
   onColumnClick,
+  onCellClick,
   animationSpeed,
   isAnimating,
   gridKey,
@@ -37,6 +39,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
           key={gridKey}
           game={game}
           animationSpeed={animationSpeed}
+          onCellClick={onCellClick}
         />
         {/* Render animated balls inside grid container */}
         {animatedBalls.map((ballPath, index) => (

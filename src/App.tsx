@@ -121,6 +121,7 @@ const App: React.FC = () => {
   const updateGameMessage = useCallback((gameInstance: Game) => {
     const state = gameInstance.getState();
     const currentPlayer = gameInstance.getCurrentPlayer();
+    const gameMode = gameInstance.getGameMode();
 
     switch (state) {
       case GameState.SETUP:
@@ -135,10 +136,19 @@ const App: React.FC = () => {
         setGameMessage("Select your moves for this round");
         break;
       case GameState.BALL_PLACEMENT_PHASE:
-        setGameMessage("Place your balls on the grid");
+        if (gameMode === GameMode.HARD_MODE) {
+          const moveSelection = gameInstance.getMoveSelection();
+          const totalPlaced = moveSelection.player1Moves.length + moveSelection.player2Moves.length;
+          const totalNeeded = gameInstance.getConfig().ballsPerPlayer * 2;
+          setGameMessage(
+            `Hard Mode - Player ${currentPlayer}'s turn to place a ball (${totalPlaced}/${totalNeeded} balls placed)`
+          );
+        } else {
+          setGameMessage("Place your balls on the grid");
+        }
         break;
       case GameState.BALL_RELEASE_PHASE:
-        setGameMessage("Release your balls to see them fall");
+        setGameMessage(`Player ${currentPlayer}'s turn - Click one of your dormant balls to release it`);
         break;
       case GameState.EXECUTING_MOVES:
         setGameMessage("Executing moves...");
@@ -187,6 +197,29 @@ const App: React.FC = () => {
         }
       } else {
         console.log(`Column click blocked - game: ${!!game}, isAnimating: ${isAnimating}`);
+      }
+    },
+    [game, isAnimating]
+  );
+
+  const handleCellClick = useCallback(
+    (row: number, col: number) => {
+      if (game && !isAnimating) {
+        try {
+          console.log(`Attempting to release ball at row ${row}, col ${col}, game state: ${game.getState()}`);
+          const success = game.releaseBall(row, col);
+          console.log(`Release result: ${success}`);
+          if (!success) {
+            setGameMessage(`Cannot release ball at row ${row + 1}, column ${col + 1}`);
+          }
+        } catch (error) {
+          console.error("Error releasing ball:", error);
+          setGameMessage(
+            error instanceof Error ? error.message : "Error releasing ball"
+          );
+        }
+      } else {
+        console.log(`Cell click blocked - game: ${!!game}, isAnimating: ${isAnimating}`);
       }
     },
     [game, isAnimating]
@@ -260,6 +293,7 @@ const App: React.FC = () => {
         <GameBoard
           game={game}
           onColumnClick={handleColumnClick}
+          onCellClick={handleCellClick}
           animationSpeed={animationSpeed}
           isAnimating={isAnimating}
           gridKey={gridKey}

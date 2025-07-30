@@ -160,24 +160,42 @@ export class Game {
         currentMoves.push(col);
         this.moveSelection.columnOwners.set(col, this.currentPlayer);
 
-        // Check if current player has selected all moves
-        if (currentMoves.length === this.config.ballsPerPlayer) {
-            if (this.currentPlayer === Player.PLAYER1) {
-                // Switch to player 2
-                this.currentPlayer = Player.PLAYER2;
-                this.moveSelection.currentSelectionPlayer = Player.PLAYER2;
-            } else {
-                // Both players have selected all moves - place dormant balls and transition to release phase
-                this.moveSelection.allMovesSelected = true;
-                this.placeDormantBalls();
-                this.state = GameState.BALL_RELEASE_PHASE;
-                this.currentPlayer = Player.PLAYER1; // Reset to player 1 for release phase
-                this.ballReleaseSelection.currentReleasePlayer = Player.PLAYER1;
-            }
+        // Place the dormant ball immediately for this move
+        this.placeSingleDormantBall(col, this.currentPlayer);
+
+        // Check if all balls have been placed by both players
+        const totalBallsPlaced = this.moveSelection.player1Moves.length + this.moveSelection.player2Moves.length;
+        const totalBallsNeeded = this.config.ballsPerPlayer * 2;
+
+        if (totalBallsPlaced >= totalBallsNeeded) {
+            // All balls placed - transition to release phase
+            this.moveSelection.allMovesSelected = true;
+            this.state = GameState.BALL_RELEASE_PHASE;
+            this.currentPlayer = Player.PLAYER1; // Reset to player 1 for release phase
+            this.ballReleaseSelection.currentReleasePlayer = Player.PLAYER1;
+        } else {
+            // Switch to the other player for next ball placement
+            this.currentPlayer = this.currentPlayer === Player.PLAYER1 ? Player.PLAYER2 : Player.PLAYER1;
+            this.moveSelection.currentSelectionPlayer = this.currentPlayer;
         }
 
         this.notifyStateChange();
         return true;
+    }
+
+    private placeSingleDormantBall(col: number, player: Player): void {
+        // Calculate and place a single dormant ball immediately
+        const result = this.grid.calculateBallPath(col, player);
+        if (result.ballPath) {
+            this.grid.applyBallPath(result.ballPath, true); // true = dormant
+            
+            // Update dormant balls tracking
+            const dormantBalls = this.grid.getDormantBalls();
+            this.ballReleaseSelection.dormantBalls.clear();
+            for (const ball of dormantBalls) {
+                this.ballReleaseSelection.dormantBalls.set(ball.ballId, ball);
+            }
+        }
     }
 
     private placeDormantBalls(): void {
