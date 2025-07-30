@@ -214,8 +214,12 @@ export class Game {
     const totalColumnsNeeded = this.config.ballsPerPlayer * 2;
 
     if (totalColumnsReserved >= totalColumnsNeeded) {
-      // All columns reserved - transition to release phase
+      // All columns reserved - place dormant balls and transition to release phase
       this.columnReservation.allColumnsReserved = true;
+      
+      // Place dormant balls for all reserved columns
+      this.placeDormantBallsFromReservations();
+      
       this.state = GameState.BALL_RELEASE_PHASE;
       this.currentPlayer = Player.PLAYER1; // Reset to player 1 for release phase
       this.ballReleaseSelection.currentReleasePlayer = Player.PLAYER1;
@@ -328,6 +332,40 @@ export class Game {
     }
 
     // Set balls remaining to 0 for both players (they're all placed now)
+    this.ballsRemaining.set(Player.PLAYER1, 0);
+    this.ballsRemaining.set(Player.PLAYER2, 0);
+  }
+
+  private placeDormantBallsFromReservations(): void {
+    // Place dormant balls for all reserved columns in hard mode
+    const allBallPaths: BallPath[] = [];
+
+    // Place player 1 reserved balls as dormant
+    for (const col of this.columnReservation.player1ReservedColumns) {
+      const result = this.grid.calculateBallPath(col, Player.PLAYER1);
+      if (result.ballPath) {
+        this.grid.applyBallPath(result.ballPath, true); // true = dormant
+        allBallPaths.push(result.ballPath);
+      }
+    }
+
+    // Place player 2 reserved balls as dormant
+    for (const col of this.columnReservation.player2ReservedColumns) {
+      const result = this.grid.calculateBallPath(col, Player.PLAYER2);
+      if (result.ballPath) {
+        this.grid.applyBallPath(result.ballPath, true); // true = dormant
+        allBallPaths.push(result.ballPath);
+      }
+    }
+
+    // Update dormant balls tracking
+    const dormantBalls = this.grid.getDormantBalls();
+    this.ballReleaseSelection.dormantBalls.clear();
+    for (const ball of dormantBalls) {
+      this.ballReleaseSelection.dormantBalls.set(ball.ballId, ball);
+    }
+
+    // Set balls remaining to 0 for both players (they're all placed now as dormant)
     this.ballsRemaining.set(Player.PLAYER1, 0);
     this.ballsRemaining.set(Player.PLAYER2, 0);
   }

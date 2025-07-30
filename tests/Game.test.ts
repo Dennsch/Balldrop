@@ -208,7 +208,145 @@ describe('Game', () => {
         });
     });
 
-    describe('hard mode - two phase system', () => {
+    describe('hard mode - column reservation system', () => {
+        let hardModeGame: Game;
+
+        beforeEach(() => {
+            hardModeGame = new Game({
+                gridSize: 5,
+                ballsPerPlayer: 2, // Use 2 balls per player for easier testing
+                minBoxes: 1,
+                maxBoxes: 3,
+                gameMode: GameMode.HARD_MODE
+            });
+        });
+
+        describe('column reservation phase', () => {
+            it('should start in column reservation phase for hard mode', () => {
+                hardModeGame.startNewGame();
+                expect(hardModeGame.getState()).toBe(GameState.COLUMN_RESERVATION_PHASE);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+            });
+
+            it('should allow players to reserve columns alternately', () => {
+                hardModeGame.startNewGame();
+                
+                // Player 1 reserves first column
+                expect(hardModeGame.reserveColumn(0)).toBe(true);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2);
+                
+                // Player 2 reserves second column
+                expect(hardModeGame.reserveColumn(1)).toBe(true);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+                
+                // Check reservation state
+                const reservation = hardModeGame.getColumnReservation();
+                expect(reservation.player1ReservedColumns).toContain(0);
+                expect(reservation.player2ReservedColumns).toContain(1);
+            });
+
+            it('should not allow same column to be reserved by different players', () => {
+                hardModeGame.startNewGame();
+                
+                // Player 1 reserves column 0
+                expect(hardModeGame.reserveColumn(0)).toBe(true);
+                
+                // Player 2 should not be able to reserve the same column
+                expect(hardModeGame.reserveColumn(0)).toBe(false);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2); // Should still be player 2's turn
+            });
+
+            it('should transition to ball release phase after all columns reserved', () => {
+                hardModeGame.startNewGame();
+                
+                // Reserve all columns (2 per player = 4 total)
+                expect(hardModeGame.reserveColumn(0)).toBe(true); // P1
+                expect(hardModeGame.reserveColumn(1)).toBe(true); // P2
+                expect(hardModeGame.reserveColumn(2)).toBe(true); // P1
+                expect(hardModeGame.reserveColumn(3)).toBe(true); // P2 - this should trigger transition
+                
+                // Should now be in ball release phase
+                expect(hardModeGame.getState()).toBe(GameState.BALL_RELEASE_PHASE);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+                
+                // Check that dormant balls were placed
+                const ballReleaseSelection = hardModeGame.getBallReleaseSelection();
+                expect(ballReleaseSelection.dormantBalls.size).toBe(4); // 2 balls per player
+                
+                // Check that balls remaining is now 0 (all placed as dormant)
+                expect(hardModeGame.getBallsRemaining(Player.PLAYER1)).toBe(0);
+                expect(hardModeGame.getBallsRemaining(Player.PLAYER2)).toBe(0);
+            });
+        });
+
+        describe('ball release phase', () => {
+            beforeEach(() => {
+                // Set up a game in ball release phase
+                hardModeGame.startNewGame();
+                
+                // Reserve all columns to trigger transition
+                hardModeGame.reserveColumn(0); // P1
+                hardModeGame.reserveColumn(1); // P2
+                hardModeGame.reserveColumn(2); // P1
+                hardModeGame.reserveColumn(3); // P2
+            });
+
+            it('should have dormant balls ready for release', () => {
+                expect(hardModeGame.getState()).toBe(GameState.BALL_RELEASE_PHASE);
+                
+                const ballReleaseSelection = hardModeGame.getBallReleaseSelection();
+                expect(ballReleaseSelection.dormantBalls.size).toBe(4);
+                
+                // Check that each player has their expected dormant balls
+                const player1Balls = hardModeGame.getDormantBallsForPlayer(Player.PLAYER1);
+                const player2Balls = hardModeGame.getDormantBallsForPlayer(Player.PLAYER2);
+                
+                expect(player1Balls.length).toBe(2);
+                expect(player2Balls.length).toBe(2);
+            });
+
+            it('should allow players to release their own reserved balls', () => {
+                expect(hardModeGame.getState()).toBe(GameState.BALL_RELEASE_PHASE);
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+                
+                // Player 1 should be able to release from column 0 (their reserved column)
+                expect(hardModeGame.canReleaseBall(0)).toBe(true);
+                expect(hardModeGame.releaseBall(0)).toBe(true);
+                
+                // Should switch to player 2
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2);
+            });
+
+            it('should not allow players to release opponent reserved balls', () => {
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+                
+                // Player 1 should not be able to release from column 1 (Player 2's reserved column)
+                expect(hardModeGame.canReleaseBall(1)).toBe(false);
+                expect(hardModeGame.releaseBall(1)).toBe(false);
+                
+                // Should still be player 1's turn
+                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+            });
+
+            it('should finish game when all balls are released', () => {
+                // Release all balls alternately
+                expect(hardModeGame.releaseBall(0)).toBe(true); // P1 releases from column 0
+                expect(hardModeGame.releaseBall(1)).toBe(true); // P2 releases from column 1
+                expect(hardModeGame.releaseBall(2)).toBe(true); // P1 releases from column 2
+                expect(hardModeGame.releaseBall(3)).toBe(true); // P2 releases from column 3
+                
+                // Game should be finished
+                expect(hardModeGame.getState()).toBe(GameState.FINISHED);
+            });
+        });
+    });
+
+    describe('hard mode - two phase system (legacy)', () => {
+        // Note: These tests are for a different hard mode implementation
+        // The current implementation uses COLUMN_RESERVATION_PHASE instead of BALL_PLACEMENT_PHASE
+        // Keeping these tests commented out for reference
+        
+        /*
         let hardModeGame: Game;
 
         beforeEach(() => {
@@ -404,6 +542,7 @@ describe('Game', () => {
                 expect(result.player2Columns).toBe(0);
             });
         });
+        */
 
         describe('backward compatibility', () => {
             it('should maintain normal mode functionality', () => {
