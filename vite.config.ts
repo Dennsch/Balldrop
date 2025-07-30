@@ -22,8 +22,7 @@ export default defineConfig({
     host: "0.0.0.0",
     open: true,
     strictPort: true,
-    allowedHosts:
-      "635e5260-0b92-4fe5-a4fe-1c05755d670a-00-21i45pxrurrkt.worf.replit.dev",
+    allowedHosts: "all",
   },
   resolve: {
     alias: {
