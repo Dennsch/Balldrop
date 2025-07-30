@@ -130,6 +130,8 @@ export class Game {
       // In hard mode, handle different phases differently
       if (this.state === GameState.COLUMN_RESERVATION_PHASE) {
         return this.reserveColumn(col);
+      } else if (this.state === GameState.BALL_PLACEMENT_PHASE) {
+        return this.selectMove(col);
       } else if (this.state === GameState.BALL_RELEASE_PHASE) {
         // In release phase, this method shouldn't be called directly
         // Ball release is handled by releaseBall method with row/col coordinates
@@ -214,11 +216,11 @@ export class Game {
     const totalColumnsNeeded = this.config.ballsPerPlayer * 2;
 
     if (totalColumnsReserved >= totalColumnsNeeded) {
-      // All columns reserved - transition to release phase
+      // All columns reserved - transition to ball placement phase
       this.columnReservation.allColumnsReserved = true;
-      this.state = GameState.BALL_RELEASE_PHASE;
-      this.currentPlayer = Player.PLAYER1; // Reset to player 1 for release phase
-      this.ballReleaseSelection.currentReleasePlayer = Player.PLAYER1;
+      this.state = GameState.BALL_PLACEMENT_PHASE;
+      this.currentPlayer = Player.PLAYER1; // Reset to player 1 for ball placement phase
+      this.moveSelection.currentSelectionPlayer = Player.PLAYER1;
     } else {
       // Switch to the other player for next column reservation
       this.currentPlayer =
@@ -239,9 +241,17 @@ export class Game {
       return false;
     }
 
-    // Hard mode rule: only one ball per column is allowed
-    if (this.moveSelection.columnOwners.has(col)) {
-      return false; // Column already selected by a player
+    // In hard mode, players can only place balls in columns they reserved
+    if (this.config.gameMode === GameMode.HARD_MODE) {
+      const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
+      if (columnOwner !== this.currentPlayer) {
+        return false; // Player can only place balls in their own reserved columns
+      }
+    } else {
+      // Hard mode rule: only one ball per column is allowed
+      if (this.moveSelection.columnOwners.has(col)) {
+        return false; // Column already selected by a player
+      }
     }
 
     const currentMoves =
@@ -686,6 +696,8 @@ export class Game {
     if (this.config.gameMode === GameMode.HARD_MODE) {
       if (this.state === GameState.COLUMN_RESERVATION_PHASE) {
         return this.canReserveColumn(col);
+      } else if (this.state === GameState.BALL_PLACEMENT_PHASE) {
+        return this.canSelectMove(col);
       } else if (this.state === GameState.BALL_RELEASE_PHASE) {
         return this.canReleaseBall(col);
       } else {
@@ -756,9 +768,17 @@ export class Game {
       return false;
     }
 
-    // Hard mode rule: only one ball per column is allowed
-    if (this.moveSelection.columnOwners.has(col)) {
-      return false; // Column already selected by a player
+    // In hard mode, players can only place balls in columns they reserved
+    if (this.config.gameMode === GameMode.HARD_MODE) {
+      const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
+      if (columnOwner !== this.currentPlayer) {
+        return false; // Player can only place balls in their own reserved columns
+      }
+    } else {
+      // Hard mode rule: only one ball per column is allowed
+      if (this.moveSelection.columnOwners.has(col)) {
+        return false; // Column already selected by a player
+      }
     }
 
     const currentMoves =

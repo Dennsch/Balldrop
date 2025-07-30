@@ -135,6 +135,18 @@ const App: React.FC = () => {
       case GameState.SELECTING_MOVES:
         setGameMessage("Select your moves for this round");
         break;
+      case GameState.COLUMN_RESERVATION_PHASE:
+        if (gameMode === GameMode.HARD_MODE) {
+          const columnReservation = gameInstance.getColumnReservation();
+          const totalReserved = columnReservation.player1ReservedColumns.length + columnReservation.player2ReservedColumns.length;
+          const totalNeeded = gameInstance.getConfig().ballsPerPlayer * 2;
+          setGameMessage(
+            `Hard Mode - Player ${currentPlayer}'s turn to reserve a column (${totalReserved}/${totalNeeded} columns reserved)`
+          );
+        } else {
+          setGameMessage("Reserve your columns");
+        }
+        break;
       case GameState.BALL_PLACEMENT_PHASE:
         if (gameMode === GameMode.HARD_MODE) {
           const moveSelection = gameInstance.getMoveSelection();
