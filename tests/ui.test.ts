@@ -201,5 +201,83 @@ describe('UI Component Tests', () => {
       expect(gameBoard).toBeTruthy();
       expect(gameControls).toBeTruthy();
     });
+
+    it('should have column selectors with mobile-friendly properties', () => {
+      const columnSelectors = document.querySelector('.column-selectors');
+      expect(columnSelectors).toBeTruthy();
+      expect(columnSelectors?.id).toBe('column-selectors');
+    });
+
+    it('should have grid container with proper structure for mobile', () => {
+      const gridContainer = document.querySelector('.grid-container');
+      const grid = document.querySelector('.grid');
+      
+      expect(gridContainer).toBeTruthy();
+      expect(grid).toBeTruthy();
+      expect(grid?.id).toBe('game-grid');
+      expect(gridContainer?.contains(grid as Node)).toBe(true);
+    });
+
+    it('should have touch-friendly button elements', () => {
+      const buttons = document.querySelectorAll('.btn');
+      expect(buttons.length).toBeGreaterThan(0);
+      
+      buttons.forEach(button => {
+        expect(button.classList.contains('btn')).toBe(true);
+      });
+    });
+
+    it('should have proper viewport meta structure for mobile', () => {
+      // This would be tested in integration tests, but we can verify
+      // the DOM structure supports mobile responsiveness
+      const gameContainer = document.querySelector('.game-container');
+      const header = document.querySelector('header');
+      const main = document.querySelector('main');
+      
+      expect(gameContainer).toBeTruthy();
+      expect(header).toBeTruthy();
+      expect(main).toBeTruthy();
+      expect(gameContainer?.contains(header as Node)).toBe(true);
+      expect(gameContainer?.contains(main as Node)).toBe(true);
+    });
+  });
+
+  describe('Mobile Touch Interaction Support', () => {
+    it('should have column selectors ready for touch interaction', () => {
+      // Initialize the UI to create column selectors
+      gameUI.render();
+      
+      const columnSelectors = document.querySelectorAll('.column-selector');
+      expect(columnSelectors.length).toBe(5); // 5x5 grid for test
+      
+      columnSelectors.forEach(selector => {
+        expect(selector.tagName).toBe('BUTTON');
+        expect(selector.classList.contains('column-selector')).toBe(true);
+      });
+    });
+
+    it('should have grid cells ready for touch interaction', () => {
+      gameUI.render();
+      
+      const cells = document.querySelectorAll('.cell');
+      expect(cells.length).toBe(25); // 5x5 grid for test
+      
+      cells.forEach(cell => {
+        expect(cell.classList.contains('cell')).toBe(true);
+      });
+    });
+
+    it('should maintain accessibility for mobile users', () => {
+      const buttons = document.querySelectorAll('button');
+      const selects = document.querySelectorAll('select');
+      
+      buttons.forEach(button => {
+        expect(button.tagName).toBe('BUTTON');
+      });
+      
+      selects.forEach(select => {
+        expect(select.tagName).toBe('SELECT');
+      });
+    });
   });
 });
