@@ -170,7 +170,7 @@ header {
     background: linear-gradient(135deg, var(--button-column), #E6B82E);
     color: var(--text-light);
     border: none;
-    padding: 10px 6px;
+    padding: 10px 4px;
     border-radius: 8px;
     cursor: pointer;
     font-size: 12px;
@@ -179,8 +179,9 @@ header {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     letter-spacing: 0.3px;
     box-sizing: border-box;
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 28px;
+    max-width: calc((100% - 38px) / 20);
     min-height: 44px;
     display: flex;
     align-items: center;
@@ -723,10 +724,11 @@ header {
     }
     
     .column-selector {
-        min-width: 44px;
+        min-width: 40px;
+        max-width: calc((100% - 19px) / 20);
         flex-shrink: 0;
         font-size: 11px;
-        padding: 8px 4px;
+        padding: 8px 3px;
     }
     
     .cell {
@@ -782,7 +784,8 @@ header {
     }
     
     .column-selector {
-        min-width: 40px;
+        min-width: 36px;
+        max-width: calc((100% - 19px) / 20);
         font-size: 10px;
         padding: 6px 2px;
         border-radius: 6px;
@@ -837,7 +840,8 @@ header {
     }
     
     .column-selector {
-        min-width: 36px;
+        min-width: 32px;
+        max-width: calc((100% - 19px) / 20);
         font-size: 9px;
         padding: 5px 1px;
     }
@@ -907,6 +911,13 @@ header {
     
     .column-selectors {
         width: min(60vh, 300px);
+    }
+    
+    .column-selector {
+        min-width: 30px;
+        max-width: calc((100% - 19px) / 20);
+        font-size: 10px;
+        padding: 4px 1px;
     }
     
     .game-controls {
