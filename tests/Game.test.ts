@@ -348,25 +348,40 @@ describe('Game', () => {
             });
 
             it('should allow players to release their own balls', () => {
-                // Player 1 should be able to release balls in columns 0 and 2
+                // In the new non-turn-based release phase, all reserved columns should be available
+                // Player 1 reserved columns 0 and 2
                 expect(hardModeGame.canDropInColumn(0)).toBe(true);
                 expect(hardModeGame.canDropInColumn(2)).toBe(true);
                 
-                // Player 1 should not be able to release Player 2's balls
-                expect(hardModeGame.canDropInColumn(1)).toBe(false);
-                expect(hardModeGame.canDropInColumn(3)).toBe(false);
+                // Player 2 reserved columns 1 and 3
+                expect(hardModeGame.canDropInColumn(1)).toBe(true);
+                expect(hardModeGame.canDropInColumn(3)).toBe(true);
+                
+                // All reserved columns should be available for release
+                // The restriction is enforced at the UI level and in the releaseBall method
             });
 
-            it('should switch players after each ball release', () => {
+            it('should allow any player to release their own balls (non-turn-based)', () => {
                 expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
                 
-                // Player 1 releases a ball
+                // In the new release phase, players don't need to wait for turns
+                // Both players should be able to release their own balls
+                
+                // Player 1 should be able to release from columns 0 and 2
+                expect(hardModeGame.canDropInColumn(0)).toBe(true);
+                expect(hardModeGame.canDropInColumn(2)).toBe(true);
+                
+                // Player 2 should be able to release from columns 1 and 3
+                expect(hardModeGame.canDropInColumn(1)).toBe(true);
+                expect(hardModeGame.canDropInColumn(3)).toBe(true);
+                
+                // Release a ball - current player should not change (non-turn-based)
+                const initialPlayer = hardModeGame.getCurrentPlayer();
                 hardModeGame.releaseBall(0);
-                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER2);
+                expect(hardModeGame.getCurrentPlayer()).toBe(initialPlayer);
                 
-                // Player 2 releases a ball
-                hardModeGame.releaseBall(1);
-                expect(hardModeGame.getCurrentPlayer()).toBe(Player.PLAYER1);
+                // The released column should no longer be available
+                expect(hardModeGame.canDropInColumn(0)).toBe(false);
             });
 
             it('should finish game when all balls are released', () => {

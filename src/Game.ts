@@ -347,34 +347,31 @@ export class Game {
       return false;
     }
 
-    // Check if this column was reserved by the current player
+    // Check if this column was reserved
     if (!this.columnReservation.reservedColumnOwners.has(col)) {
       return false; // Column was not reserved
     }
 
     const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
-    if (columnOwner !== this.currentPlayer) {
-      return false; // Players can only release their own reserved balls
-    }
-
+    
     // Check if column is full
     if (this.grid.isColumnFull(col)) {
       return false;
     }
 
     // Calculate and place the ball immediately (not as dormant)
-    const result = this.grid.calculateBallPath(col, this.currentPlayer);
+    const result = this.grid.calculateBallPath(col, columnOwner!);
     if (result.finalPosition && result.ballPath) {
       // Apply the ball path immediately (active ball, not dormant)
       this.grid.applyBallPath(result.ballPath, false);
 
-      // Decrease balls remaining
-      const ballsLeft = this.ballsRemaining.get(this.currentPlayer) || 0;
-      this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
+      // Decrease balls remaining for the column owner
+      const ballsLeft = this.ballsRemaining.get(columnOwner!) || 0;
+      this.ballsRemaining.set(columnOwner!, ballsLeft - 1);
 
       // Remove the column from reserved columns
       const currentReservedColumns =
-        this.currentPlayer === Player.PLAYER1
+        columnOwner === Player.PLAYER1
           ? this.columnReservation.player1ReservedColumns
           : this.columnReservation.player2ReservedColumns;
 
@@ -385,7 +382,7 @@ export class Game {
 
       // Mark column as used
       this.usedColumns.add(col);
-      this.columnOwners.set(col, this.currentPlayer);
+      this.columnOwners.set(col, columnOwner!);
 
       // Check if all balls have been released
       const totalBallsReleased =
@@ -396,14 +393,8 @@ export class Game {
 
       if (totalBallsReleased >= totalBalls) {
         this.state = GameState.FINISHED;
-      } else {
-        // Switch to the other player
-        this.currentPlayer =
-          this.currentPlayer === Player.PLAYER1
-            ? Player.PLAYER2
-            : Player.PLAYER1;
-        this.ballReleaseSelection.currentReleasePlayer = this.currentPlayer;
       }
+      // Remove player switching logic - no more turn-based behavior in release phase
 
       // Play pop sound when ball is released
       this.soundManager.playSound("pop", 0.6);
@@ -745,14 +736,9 @@ export class Game {
       return false;
     }
 
-    // Check if this column was reserved by the current player
+    // Check if this column was reserved
     if (!this.columnReservation.reservedColumnOwners.has(col)) {
       return false; // Column was not reserved
-    }
-
-    const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
-    if (columnOwner !== this.currentPlayer) {
-      return false; // Players can only release their own reserved balls
     }
 
     // Check if column is full
