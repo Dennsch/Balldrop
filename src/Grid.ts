@@ -66,6 +66,47 @@ export class Grid {
                 direction: direction
             });
         }
+
+        // Place portal blocks after boxes
+        this.placePortalBlocks();
+    }
+
+    public placePortalBlocks(): void {
+        const availablePositions: Position[] = [];
+
+        // Generate all possible positions (excluding first and last rows, and occupied cells)
+        for (let row = 1; row < this.size - 1; row++) {
+            for (let col = 0; col < this.size; col++) {
+                if (this.cells[row][col].type === CellType.EMPTY) {
+                    availablePositions.push({ row, col });
+                }
+            }
+        }
+
+        // Shuffle available positions
+        for (let i = availablePositions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availablePositions[i], availablePositions[j]] = [availablePositions[j], availablePositions[i]];
+        }
+
+        // Place exactly 4 portal blocks (2 pairs) if we have enough space
+        if (availablePositions.length >= 4) {
+            // Place first portal pair
+            this.setCell(availablePositions[0].row, availablePositions[0].col, {
+                type: CellType.PORTAL_ENTRY_1
+            });
+            this.setCell(availablePositions[1].row, availablePositions[1].col, {
+                type: CellType.PORTAL_EXIT_1
+            });
+
+            // Place second portal pair
+            this.setCell(availablePositions[2].row, availablePositions[2].col, {
+                type: CellType.PORTAL_ENTRY_2
+            });
+            this.setCell(availablePositions[3].row, availablePositions[3].col, {
+                type: CellType.PORTAL_EXIT_2
+            });
+        }
     }
 
     public calculateBallPath(col: number, player: Player): { finalPosition: Position | null, ballPath: BallPath | null } {
@@ -158,6 +199,43 @@ export class Grid {
                     }
                 } else {
                     // Ball goes out of bounds, place it in current position
+                    break;
+                }
+            }
+
+            // If next cell has a portal entry, teleport the ball
+            if (nextCell.type === CellType.PORTAL_ENTRY_1 || nextCell.type === CellType.PORTAL_ENTRY_2) {
+                // Find the corresponding exit portal
+                const exitPortalType = nextCell.type === CellType.PORTAL_ENTRY_1 ? CellType.PORTAL_EXIT_1 : CellType.PORTAL_EXIT_2;
+                const exitPortalPosition = this.findPortalPosition(exitPortalType);
+                
+                if (exitPortalPosition) {
+                    // Add portal entry step
+                    pathSteps.push({
+                        position: { row: currentRow, col: currentCol },
+                        action: 'redirect' // Using redirect action for portal teleportation
+                    });
+                    
+                    // Teleport to the position above the exit portal
+                    currentRow = exitPortalPosition.row - 1;
+                    currentCol = exitPortalPosition.col;
+                    
+                    // Check if the teleport destination is valid and empty
+                    if (this.isValidPosition(currentRow, currentCol) && 
+                        this.cells[currentRow][currentCol].type === CellType.EMPTY) {
+                        // Add teleport arrival step
+                        pathSteps.push({
+                            position: { row: currentRow, col: currentCol },
+                            action: 'fall'
+                        });
+                        // Continue falling from the new position
+                        continue;
+                    } else {
+                        // If teleport destination is blocked, ball gets stuck at current position
+                        break;
+                    }
+                } else {
+                    // If exit portal not found, treat as obstacle and stop
                     break;
                 }
             }
@@ -337,5 +415,16 @@ export class Grid {
             return true;
         }
         return this.cells[0][col].type !== CellType.EMPTY;
+    }
+
+    private findPortalPosition(portalType: CellType): Position | null {
+        for (let row = 0; row < this.size; row++) {
+            for (let col = 0; col < this.size; col++) {
+                if (this.cells[row][col].type === portalType) {
+                    return { row, col };
+                }
+            }
+        }
+        return null;
     }
 }

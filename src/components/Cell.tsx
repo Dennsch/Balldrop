@@ -30,6 +30,18 @@ const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick }) => {
         classes.push('has-dormant-ball-p2');
         if (onCellClick) classes.push('clickable');
         break;
+      case CellTypeEnum.PORTAL_ENTRY_1:
+        classes.push('has-portal-entry-1');
+        break;
+      case CellTypeEnum.PORTAL_EXIT_1:
+        classes.push('has-portal-exit-1');
+        break;
+      case CellTypeEnum.PORTAL_ENTRY_2:
+        classes.push('has-portal-entry-2');
+        break;
+      case CellTypeEnum.PORTAL_EXIT_2:
+        classes.push('has-portal-exit-2');
+        break;
       default:
         // Empty cell - no additional classes
         break;
@@ -51,6 +63,14 @@ const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick }) => {
       case CellTypeEnum.DORMANT_BALL_P1:
       case CellTypeEnum.DORMANT_BALL_P2:
         return '●';
+      case CellTypeEnum.PORTAL_ENTRY_1:
+        return '⚪';
+      case CellTypeEnum.PORTAL_EXIT_1:
+        return '⚫';
+      case CellTypeEnum.PORTAL_ENTRY_2:
+        return '🔵';
+      case CellTypeEnum.PORTAL_EXIT_2:
+        return '🔴';
       default:
         return null;
     }
