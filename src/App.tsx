@@ -160,7 +160,7 @@ const App: React.FC = () => {
         }
         break;
       case GameState.BALL_RELEASE_PHASE:
-        setGameMessage(`Player ${currentPlayer}'s turn - Click one of your dormant balls to release it`);
+        setGameMessage("Release Phase - Click your reserved columns to release balls");
         break;
       case GameState.EXECUTING_MOVES:
         setGameMessage("Executing moves...");

@@ -72,8 +72,9 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
               titleText = `Column ${column + 1} - Player 2 ball ready to release`;
             }
             
-            // Highlight if it's the current player's turn and they can release this ball
-            if (reservedBy === game.getCurrentPlayer() && canDrop) {
+            // In the new release phase, all reserved columns are available to their owners
+            // No turn-based restrictions - behaves like normal mode
+            if (canDrop) {
               buttonClasses += ' can-release';
             }
           } else if (columnWinner !== null) {
