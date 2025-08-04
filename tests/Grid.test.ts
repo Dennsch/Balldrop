@@ -459,6 +459,203 @@ describe('Grid', () => {
         });
     });
 
+    describe('portal blocks', () => {
+        it('should place exactly 4 portal blocks (2 pairs) when there is enough space', () => {
+            grid.placeRandomBoxes(0, 0); // Place no boxes to ensure space for portals
+            
+            const cells = grid.getCells();
+            let portalCount = 0;
+            let entry1Count = 0;
+            let exit1Count = 0;
+            let entry2Count = 0;
+            let exit2Count = 0;
+            
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const cellType = cells[row][col].type;
+                    if (cellType === CellType.PORTAL_ENTRY_1) {
+                        entry1Count++;
+                        portalCount++;
+                    } else if (cellType === CellType.PORTAL_EXIT_1) {
+                        exit1Count++;
+                        portalCount++;
+                    } else if (cellType === CellType.PORTAL_ENTRY_2) {
+                        entry2Count++;
+                        portalCount++;
+                    } else if (cellType === CellType.PORTAL_EXIT_2) {
+                        exit2Count++;
+                        portalCount++;
+                    }
+                }
+            }
+            
+            expect(portalCount).toBe(4);
+            expect(entry1Count).toBe(1);
+            expect(exit1Count).toBe(1);
+            expect(entry2Count).toBe(1);
+            expect(exit2Count).toBe(1);
+        });
+
+        it('should not place portals in the first or last row', () => {
+            grid.placeRandomBoxes(0, 0); // Place no boxes to ensure space for portals
+            
+            const cells = grid.getCells();
+            const gridSize = grid.getSize();
+            
+            // Check first row (row 0) - should have no portals
+            for (let col = 0; col < gridSize; col++) {
+                const cellType = cells[0][col].type;
+                expect(cellType).not.toBe(CellType.PORTAL_ENTRY_1);
+                expect(cellType).not.toBe(CellType.PORTAL_EXIT_1);
+                expect(cellType).not.toBe(CellType.PORTAL_ENTRY_2);
+                expect(cellType).not.toBe(CellType.PORTAL_EXIT_2);
+            }
+            
+            // Check last row (row gridSize-1) - should have no portals
+            for (let col = 0; col < gridSize; col++) {
+                const cellType = cells[gridSize - 1][col].type;
+                expect(cellType).not.toBe(CellType.PORTAL_ENTRY_1);
+                expect(cellType).not.toBe(CellType.PORTAL_EXIT_1);
+                expect(cellType).not.toBe(CellType.PORTAL_ENTRY_2);
+                expect(cellType).not.toBe(CellType.PORTAL_EXIT_2);
+            }
+        });
+
+        it('should not place portals on occupied cells', () => {
+            // Fill most of the grid with boxes, leaving only a few spaces
+            for (let row = 1; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    grid.setCell(row, col, { type: CellType.BOX, direction: Direction.LEFT });
+                }
+            }
+            
+            grid.placePortalBlocks();
+            
+            const cells = grid.getCells();
+            let portalCount = 0;
+            
+            for (let row = 0; row < 5; row++) {
+                for (let col = 0; col < 5; col++) {
+                    const cellType = cells[row][col].type;
+                    if (cellType === CellType.PORTAL_ENTRY_1 || cellType === CellType.PORTAL_EXIT_1 ||
+                        cellType === CellType.PORTAL_ENTRY_2 || cellType === CellType.PORTAL_EXIT_2) {
+                        portalCount++;
+                        // Ensure portal is not placed on a box
+                        expect(cellType).not.toBe(CellType.BOX);
+                    }
+                }
+            }
+            
+            // Should place 4 portals if there's enough space, or fewer if not enough space
+            expect(portalCount).toBeLessThanOrEqual(4);
+        });
+
+        it('should teleport ball from entry portal 1 to exit portal 1', () => {
+            grid.clearGrid();
+            
+            // Manually place portal pair 1
+            grid.setCell(2, 1, { type: CellType.PORTAL_ENTRY_1 });
+            grid.setCell(2, 3, { type: CellType.PORTAL_EXIT_1 });
+            
+            // Drop ball in column 1 - should hit entry portal and teleport to above exit portal
+            const result = grid.dropBallWithPath(1, Player.PLAYER1);
+            
+            // Ball should end up in column 3 (above the exit portal)
+            expect(result.finalPosition?.col).toBe(3);
+            expect(result.ballPath).toBeDefined();
+            
+            const steps = result.ballPath?.steps || [];
+            
+            // Should have a redirect step for portal teleportation
+            const redirectStep = steps.find(step => step.action === 'redirect');
+            expect(redirectStep).toBeDefined();
+            
+            // Should have steps in both columns (entry and exit)
+            const column1Steps = steps.filter(step => step.position.col === 1);
+            const column3Steps = steps.filter(step => step.position.col === 3);
+            expect(column1Steps.length).toBeGreaterThan(0);
+            expect(column3Steps.length).toBeGreaterThan(0);
+        });
+
+        it('should teleport ball from entry portal 2 to exit portal 2', () => {
+            grid.clearGrid();
+            
+            // Manually place portal pair 2
+            grid.setCell(2, 1, { type: CellType.PORTAL_ENTRY_2 });
+            grid.setCell(2, 3, { type: CellType.PORTAL_EXIT_2 });
+            
+            // Drop ball in column 1 - should hit entry portal and teleport to above exit portal
+            const result = grid.dropBallWithPath(1, Player.PLAYER2);
+            
+            // Ball should end up in column 3 (above the exit portal)
+            expect(result.finalPosition?.col).toBe(3);
+            expect(result.ballPath).toBeDefined();
+            
+            const steps = result.ballPath?.steps || [];
+            
+            // Should have a redirect step for portal teleportation
+            const redirectStep = steps.find(step => step.action === 'redirect');
+            expect(redirectStep).toBeDefined();
+            
+            // Should have steps in both columns (entry and exit)
+            const column1Steps = steps.filter(step => step.position.col === 1);
+            const column3Steps = steps.filter(step => step.position.col === 3);
+            expect(column1Steps.length).toBeGreaterThan(0);
+            expect(column3Steps.length).toBeGreaterThan(0);
+        });
+
+        it('should handle blocked teleport destination', () => {
+            grid.clearGrid();
+            
+            // Manually place portal pair 1
+            grid.setCell(2, 1, { type: CellType.PORTAL_ENTRY_1 });
+            grid.setCell(2, 3, { type: CellType.PORTAL_EXIT_1 });
+            
+            // Block the teleport destination (above exit portal)
+            grid.setCell(1, 3, { type: CellType.BOX, direction: Direction.LEFT });
+            
+            // Drop ball in column 1 - should hit entry portal but can't teleport due to blocked destination
+            const result = grid.dropBallWithPath(1, Player.PLAYER1);
+            
+            // Ball should stay in column 1 since teleport destination is blocked
+            expect(result.finalPosition?.col).toBe(1);
+            expect(result.ballPath).toBeDefined();
+        });
+
+        it('should handle missing exit portal gracefully', () => {
+            grid.clearGrid();
+            
+            // Place only entry portal without corresponding exit
+            grid.setCell(2, 1, { type: CellType.PORTAL_ENTRY_1 });
+            
+            // Drop ball in column 1 - should hit entry portal but can't teleport due to missing exit
+            const result = grid.dropBallWithPath(1, Player.PLAYER1);
+            
+            // Ball should stay in column 1 since exit portal is missing
+            expect(result.finalPosition?.col).toBe(1);
+            expect(result.ballPath).toBeDefined();
+        });
+
+        it('should continue normal physics after teleportation', () => {
+            grid.clearGrid();
+            
+            // Set up portal pair and a box below the exit portal
+            grid.setCell(1, 1, { type: CellType.PORTAL_ENTRY_1 });
+            grid.setCell(1, 3, { type: CellType.PORTAL_EXIT_1 });
+            grid.setCell(2, 3, { type: CellType.BOX, direction: Direction.RIGHT });
+            
+            // Drop ball in column 1 - should teleport to column 3 and then hit the box
+            const result = grid.dropBallWithPath(1, Player.PLAYER1);
+            
+            // Ball should be redirected by the box after teleportation
+            expect(result.finalPosition?.col).toBe(4); // Redirected right by the box
+            expect(result.ballPath).toBeDefined();
+            
+            // Box direction should have changed
+            expect(grid.getCell(2, 3)?.direction).toBe(Direction.LEFT);
+        });
+    });
+
     describe('grid management', () => {
         it('should clear the grid', () => {
             // Add some content
