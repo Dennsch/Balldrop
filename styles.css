@@ -159,11 +159,11 @@ header {
 }
 
 .column-selectors {
-    display: flex;
-    gap: 2px;
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 1px;
     margin-bottom: 10px;
     width: 600px;
-    justify-content: space-between;
 }
 
 .column-selector {
@@ -179,9 +179,6 @@ header {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     letter-spacing: 0.3px;
     box-sizing: border-box;
-    flex: 1 1 auto;
-    min-width: 28px;
-    max-width: calc((100% - 38px) / 20);
     min-height: 44px;
     display: flex;
     align-items: center;
@@ -673,6 +670,7 @@ header {
     
     .column-selectors {
         width: min(90vw, 500px);
+        gap: 1px;
     }
 }
 
@@ -701,6 +699,7 @@ header {
     
     .column-selectors {
         width: min(95vw, 450px);
+        gap: 1px;
         overflow-x: auto;
         overflow-y: hidden;
         scrollbar-width: thin;
@@ -724,11 +723,10 @@ header {
     }
     
     .column-selector {
-        min-width: 40px;
-        max-width: calc((100% - 19px) / 20);
-        flex-shrink: 0;
-        font-size: 11px;
-        padding: 8px 3px;
+        font-size: 10px;
+        padding: 6px 2px;
+        min-height: 36px;
+        border-radius: 6px;
     }
     
     .cell {
@@ -784,11 +782,10 @@ header {
     }
     
     .column-selector {
-        min-width: 36px;
-        max-width: calc((100% - 19px) / 20);
-        font-size: 10px;
-        padding: 6px 2px;
-        border-radius: 6px;
+        font-size: 9px;
+        padding: 4px 1px;
+        min-height: 32px;
+        border-radius: 4px;
     }
     
     .cell {
@@ -837,13 +834,14 @@ header {
     
     .column-selectors {
         width: min(99vw, 300px);
+        gap: 1px;
     }
     
     .column-selector {
-        min-width: 32px;
-        max-width: calc((100% - 19px) / 20);
-        font-size: 9px;
-        padding: 5px 1px;
+        font-size: 8px;
+        padding: 3px 1px;
+        min-height: 28px;
+        border-radius: 3px;
     }
     
     .cell {
@@ -911,13 +909,14 @@ header {
     
     .column-selectors {
         width: min(60vh, 300px);
+        gap: 1px;
     }
     
     .column-selector {
-        min-width: 30px;
-        max-width: calc((100% - 19px) / 20);
-        font-size: 10px;
-        padding: 4px 1px;
+        font-size: 8px;
+        padding: 3px 1px;
+        min-height: 26px;
+        border-radius: 3px;
     }
     
     .game-controls {
