@@ -9,5 +9,6 @@ try {
     console.log(output);
 } catch (error) {
     console.error('Test failed:', error.stdout || error.message);
+    console.log('Full error details:', error);
     process.exit(1);
 }

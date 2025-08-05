@@ -15,10 +15,8 @@ export enum CellType {
     BALL_P2 = 'BALL_P2',
     DORMANT_BALL_P1 = 'DORMANT_BALL_P1',
     DORMANT_BALL_P2 = 'DORMANT_BALL_P2',
-    PORTAL_ENTRY_1 = 'PORTAL_ENTRY_1',
-    PORTAL_EXIT_1 = 'PORTAL_EXIT_1',
-    PORTAL_ENTRY_2 = 'PORTAL_ENTRY_2',
-    PORTAL_EXIT_2 = 'PORTAL_EXIT_2'
+    PORTAL_1 = 'PORTAL_1',
+    PORTAL_2 = 'PORTAL_2'
 }
 
 export enum Player {
