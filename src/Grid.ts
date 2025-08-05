@@ -205,37 +205,49 @@ export class Grid {
 
             // If next cell has a portal, teleport the ball
             if (nextCell.type === CellType.PORTAL_1 || nextCell.type === CellType.PORTAL_2) {
-                // Find the other portal of the same type
-                const portalType = nextCell.type;
-                const otherPortalPosition = this.findOtherPortalPosition(portalType, { row: nextRow, col: currentCol });
-                
-                if (otherPortalPosition) {
-                    // Add portal entry step
-                    pathSteps.push({
-                        position: { row: currentRow, col: currentCol },
-                        action: 'redirect' // Using redirect action for portal teleportation
-                    });
+                try {
+                    // Find the other portal of the same type
+                    const portalType = nextCell.type;
+                    const otherPortalPosition = this.findOtherPortalPosition(portalType, { row: nextRow, col: currentCol });
                     
-                    // Teleport to the position above the other portal
-                    currentRow = otherPortalPosition.row - 1;
-                    currentCol = otherPortalPosition.col;
-                    
-                    // Check if the teleport destination is valid and empty
-                    if (this.isValidPosition(currentRow, currentCol) && 
-                        this.cells[currentRow][currentCol].type === CellType.EMPTY) {
-                        // Add teleport arrival step
-                        pathSteps.push({
-                            position: { row: currentRow, col: currentCol },
-                            action: 'fall'
-                        });
-                        // Continue falling from the new position
-                        continue;
+                    if (otherPortalPosition) {
+                        // Calculate teleport destination (position above the other portal)
+                        const teleportRow = otherPortalPosition.row - 1;
+                        const teleportCol = otherPortalPosition.col;
+                        
+                        // Validate teleport destination
+                        if (this.isValidPosition(teleportRow, teleportCol) && 
+                            this.cells[teleportRow][teleportCol].type === CellType.EMPTY) {
+                            
+                            // Add portal entry step
+                            pathSteps.push({
+                                position: { row: currentRow, col: currentCol },
+                                action: 'redirect' // Using redirect action for portal teleportation
+                            });
+                            
+                            // Teleport to the valid destination
+                            currentRow = teleportRow;
+                            currentCol = teleportCol;
+                            
+                            // Add teleport arrival step
+                            pathSteps.push({
+                                position: { row: currentRow, col: currentCol },
+                                action: 'fall'
+                            });
+                            
+                            // Continue falling from the new position
+                            continue;
+                        } else {
+                            // If teleport destination is invalid or blocked, ball gets stuck at current position
+                            break;
+                        }
                     } else {
-                        // If teleport destination is blocked, ball gets stuck at current position
+                        // If other portal not found, treat as obstacle and stop
                         break;
                     }
-                } else {
-                    // If other portal not found, treat as obstacle and stop
+                } catch (error) {
+                    // If any error occurs during portal processing, treat portal as obstacle and stop
+                    console.warn('Portal processing error:', error);
                     break;
                 }
             }
