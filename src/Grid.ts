@@ -93,18 +93,18 @@ export class Grid {
         if (availablePositions.length >= 4) {
             // Place first portal pair
             this.setCell(availablePositions[0].row, availablePositions[0].col, {
-                type: CellType.PORTAL_ENTRY_1
+                type: CellType.PORTAL_1
             });
             this.setCell(availablePositions[1].row, availablePositions[1].col, {
-                type: CellType.PORTAL_EXIT_1
+                type: CellType.PORTAL_1
             });
 
             // Place second portal pair
             this.setCell(availablePositions[2].row, availablePositions[2].col, {
-                type: CellType.PORTAL_ENTRY_2
+                type: CellType.PORTAL_2
             });
             this.setCell(availablePositions[3].row, availablePositions[3].col, {
-                type: CellType.PORTAL_EXIT_2
+                type: CellType.PORTAL_2
             });
         }
     }
@@ -203,22 +203,22 @@ export class Grid {
                 }
             }
 
-            // If next cell has a portal entry, teleport the ball
-            if (nextCell.type === CellType.PORTAL_ENTRY_1 || nextCell.type === CellType.PORTAL_ENTRY_2) {
-                // Find the corresponding exit portal
-                const exitPortalType = nextCell.type === CellType.PORTAL_ENTRY_1 ? CellType.PORTAL_EXIT_1 : CellType.PORTAL_EXIT_2;
-                const exitPortalPosition = this.findPortalPosition(exitPortalType);
+            // If next cell has a portal, teleport the ball
+            if (nextCell.type === CellType.PORTAL_1 || nextCell.type === CellType.PORTAL_2) {
+                // Find the other portal of the same type
+                const portalType = nextCell.type;
+                const otherPortalPosition = this.findOtherPortalPosition(portalType, { row: nextRow, col: currentCol });
                 
-                if (exitPortalPosition) {
+                if (otherPortalPosition) {
                     // Add portal entry step
                     pathSteps.push({
                         position: { row: currentRow, col: currentCol },
                         action: 'redirect' // Using redirect action for portal teleportation
                     });
                     
-                    // Teleport to the position above the exit portal
-                    currentRow = exitPortalPosition.row - 1;
-                    currentCol = exitPortalPosition.col;
+                    // Teleport to the position above the other portal
+                    currentRow = otherPortalPosition.row - 1;
+                    currentCol = otherPortalPosition.col;
                     
                     // Check if the teleport destination is valid and empty
                     if (this.isValidPosition(currentRow, currentCol) && 
@@ -235,7 +235,7 @@ export class Grid {
                         break;
                     }
                 } else {
-                    // If exit portal not found, treat as obstacle and stop
+                    // If other portal not found, treat as obstacle and stop
                     break;
                 }
             }
@@ -417,10 +417,11 @@ export class Grid {
         return this.cells[0][col].type !== CellType.EMPTY;
     }
 
-    private findPortalPosition(portalType: CellType): Position | null {
+    private findOtherPortalPosition(portalType: CellType, currentPortalPosition: Position): Position | null {
         for (let row = 0; row < this.size; row++) {
             for (let col = 0; col < this.size; col++) {
-                if (this.cells[row][col].type === portalType) {
+                if (this.cells[row][col].type === portalType && 
+                    !(row === currentPortalPosition.row && col === currentPortalPosition.col)) {
                     return { row, col };
                 }
             }
