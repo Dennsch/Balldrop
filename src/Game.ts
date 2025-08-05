@@ -160,23 +160,28 @@ export class Game {
     }
 
     // Calculate the ball path without applying changes to the grid yet
-    const result = this.grid.calculateBallPath(col, this.currentPlayer);
-    if (result.finalPosition && result.ballPath) {
-      this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
+    try {
+      const result = this.grid.calculateBallPath(col, this.currentPlayer);
+      if (result.finalPosition && result.ballPath) {
+        this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
 
-      // Mark column as used and track ownership
-      this.usedColumns.add(col);
-      this.columnOwners.set(col, this.currentPlayer);
+        // Mark column as used and track ownership
+        this.usedColumns.add(col);
+        this.columnOwners.set(col, this.currentPlayer);
 
-      // Play pop sound when ball is dropped
-      this.soundManager.playSound("pop", 0.6);
+        // Play pop sound when ball is dropped
+        this.soundManager.playSound("pop", 0.6);
 
-      if (this.onBallDropped) {
-        // Use the detailed ball path from the grid
-        this.onBallDropped(result.ballPath);
+        if (this.onBallDropped) {
+          // Use the detailed ball path from the grid
+          this.onBallDropped(result.ballPath);
+        }
+
+        return true;
       }
-
-      return true;
+    } catch (error) {
+      console.error('Error calculating ball path:', error);
+      // Return false to indicate the drop failed
     }
 
     return false;
@@ -295,16 +300,21 @@ export class Game {
 
   private placeSingleDormantBall(col: number, player: Player): void {
     // Calculate and place a single dormant ball immediately
-    const result = this.grid.calculateBallPath(col, player);
-    if (result.ballPath) {
-      this.grid.applyBallPath(result.ballPath, true); // true = dormant
+    try {
+      const result = this.grid.calculateBallPath(col, player);
+      if (result.ballPath) {
+        this.grid.applyBallPath(result.ballPath, true); // true = dormant
 
-      // Update dormant balls tracking
-      const dormantBalls = this.grid.getDormantBalls();
-      this.ballReleaseSelection.dormantBalls.clear();
-      for (const ball of dormantBalls) {
-        this.ballReleaseSelection.dormantBalls.set(ball.ballId, ball);
+        // Update dormant balls tracking
+        const dormantBalls = this.grid.getDormantBalls();
+        this.ballReleaseSelection.dormantBalls.clear();
+        for (const ball of dormantBalls) {
+          this.ballReleaseSelection.dormantBalls.set(ball.ballId, ball);
+        }
       }
+    } catch (error) {
+      console.error('Error placing dormant ball:', error);
+      // Continue execution - don't let portal errors break the game flow
     }
   }
 
@@ -585,26 +595,31 @@ export class Game {
     }
 
     // Use the original synchronous method for testing
-    const result = this.grid.dropBallWithPath(col, this.currentPlayer);
-    if (result.finalPosition && result.ballPath) {
-      this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
+    try {
+      const result = this.grid.dropBallWithPath(col, this.currentPlayer);
+      if (result.finalPosition && result.ballPath) {
+        this.ballsRemaining.set(this.currentPlayer, ballsLeft - 1);
 
-      // Mark column as used
-      this.usedColumns.add(col);
+        // Mark column as used
+        this.usedColumns.add(col);
 
-      // Check if game is finished
-      if (this.isGameFinished()) {
-        this.state = GameState.FINISHED;
-      } else {
-        // Switch to next player
-        this.currentPlayer =
-          this.currentPlayer === Player.PLAYER1
-            ? Player.PLAYER2
-            : Player.PLAYER1;
+        // Check if game is finished
+        if (this.isGameFinished()) {
+          this.state = GameState.FINISHED;
+        } else {
+          // Switch to next player
+          this.currentPlayer =
+            this.currentPlayer === Player.PLAYER1
+              ? Player.PLAYER2
+              : Player.PLAYER1;
+        }
+
+        this.notifyStateChange();
+        return true;
       }
-
-      this.notifyStateChange();
-      return true;
+    } catch (error) {
+      console.error('Error in dropBallSync:', error);
+      // Return false to indicate the drop failed
     }
 
     return false;
