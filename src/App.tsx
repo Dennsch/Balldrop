@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Game } from "./Game.js";
-import { GameState, Player, AnimationSpeed, BallPath, GameMode } from "./types.js";
+import {
+  GameState,
+  Player,
+  AnimationSpeed,
+  BallPath,
+  GameMode,
+} from "./types.js";
 import GameHeader from "./components/GameHeader.js";
 import GameBoard from "./components/GameBoard.js";
 import GameControls from "./components/GameControls.js";
@@ -40,12 +46,12 @@ const App: React.FC = () => {
       setCurrentPlayer(updatedGame.getCurrentPlayer());
       setPlayer1Balls(updatedGame.getBallsRemaining(Player.PLAYER1));
       setPlayer2Balls(updatedGame.getBallsRemaining(Player.PLAYER2));
-      
+
       // Update current score
       const currentScore = updatedGame.getCurrentScore();
       setPlayer1Score(currentScore.player1Columns);
       setPlayer2Score(currentScore.player2Columns);
-      
+
       // Update game mode
       setGameMode(updatedGame.getGameMode());
 
@@ -81,17 +87,20 @@ const App: React.FC = () => {
     gameInstance.onBallDroppedHandler((ballPath: BallPath) => {
       // Handle individual ball drop animation
       setIsAnimating(true);
-      console.log('Ball dropped, starting animation for column:', ballPath.startColumn);
-      
+      console.log(
+        "Ball dropped, starting animation for column:",
+        ballPath.startColumn
+      );
+
       // Add the ball to animated balls state to trigger animation
-      setAnimatedBalls(prev => [...prev, ballPath]);
+      setAnimatedBalls((prev) => [...prev, ballPath]);
     });
 
     gameInstance.onMovesExecutedHandler((ballPaths: BallPath[]) => {
       // Handle batch move execution
       setIsAnimating(false);
       setGridKey((prev) => prev + 1);
-      console.log('Moves executed, re-enabling interactions');
+      console.log("Moves executed, re-enabling interactions");
     });
 
     // Initialize the game
@@ -100,16 +109,16 @@ const App: React.FC = () => {
 
     // Make game available globally for debugging
     (window as any).game = gameInstance;
-    
+
     // Debug logging
-    console.log('Game initialized:', {
+    console.log("Game initialized:", {
       state: gameInstance.getState(),
       mode: gameInstance.getGameMode(),
       currentPlayer: gameInstance.getCurrentPlayer(),
       canDropCol0: gameInstance.canDropInColumn(0),
-      canDropCol1: gameInstance.canDropInColumn(1)
+      canDropCol1: gameInstance.canDropInColumn(1),
     });
-    
+
     // Force reset animation state to ensure it's not stuck
     setIsAnimating(false);
 
@@ -138,7 +147,9 @@ const App: React.FC = () => {
       case GameState.COLUMN_RESERVATION_PHASE:
         if (gameMode === GameMode.HARD_MODE) {
           const columnReservation = gameInstance.getColumnReservation();
-          const totalReserved = columnReservation.player1ReservedColumns.length + columnReservation.player2ReservedColumns.length;
+          const totalReserved =
+            columnReservation.player1ReservedColumns.length +
+            columnReservation.player2ReservedColumns.length;
           const totalNeeded = gameInstance.getConfig().ballsPerPlayer * 2;
           setGameMessage(
             `Hard Mode - Player ${currentPlayer}'s turn to reserve a column (${totalReserved}/${totalNeeded} columns reserved)`
@@ -150,7 +161,9 @@ const App: React.FC = () => {
       case GameState.BALL_PLACEMENT_PHASE:
         if (gameMode === GameMode.HARD_MODE) {
           const moveSelection = gameInstance.getMoveSelection();
-          const totalPlaced = moveSelection.player1Moves.length + moveSelection.player2Moves.length;
+          const totalPlaced =
+            moveSelection.player1Moves.length +
+            moveSelection.player2Moves.length;
           const totalNeeded = gameInstance.getConfig().ballsPerPlayer * 2;
           setGameMessage(
             `Hard Mode - Player ${currentPlayer}'s turn to place a ball (${totalPlaced}/${totalNeeded} balls placed)`
@@ -160,7 +173,9 @@ const App: React.FC = () => {
         }
         break;
       case GameState.BALL_RELEASE_PHASE:
-        setGameMessage("Release Phase - Click your reserved columns to release balls");
+        setGameMessage(
+          "Release Phase - Click your reserved columns to release balls"
+        );
         break;
       case GameState.EXECUTING_MOVES:
         setGameMessage("Executing moves...");
@@ -195,7 +210,11 @@ const App: React.FC = () => {
     (column: number) => {
       if (game && !isAnimating) {
         try {
-          console.log(`Attempting to drop ball in column ${column}, game state: ${game.getState()}, can drop: ${game.canDropInColumn(column)}`);
+          console.log(
+            `Attempting to drop ball in column ${column}, game state: ${game.getState()}, can drop: ${game.canDropInColumn(
+              column
+            )}`
+          );
           const success = game.dropBall(column);
           console.log(`Drop result: ${success}`);
           if (!success) {
@@ -208,7 +227,9 @@ const App: React.FC = () => {
           );
         }
       } else {
-        console.log(`Column click blocked - game: ${!!game}, isAnimating: ${isAnimating}`);
+        console.log(
+          `Column click blocked - game: ${!!game}, isAnimating: ${isAnimating}`
+        );
       }
     },
     [game, isAnimating]
@@ -218,7 +239,9 @@ const App: React.FC = () => {
     (row: number, col: number) => {
       if (game && !isAnimating) {
         try {
-          console.log(`Attempting to release ball at row ${row}, col ${col}, game state: ${game.getState()}`);
+          console.log(
+            `Attempting to release ball at row ${row}, col ${col}, game state: ${game.getState()}`
+          );
           const success = game.releaseBall(col);
           console.log(`Release result: ${success}`);
           if (!success) {
@@ -231,7 +254,9 @@ const App: React.FC = () => {
           );
         }
       } else {
-        console.log(`Cell click blocked - game: ${!!game}, isAnimating: ${isAnimating}`);
+        console.log(
+          `Cell click blocked - game: ${!!game}, isAnimating: ${isAnimating}`
+        );
       }
     },
     [game, isAnimating]
@@ -241,35 +266,42 @@ const App: React.FC = () => {
     setAnimationSpeed(speed);
   }, []);
 
-  const handleGameModeChange = useCallback((mode: GameMode) => {
-    if (game) {
-      console.log(`Changing game mode to: ${mode}`);
-      game.setGameMode(mode);
-      setGameMode(mode);
-      // Force grid re-render
-      setGridKey((prev) => prev + 1);
-    }
-  }, [game]);
+  const handleGameModeChange = useCallback(
+    (mode: GameMode) => {
+      if (game) {
+        console.log(`Changing game mode to: ${mode}`);
+        game.setGameMode(mode);
+        setGameMode(mode);
+        // Force grid re-render
+        setGridKey((prev) => prev + 1);
+      }
+    },
+    [game]
+  );
 
-  const handleAnimationComplete = useCallback((ballPath: BallPath) => {
-    if (game) {
-      console.log('Animation completed for column:', ballPath.startColumn);
-      
-      // Complete the ball drop in the game logic
-      game.completeBallDrop(ballPath);
-      
-      // Remove this ball from animated balls
-      setAnimatedBalls(prev => prev.filter(ball => ball !== ballPath));
-      
-      // Re-enable interactions if no more balls are animating
-      setAnimatedBalls(prev => {
-        if (prev.length <= 1) { // Will be 0 after filter above
-          setIsAnimating(false);
-        }
-        return prev.filter(ball => ball !== ballPath);
-      });
-    }
-  }, [game]);
+  const handleAnimationComplete = useCallback(
+    (ballPath: BallPath) => {
+      if (game) {
+        console.log("Animation completed for column:", ballPath.startColumn);
+
+        // Complete the ball drop in the game logic
+        game.completeBallDrop(ballPath);
+
+        // Remove this ball from animated balls
+        setAnimatedBalls((prev) => prev.filter((ball) => ball !== ballPath));
+
+        // Re-enable interactions if no more balls are animating
+        setAnimatedBalls((prev) => {
+          if (prev.length <= 1) {
+            // Will be 0 after filter above
+            setIsAnimating(false);
+          }
+          return prev.filter((ball) => ball !== ballPath);
+        });
+      }
+    },
+    [game]
+  );
 
   if (!game) {
     return (

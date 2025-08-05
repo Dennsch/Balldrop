@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turn-Based Release Phase Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .column-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .column-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .reserved-p1 { background: #dc3545 !important; }
+        .reserved-p2 { background: #17a2b8 !important; }
+        .current-player {
+            font-weight: bold;
+            font-size: 18px;
+            color: #007bff;
+            margin: 10px 0;
+        }
+        .game-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Turn-Based Release Phase Test</h1>
+    
+    <div class="test-section">
+        <h2>Game State</h2>
+        <div class="game-info">
+            <div>
+                <div id="game-state" class="info">Loading...</div>
+                <div id="current-player" class="current-player">Current Player: -</div>
+            </div>
+            <div>
+                <div id="player-info" class="info">Player info...</div>
+                <div id="balls-remaining" class="info">Balls remaining...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Quick Setup</h2>
+        <button onclick="startNewGame()">Start New Game</button>
+        <button onclick="quickSetup()">Quick Setup (Auto Reserve & Place)</button>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Column Actions (Release Phase)</h2>
+        <div>Click columns to release balls (turn-based):</div>
+        <div class="column-buttons" id="column-buttons"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Turn-Based Test Results</h2>
+        <div id="test-results"></div>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <script type="module">
+        import { Game } from './dist-react/assets/index-react-BJvO-PYD.js';
+        
+        // Mock the required types since we can't import them directly
+        const GameMode = { NORMAL: 'NORMAL', HARD_MODE: 'HARD_MODE' };
+        const GameState = {
+            SETUP: 'SETUP',
+            PLAYING: 'PLAYING',
+            COLUMN_RESERVATION_PHASE: 'COLUMN_RESERVATION_PHASE',
+            BALL_PLACEMENT_PHASE: 'BALL_PLACEMENT_PHASE',
+            BALL_RELEASE_PHASE: 'BALL_RELEASE_PHASE',
+            FINISHED: 'FINISHED'
+        };
+        const Player = { PLAYER1: 1, PLAYER2: 2 };
+
+        let game;
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function updateUI() {
+            const stateDiv = document.getElementById('game-state');
+            const playerDiv = document.getElementById('current-player');
+            const infoDiv = document.getElementById('player-info');
+            const ballsDiv = document.getElementById('balls-remaining');
+            
+            if (!game) return;
+            
+            const state = game.getState();
+            const currentPlayer = game.getCurrentPlayer();
+            const p1Balls = game.getBallsRemaining(Player.PLAYER1);
+            const p2Balls = game.getBallsRemaining(Player.PLAYER2);
+            
+            stateDiv.textContent = `State: ${state}`;
+            playerDiv.textContent = `Current Player: ${currentPlayer}`;
+            infoDiv.textContent = `Game Mode: ${game.getGameMode()}`;
+            ballsDiv.textContent = `Player 1: ${p1Balls} balls | Player 2: ${p2Balls} balls`;
+            
+            updateColumnButtons();
+        }
+
+        function updateColumnButtons() {
+            const container = document.getElementById('column-buttons');
+            container.innerHTML = '';
+            
+            if (!game) return;
+            
+            const state = game.getState();
+            const currentPlayer = game.getCurrentPlayer();
+            
+            for (let col = 0; col < 8; col++) {
+                const btn = document.createElement('button');
+                btn.className = 'column-btn';
+                btn.textContent = col.toString();
+                btn.onclick = () => handleColumnClick(col);
+                
+                // Check if this column can be used
+                const canDrop = game.canDropInColumn(col);
+                btn.disabled = !canDrop;
+                
+                // Add visual indicators for reserved columns
+                if (state === GameState.BALL_RELEASE_PHASE) {
+                    const columnReservation = game.getColumnReservation();
+                    const reservedBy = columnReservation.reservedColumnOwners.get(col);
+                    
+                    if (reservedBy === Player.PLAYER1) {
+                        btn.classList.add('reserved-p1');
+                        btn.textContent = `${col} (P1)`;
+                        
+                        // Highlight if it's Player 1's turn and they can use this column
+                        if (currentPlayer === Player.PLAYER1 && canDrop) {
+                            btn.style.border = '3px solid #28a745';
+                        }
+                    } else if (reservedBy === Player.PLAYER2) {
+                        btn.classList.add('reserved-p2');
+                        btn.textContent = `${col} (P2)`;
+                        
+                        // Highlight if it's Player 2's turn and they can use this column
+                        if (currentPlayer === Player.PLAYER2 && canDrop) {
+                            btn.style.border = '3px solid #28a745';
+                        }
+                    }
+                }
+                
+                container.appendChild(btn);
+            }
+        }
+
+        function handleColumnClick(col) {
+            const state = game.getState();
+            const currentPlayer = game.getCurrentPlayer();
+            
+            if (state === GameState.BALL_RELEASE_PHASE) {
+                const canRelease = game.canReleaseBall(col);
+                log(`Player ${currentPlayer} attempting to release from column ${col}...`, 'info');
+                
+                if (canRelease) {
+                    const result = game.releaseBall(col);
+                    if (result) {
+                        log(`✅ Player ${currentPlayer} successfully released ball from column ${col}`, 'success');
+                        
+                        // Check if turn switched
+                        const newCurrentPlayer = game.getCurrentPlayer();
+                        if (newCurrentPlayer !== currentPlayer) {
+                            log(`🔄 Turn switched to Player ${newCurrentPlayer}`, 'warning');
+                        }
+                    } else {
+                        log(`❌ Failed to release ball from column ${col}`, 'error');
+                    }
+                } else {
+                    log(`❌ Cannot release from column ${col} (not your turn or column not available)`, 'error');
+                }
+            } else {
+                // Handle other phases
+                const result = game.dropBall(col);
+                log(`Action in ${state}: ${result}`, result ? 'success' : 'error');
+            }
+            
+            updateUI();
+        }
+
+        window.startNewGame = function() {
+            try {
+                game = new Game({ gameMode: GameMode.HARD_MODE, ballsPerPlayer: 3, gridSize: 8 });
+                game.startNewGame();
+                log('🎮 Started new Hard Mode game', 'success');
+                updateUI();
+            } catch (error) {
+                log(`Error starting game: ${error.message}`, 'error');
+            }
+        };
+
+        window.quickSetup = function() {
+            if (!game) {
+                log('❌ No game started', 'error');
+                return;
+            }
+            
+            try {
+                // Auto-reserve columns
+                if (game.getState() === GameState.COLUMN_RESERVATION_PHASE) {
+                    // Player 1 reserves columns 0, 1, 2
+                    game.reserveColumn(0);
+                    game.reserveColumn(1);
+                    game.reserveColumn(2);
+                    
+                    // Player 2 reserves columns 3, 4, 5
+                    game.reserveColumn(3);
+                    game.reserveColumn(4);
+                    game.reserveColumn(5);
+                    
+                    log('📍 Auto-reserved columns: P1(0,1,2) P2(3,4,5)', 'success');
+                }
+                
+                // Auto-place balls
+                if (game.getState() === GameState.BALL_PLACEMENT_PHASE) {
+                    // Player 1 places balls
+                    game.selectMove(0);
+                    game.selectMove(1);
+                    game.selectMove(2);
+                    
+                    // Player 2 places balls
+                    game.selectMove(3);
+                    game.selectMove(4);
+                    game.selectMove(5);
+                    
+                    log('⚽ Auto-placed all balls', 'success');
+                }
+                
+                updateUI();
+                
+                if (game.getState() === GameState.BALL_RELEASE_PHASE) {
+                    log('🚀 Ready for turn-based release phase!', 'success');
+                    log('📋 Test Instructions:', 'info');
+                    log('1. Only current player can release balls', 'info');
+                    log('2. Players can only use their reserved columns', 'info');
+                    log('3. Each column can only be used once', 'info');
+                    log('4. Turn switches after each successful release', 'info');
+                }
+                
+            } catch (error) {
+                log(`Error in quick setup: ${error.message}`, 'error');
+            }
+        };
+
+        window.resetGame = function() {
+            if (game) {
+                game.reset();
+                log('🔄 Game reset', 'info');
+                updateUI();
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = '';
+        };
+
+        // Initialize
+        log('🎯 Turn-Based Release Phase Test Ready', 'info');
+        log('Click "Start New Game" then "Quick Setup" to begin testing', 'info');
+    </script>
+</body>
+</html>

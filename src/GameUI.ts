@@ -439,8 +439,12 @@ export class GameUI {
 
     // Handle instant mode - skip animations entirely
     if (this.currentAnimationSpeed === AnimationSpeed.INSTANT) {
-      // Complete the ball drop immediately without visual animation
-      this.game.completeBallDrop(ballPath);
+      // Complete the ball drop/release immediately without visual animation
+      if (this.game.getState() === GameState.BALL_RELEASE_PHASE) {
+        this.game.completeBallRelease(ballPath);
+      } else {
+        this.game.completeBallDrop(ballPath);
+      }
       this.isAnimating = false;
       this.updateColumnSelectors(); // Re-enable buttons
       return;
@@ -500,16 +504,24 @@ export class GameUI {
       // Place the final ball in the grid visually
       await this.placeFinalBall(ballPath.finalPosition, ballPath.player);
 
-      // Complete the ball drop in the game logic
-      this.game.completeBallDrop(ballPath);
+      // Complete the ball drop/release in the game logic
+      if (this.game.getState() === GameState.BALL_RELEASE_PHASE) {
+        this.game.completeBallRelease(ballPath);
+      } else {
+        this.game.completeBallDrop(ballPath);
+      }
     } catch (error) {
       console.error("Animation error:", error);
       // Cleanup on error
       if (this.gridElement.contains(animatedBall)) {
         this.gridElement.removeChild(animatedBall);
       }
-      // Still complete the ball drop even if animation fails
-      this.game.completeBallDrop(ballPath);
+      // Still complete the ball drop/release even if animation fails
+      if (this.game.getState() === GameState.BALL_RELEASE_PHASE) {
+        this.game.completeBallRelease(ballPath);
+      } else {
+        this.game.completeBallDrop(ballPath);
+      }
     } finally {
       this.isAnimating = false;
       this.updateColumnSelectors(); // Re-enable buttons
@@ -727,33 +739,62 @@ export class GameUI {
     const state = this.game.getState();
 
     if (gameMode === GameMode.HARD_MODE) {
-      // Show hard mode UI elements
-      this.executeMovesButton.classList.remove("hidden");
-      this.selectedMovesDisplay.classList.remove("hidden");
+      // Show/hide execute button based on state
+      if (state === GameState.BALL_PLACEMENT_PHASE) {
+        this.executeMovesButton.classList.remove("hidden");
+        this.selectedMovesDisplay.classList.remove("hidden");
 
-      // Update execute button state
-      const moveSelection = this.game.getMoveSelection();
-      const executeButton = this.executeMovesButton as HTMLButtonElement;
-      if (
-        state === GameState.SELECTING_MOVES &&
-        moveSelection.allMovesSelected
-      ) {
-        executeButton.disabled = false;
-        executeButton.textContent = "Execute All Moves";
+        // Update execute button state
+        const moveSelection = this.game.getMoveSelection();
+        const executeButton = this.executeMovesButton as HTMLButtonElement;
+        if (moveSelection.allMovesSelected) {
+          executeButton.disabled = false;
+          executeButton.textContent = "Execute All Moves";
+        } else {
+          executeButton.disabled = true;
+          executeButton.textContent = "Select All Moves First";
+        }
+
+        // Update selected moves display
+        const player1Selected = this.game.getSelectedMovesCount(Player.PLAYER1);
+        const player2Selected = this.game.getSelectedMovesCount(Player.PLAYER2);
+        const totalBalls = this.game.getConfig().ballsPerPlayer;
+
+        this.selectedMovesDisplay.innerHTML = `
+                  <div>Player 1: ${player1Selected}/${totalBalls} moves selected</div>
+                  <div>Player 2: ${player2Selected}/${totalBalls} moves selected</div>
+              `;
+      } else if (state === GameState.COLUMN_RESERVATION_PHASE) {
+        this.executeMovesButton.classList.add("hidden");
+        this.selectedMovesDisplay.classList.remove("hidden");
+
+        // Show reservation progress
+        const player1Reserved = this.game.getReservedColumnsCount(Player.PLAYER1);
+        const player2Reserved = this.game.getReservedColumnsCount(Player.PLAYER2);
+        const totalBalls = this.game.getConfig().ballsPerPlayer;
+
+        this.selectedMovesDisplay.innerHTML = `
+                  <div>Player 1: ${player1Reserved}/${totalBalls} columns reserved</div>
+                  <div>Player 2: ${player2Reserved}/${totalBalls} columns reserved</div>
+              `;
+      } else if (state === GameState.BALL_RELEASE_PHASE) {
+        this.executeMovesButton.classList.add("hidden");
+        this.selectedMovesDisplay.classList.remove("hidden");
+
+        // Show remaining balls (like normal mode)
+        const player1Remaining = this.game.getBallsRemaining(Player.PLAYER1);
+        const player2Remaining = this.game.getBallsRemaining(Player.PLAYER2);
+        const currentPlayer = this.game.getCurrentPlayer();
+
+        this.selectedMovesDisplay.innerHTML = `
+                  <div>Player 1: ${player1Remaining} balls remaining</div>
+                  <div>Player 2: ${player2Remaining} balls remaining</div>
+                  <div><strong>Current Turn: Player ${currentPlayer}</strong></div>
+              `;
       } else {
-        executeButton.disabled = true;
-        executeButton.textContent = "Select All Moves First";
+        this.executeMovesButton.classList.add("hidden");
+        this.selectedMovesDisplay.classList.add("hidden");
       }
-
-      // Update selected moves display
-      const player1Selected = this.game.getSelectedMovesCount(Player.PLAYER1);
-      const player2Selected = this.game.getSelectedMovesCount(Player.PLAYER2);
-      const totalBalls = this.game.getConfig().ballsPerPlayer;
-
-      this.selectedMovesDisplay.innerHTML = `
-                <div>Player 1: ${player1Selected}/${totalBalls} moves selected</div>
-                <div>Player 2: ${player2Selected}/${totalBalls} moves selected</div>
-            `;
     } else {
       // Hide hard mode UI elements in normal mode
       this.executeMovesButton.classList.add("hidden");
@@ -806,21 +847,35 @@ export class GameUI {
     const state = this.game.getState();
 
     if (this.game.getGameMode() === GameMode.HARD_MODE) {
-      const moveSelection = this.game.getMoveSelection();
-      const player1Selected = this.game.getSelectedMovesCount(Player.PLAYER1);
-      const player2Selected = this.game.getSelectedMovesCount(Player.PLAYER2);
       const totalBalls = this.game.getConfig().ballsPerPlayer;
 
-      this.player1BallsElement.textContent = `${player1Selected}/${totalBalls}`;
-      this.player2BallsElement.textContent = `${player2Selected}/${totalBalls}`;
-
-      if (state === GameState.SELECTING_MOVES) {
+      if (state === GameState.COLUMN_RESERVATION_PHASE) {
+        const player1Reserved = this.game.getReservedColumnsCount(Player.PLAYER1);
+        const player2Reserved = this.game.getReservedColumnsCount(Player.PLAYER2);
+        
+        this.player1BallsElement.textContent = `${player1Reserved}/${totalBalls}`;
+        this.player2BallsElement.textContent = `${player2Reserved}/${totalBalls}`;
+        this.currentPlayerElement.textContent = `Player ${currentPlayer} reserving columns`;
+      } else if (state === GameState.BALL_PLACEMENT_PHASE) {
+        const player1Selected = this.game.getSelectedMovesCount(Player.PLAYER1);
+        const player2Selected = this.game.getSelectedMovesCount(Player.PLAYER2);
+        
+        this.player1BallsElement.textContent = `${player1Selected}/${totalBalls}`;
+        this.player2BallsElement.textContent = `${player2Selected}/${totalBalls}`;
+        
+        const moveSelection = this.game.getMoveSelection();
         if (moveSelection.allMovesSelected) {
-          this.currentPlayerElement.textContent =
-            "All moves selected - Ready to execute!";
+          this.currentPlayerElement.textContent = "All balls placed - Release phase starting!";
         } else {
-          this.currentPlayerElement.textContent = `Player ${currentPlayer} selecting moves`;
+          this.currentPlayerElement.textContent = `Player ${currentPlayer} placing balls`;
         }
+      } else if (state === GameState.BALL_RELEASE_PHASE) {
+        const player1Remaining = this.game.getBallsRemaining(Player.PLAYER1);
+        const player2Remaining = this.game.getBallsRemaining(Player.PLAYER2);
+        
+        this.player1BallsElement.textContent = player1Remaining.toString();
+        this.player2BallsElement.textContent = player2Remaining.toString();
+        this.currentPlayerElement.textContent = `Player ${currentPlayer}'s Turn - Release from your reserved columns`;
       } else if (state === GameState.EXECUTING_MOVES) {
         this.currentPlayerElement.textContent = "Executing all moves...";
       } else if (state === GameState.SETUP) {
@@ -853,45 +908,83 @@ export class GameUI {
       buttonElement.disabled =
         !this.game.canDropInColumn(col) || this.isAnimating;
 
-      // Add visual indication for selected moves in hard mode
-      if (
-        gameMode === GameMode.HARD_MODE &&
-        state === GameState.SELECTING_MOVES
-      ) {
-        const moveSelection = this.game.getMoveSelection();
-        const player1Moves = moveSelection.player1Moves;
-        const player2Moves = moveSelection.player2Moves;
+      // Reset classes
+      buttonElement.classList.remove(
+        "selected-p1",
+        "selected-p2",
+        "selected-both",
+        "reserved-p1",
+        "reserved-p2"
+      );
 
-        // Count how many times this column was selected by each player
-        const p1Count = player1Moves.filter((c) => c === col).length;
-        const p2Count = player2Moves.filter((c) => c === col).length;
+      if (gameMode === GameMode.HARD_MODE) {
+        if (state === GameState.COLUMN_RESERVATION_PHASE) {
+          // Show which columns are reserved
+          const columnReservation = this.game.getColumnReservation();
+          const reservedBy = columnReservation.reservedColumnOwners.get(col);
+          
+          if (reservedBy === Player.PLAYER1) {
+            buttonElement.classList.add("reserved-p1");
+            buttonElement.textContent = `${col + 1} (P1)`;
+          } else if (reservedBy === Player.PLAYER2) {
+            buttonElement.classList.add("reserved-p2");
+            buttonElement.textContent = `${col + 1} (P2)`;
+          } else {
+            buttonElement.textContent = (col + 1).toString();
+          }
+        } else if (state === GameState.BALL_PLACEMENT_PHASE) {
+          // Show which columns have balls placed
+          const moveSelection = this.game.getMoveSelection();
+          const player1Moves = moveSelection.player1Moves;
+          const player2Moves = moveSelection.player2Moves;
 
-        // Reset classes
-        buttonElement.classList.remove(
-          "selected-p1",
-          "selected-p2",
-          "selected-both"
-        );
+          // Count how many times this column was selected by each player
+          const p1Count = player1Moves.filter((c) => c === col).length;
+          const p2Count = player2Moves.filter((c) => c === col).length;
 
-        if (p1Count > 0 && p2Count > 0) {
-          buttonElement.classList.add("selected-both");
-          buttonElement.textContent = `${col + 1} (${p1Count}+${p2Count})`;
-        } else if (p1Count > 0) {
-          buttonElement.classList.add("selected-p1");
-          buttonElement.textContent = `${col + 1} (${p1Count})`;
-        } else if (p2Count > 0) {
-          buttonElement.classList.add("selected-p2");
-          buttonElement.textContent = `${col + 1} (${p2Count})`;
+          if (p1Count > 0 && p2Count > 0) {
+            buttonElement.classList.add("selected-both");
+            buttonElement.textContent = `${col + 1} (${p1Count}+${p2Count})`;
+          } else if (p1Count > 0) {
+            buttonElement.classList.add("selected-p1");
+            buttonElement.textContent = `${col + 1} (${p1Count})`;
+          } else if (p2Count > 0) {
+            buttonElement.classList.add("selected-p2");
+            buttonElement.textContent = `${col + 1} (${p2Count})`;
+          } else {
+            // Show reservation info for unplaced columns
+            const columnReservation = this.game.getColumnReservation();
+            const reservedBy = columnReservation.reservedColumnOwners.get(col);
+            
+            if (reservedBy === Player.PLAYER1) {
+              buttonElement.classList.add("reserved-p1");
+              buttonElement.textContent = `${col + 1} (P1)`;
+            } else if (reservedBy === Player.PLAYER2) {
+              buttonElement.classList.add("reserved-p2");
+              buttonElement.textContent = `${col + 1} (P2)`;
+            } else {
+              buttonElement.textContent = (col + 1).toString();
+            }
+          }
+        } else if (state === GameState.BALL_RELEASE_PHASE) {
+          // Show which columns are available for release
+          const columnReservation = this.game.getColumnReservation();
+          const reservedBy = columnReservation.reservedColumnOwners.get(col);
+          
+          if (reservedBy === Player.PLAYER1) {
+            buttonElement.classList.add("reserved-p1");
+            buttonElement.textContent = `${col + 1} (P1)`;
+          } else if (reservedBy === Player.PLAYER2) {
+            buttonElement.classList.add("reserved-p2");
+            buttonElement.textContent = `${col + 1} (P2)`;
+          } else {
+            buttonElement.textContent = (col + 1).toString();
+          }
         } else {
           buttonElement.textContent = (col + 1).toString();
         }
       } else {
-        // Reset to normal display
-        buttonElement.classList.remove(
-          "selected-p1",
-          "selected-p2",
-          "selected-both"
-        );
+        // Normal mode - reset to normal display
         buttonElement.textContent = (col + 1).toString();
       }
     });
@@ -899,6 +992,7 @@ export class GameUI {
 
   private updateGameStatus(): void {
     const state = this.game.getState();
+    const gameMode = this.game.getGameMode();
 
     if (state === GameState.FINISHED) {
       const result = this.game.getGameResult();
@@ -933,6 +1027,20 @@ export class GameUI {
       } else if (state === GameState.PLAYING) {
         this.gameMessageElement.textContent =
           "Drop your balls in columns. Boxes will redirect them!";
+      } else if (gameMode === GameMode.HARD_MODE) {
+        if (state === GameState.COLUMN_RESERVATION_PHASE) {
+          this.gameMessageElement.textContent =
+            "Reserve columns for your balls. Each column can only be reserved once!";
+        } else if (state === GameState.BALL_PLACEMENT_PHASE) {
+          this.gameMessageElement.textContent =
+            "Place your balls in your reserved columns. They will be dormant until release phase.";
+        } else if (state === GameState.BALL_RELEASE_PHASE) {
+          this.gameMessageElement.textContent =
+            "Release phase! Take turns releasing balls from your reserved columns. Each column can only be used once.";
+        } else if (state === GameState.EXECUTING_MOVES) {
+          this.gameMessageElement.textContent =
+            "Executing all moves simultaneously...";
+        }
       }
     }
   }

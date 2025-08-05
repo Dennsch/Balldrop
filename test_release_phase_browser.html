@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Phase Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .column-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .column-btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        .reserved-p1 { background: #dc3545 !important; }
+        .reserved-p2 { background: #17a2b8 !important; }
+    </style>
+</head>
+<body>
+    <h1>Hard Mode Release Phase Test</h1>
+    
+    <div class="test-section">
+        <h2>Game State</h2>
+        <div id="game-state" class="info">Loading...</div>
+        <div id="player-info" class="info">Player info...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Controls</h2>
+        <button onclick="startNewGame()">Start New Game</button>
+        <button onclick="autoReserveColumns()">Auto Reserve Columns</button>
+        <button onclick="autoPlaceBalls()">Auto Place Balls</button>
+        <button onclick="testReleasePhase()">Test Release Phase</button>
+    </div>
+
+    <div class="test-section">
+        <h2>Column Actions</h2>
+        <div>Click columns to reserve/place/release balls:</div>
+        <div class="column-buttons" id="column-buttons"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <script type="module">
+        import { Game } from './dist/Game.js';
+        import { GameMode, GameState, Player } from './dist/types.js';
+
+        let game;
+        
+        function log(message, type = 'info') {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function updateUI() {
+            const stateDiv = document.getElementById('game-state');
+            const playerDiv = document.getElementById('player-info');
+            
+            if (!game) return;
+            
+            const state = game.getState();
+            const currentPlayer = game.getCurrentPlayer();
+            const p1Balls = game.getBallsRemaining(Player.PLAYER1);
+            const p2Balls = game.getBallsRemaining(Player.PLAYER2);
+            
+            stateDiv.textContent = `State: ${state} | Current Player: ${currentPlayer}`;
+            playerDiv.textContent = `Player 1 Balls: ${p1Balls} | Player 2 Balls: ${p2Balls}`;
+            
+            updateColumnButtons();
+        }
+
+        function updateColumnButtons() {
+            const container = document.getElementById('column-buttons');
+            container.innerHTML = '';
+            
+            if (!game) return;
+            
+            const state = game.getState();
+            const columnReservation = game.getColumnReservation();
+            
+            for (let col = 0; col < 10; col++) {
+                const btn = document.createElement('button');
+                btn.className = 'column-btn';
+                btn.textContent = col.toString();
+                btn.onclick = () => handleColumnClick(col);
+                btn.disabled = !game.canDropInColumn(col);
+                
+                // Add visual indicators
+                const reservedBy = columnReservation.reservedColumnOwners.get(col);
+                if (reservedBy === Player.PLAYER1) {
+                    btn.classList.add('reserved-p1');
+                    btn.textContent = `${col} (P1)`;
+                } else if (reservedBy === Player.PLAYER2) {
+                    btn.classList.add('reserved-p2');
+                    btn.textContent = `${col} (P2)`;
+                }
+                
+                container.appendChild(btn);
+            }
+        }
+
+        function handleColumnClick(col) {
+            const state = game.getState();
+            let result = false;
+            
+            if (state === GameState.COLUMN_RESERVATION_PHASE) {
+                result = game.reserveColumn(col);
+                log(`Reserve column ${col}: ${result}`, result ? 'success' : 'error');
+            } else if (state === GameState.BALL_PLACEMENT_PHASE) {
+                result = game.selectMove(col);
+                log(`Place ball in column ${col}: ${result}`, result ? 'success' : 'error');
+            } else if (state === GameState.BALL_RELEASE_PHASE) {
+                result = game.releaseBall(col);
+                log(`Release ball from column ${col}: ${result}`, result ? 'success' : 'error');
+            }
+            
+            updateUI();
+        }
+
+        window.startNewGame = function() {
+            game = new Game({ gameMode: GameMode.HARD_MODE, ballsPerPlayer: 3, gridSize: 10 });
+            game.startNewGame();
+            log('Started new Hard Mode game', 'success');
+            updateUI();
+        };
+
+        window.autoReserveColumns = function() {
+            if (!game || game.getState() !== GameState.COLUMN_RESERVATION_PHASE) {
+                log('Cannot auto-reserve: wrong state', 'error');
+                return;
+            }
+            
+            // Player 1 reserves columns 0, 1, 2
+            game.reserveColumn(0);
+            game.reserveColumn(1);
+            game.reserveColumn(2);
+            
+            // Player 2 reserves columns 3, 4, 5
+            game.reserveColumn(3);
+            game.reserveColumn(4);
+            game.reserveColumn(5);
+            
+            log('Auto-reserved columns: P1(0,1,2) P2(3,4,5)', 'success');
+            updateUI();
+        };
+
+        window.autoPlaceBalls = function() {
+            if (!game || game.getState() !== GameState.BALL_PLACEMENT_PHASE) {
+                log('Cannot auto-place: wrong state', 'error');
+                return;
+            }
+            
+            // Player 1 places balls
+            game.selectMove(0);
+            game.selectMove(1);
+            game.selectMove(2);
+            
+            // Player 2 places balls
+            game.selectMove(3);
+            game.selectMove(4);
+            game.selectMove(5);
+            
+            log('Auto-placed all balls', 'success');
+            updateUI();
+        };
+
+        window.testReleasePhase = function() {
+            if (!game || game.getState() !== GameState.BALL_RELEASE_PHASE) {
+                log('Cannot test release: wrong state', 'error');
+                return;
+            }
+            
+            log('=== Testing Release Phase ===', 'info');
+            
+            // Test 1: Player 1 can release from their column
+            const canRelease0 = game.canReleaseBall(0);
+            log(`Test 1 - Can P1 release from column 0: ${canRelease0}`, canRelease0 ? 'success' : 'error');
+            
+            // Test 2: Player 1 cannot release from Player 2's column
+            const canRelease3 = game.canReleaseBall(3);
+            log(`Test 2 - Can P1 release from column 3 (P2's): ${canRelease3}`, !canRelease3 ? 'success' : 'error');
+            
+            // Test 3: Release one ball
+            const release0 = game.releaseBall(0);
+            log(`Test 3 - Release ball from column 0: ${release0}`, release0 ? 'success' : 'error');
+            
+            // Test 4: Try to release same ball again (should fail)
+            const release0Again = game.releaseBall(0);
+            log(`Test 4 - Try to release from column 0 again: ${release0Again}`, !release0Again ? 'success' : 'error');
+            
+            // Test 5: Check remaining balls
+            const p1Remaining = game.getBallsRemaining(Player.PLAYER1);
+            log(`Test 5 - P1 balls remaining after release: ${p1Remaining}`, p1Remaining === 2 ? 'success' : 'error');
+            
+            updateUI();
+        };
+
+        // Initialize
+        startNewGame();
+    </script>
+</body>
+</html>

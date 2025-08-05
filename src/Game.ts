@@ -78,6 +78,7 @@ export class Game {
   }
 
   public startNewGame(): void {
+    console.log("new")
     this.grid.clearGrid();
     this.grid.placeRandomBoxes(this.config.minBoxes, this.config.maxBoxes);
 
@@ -133,9 +134,8 @@ export class Game {
       } else if (this.state === GameState.BALL_PLACEMENT_PHASE) {
         return this.selectMove(col);
       } else if (this.state === GameState.BALL_RELEASE_PHASE) {
-        // In release phase, this method shouldn't be called directly
-        // Ball release is handled by releaseBall method with row/col coordinates
-        return false;
+        // In release phase, use the releaseBall method
+        return this.releaseBall(col);
       } else {
         return this.selectMove(col);
       }
@@ -354,27 +354,34 @@ export class Game {
 
     const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
     
+    // TURN-BASED RESTRICTION: Only the current player can release balls
+    if (columnOwner !== this.currentPlayer) {
+      return false; // Not the current player's turn
+    }
+    
     // Check if column is full
     if (this.grid.isColumnFull(col)) {
       return false;
     }
 
-    // Calculate and place the ball immediately (not as dormant)
+    // Check if this column still has balls to release (each ball can only be released once)
+    const currentReservedColumns =
+      columnOwner === Player.PLAYER1
+        ? this.columnReservation.player1ReservedColumns
+        : this.columnReservation.player2ReservedColumns;
+
+    if (!currentReservedColumns.includes(col)) {
+      return false; // No more balls to release from this column
+    }
+
+    // Calculate the ball path without applying changes to the grid yet (like normal mode)
     const result = this.grid.calculateBallPath(col, columnOwner!);
     if (result.finalPosition && result.ballPath) {
-      // Apply the ball path immediately (active ball, not dormant)
-      this.grid.applyBallPath(result.ballPath, false);
-
       // Decrease balls remaining for the column owner
       const ballsLeft = this.ballsRemaining.get(columnOwner!) || 0;
       this.ballsRemaining.set(columnOwner!, ballsLeft - 1);
 
-      // Remove the column from reserved columns
-      const currentReservedColumns =
-        columnOwner === Player.PLAYER1
-          ? this.columnReservation.player1ReservedColumns
-          : this.columnReservation.player2ReservedColumns;
-
+      // Remove ONE instance of this column from reserved columns (each ball can only be released once)
       const columnIndex = currentReservedColumns.indexOf(col);
       if (columnIndex > -1) {
         currentReservedColumns.splice(columnIndex, 1);
@@ -384,31 +391,37 @@ export class Game {
       this.usedColumns.add(col);
       this.columnOwners.set(col, columnOwner!);
 
-      // Check if all balls have been released
-      const totalBallsReleased =
-        this.config.ballsPerPlayer -
-        this.ballsRemaining.get(Player.PLAYER1)! +
-        (this.config.ballsPerPlayer - this.ballsRemaining.get(Player.PLAYER2)!);
-      const totalBalls = this.config.ballsPerPlayer * 2;
-
-      if (totalBallsReleased >= totalBalls) {
-        this.state = GameState.FINISHED;
-      }
-      // Remove player switching logic - no more turn-based behavior in release phase
-
       // Play pop sound when ball is released
       this.soundManager.playSound("pop", 0.6);
 
-      // Trigger ball dropped callback for animation
+      // Trigger ball dropped callback for animation (like normal mode)
       if (this.onBallDropped) {
         this.onBallDropped(result.ballPath);
       }
 
-      this.notifyStateChange();
       return true;
     }
 
     return false;
+  }
+
+  public completeBallRelease(ballPath: BallPath): void {
+    // Apply the ball path changes to the grid after animation completes (like normal mode)
+    this.grid.applyBallPath(ballPath);
+
+    // Play impact sound when ball reaches final position
+    this.soundManager.playSound("impact", 0.4);
+
+    // Check if game is finished
+    if (this.isGameFinished()) {
+      this.state = GameState.FINISHED;
+    } else {
+      // Switch to next player (turn-based like normal mode)
+      this.currentPlayer =
+        this.currentPlayer === Player.PLAYER1 ? Player.PLAYER2 : Player.PLAYER1;
+    }
+
+    this.notifyStateChange();
   }
 
   // Legacy method for backward compatibility - now redirects to column-based release
@@ -739,6 +752,23 @@ export class Game {
     // Check if this column was reserved
     if (!this.columnReservation.reservedColumnOwners.has(col)) {
       return false; // Column was not reserved
+    }
+
+    const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
+
+    // TURN-BASED RESTRICTION: Only the current player can release balls
+    if (columnOwner !== this.currentPlayer) {
+      return false; // Not the current player's turn
+    }
+
+    // Check if this column still has balls to release (each ball can only be released once)
+    const currentReservedColumns =
+      columnOwner === Player.PLAYER1
+        ? this.columnReservation.player1ReservedColumns
+        : this.columnReservation.player2ReservedColumns;
+
+    if (!currentReservedColumns.includes(col)) {
+      return false; // No more balls to release from this column
     }
 
     // Check if column is full

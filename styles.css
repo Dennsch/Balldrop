@@ -30,7 +30,7 @@
     --player-2-color: #6ECFF6;        /* Light blue - Player 2 */
     
     /* UI Colors */
-    --background-primary: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-secondary) 100%);
+    --background-primary: linear-gradient(135deg, #4A90E2 0%, #40E0D0 100%);
     --background-secondary: #FFF8E7;   /* Cream background */
     --surface-color: #FFF8E7;          /* Cream surface */
     --surface-alt: #FFF8E7;            /* Cream alternative surface */
@@ -358,8 +358,8 @@ header {
 }
 
 .cell.has-box {
-    background: var(--box-color);
-    color: var(--text-primary);
+    background: linear-gradient(45deg, #FFD700, #FF8C00);
+    color: white;
 }
 
 .cell.has-ball-p1 {
@@ -387,7 +387,7 @@ header {
 }
 
 .cell.has-portal {
-    background: linear-gradient(45deg, #9B59B6, #8E44AD);
+    background: linear-gradient(45deg, #FFD700, #FF8C00);
     color: white;
     border: 2px solid #6C3483;
     box-shadow: 0 0 10px rgba(155, 89, 182, 0.5);
@@ -469,6 +469,7 @@ header {
 .arrow {
     font-size: 18px;
     font-weight: bold;
+    color: #CC5500;
     transition: transform var(--arrow-transition-duration) ease-in-out;
 }
 
