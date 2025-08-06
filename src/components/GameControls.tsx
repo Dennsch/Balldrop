@@ -2,12 +2,10 @@ import React from 'react';
 
 interface GameControlsProps {
   onNewGame: () => void;
-  onReset: () => void;
 }
 
 const GameControls: React.FC<GameControlsProps> = ({
-  onNewGame,
-  onReset
+  onNewGame
 }) => {
 
   return (
@@ -19,14 +17,6 @@ const GameControls: React.FC<GameControlsProps> = ({
       >
         New Game
       </button>
-      <button 
-        id="reset-btn" 
-        className="btn btn-secondary"
-        onClick={onReset}
-      >
-        Reset
-      </button>
-
     </div>
   );
 };

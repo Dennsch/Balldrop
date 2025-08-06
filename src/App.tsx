@@ -202,14 +202,7 @@ const App: React.FC = () => {
     }
   }, [game]);
 
-  const handleReset = useCallback(() => {
-    if (game) {
-      game.reset();
-      setWinnerMessage("");
-      setGameMessage("");
-      setGridKey((prev) => prev + 1);
-    }
-  }, [game]);
+
 
   const handleColumnClick = useCallback(
     (column: number) => {
@@ -366,7 +359,6 @@ const App: React.FC = () => {
 
         <GameControls
           onNewGame={handleNewGame}
-          onReset={handleReset}
         />
 
         <GameStatus winnerMessage={winnerMessage} gameMessage={gameMessage} />
