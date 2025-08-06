@@ -14,7 +14,6 @@ import {
 } from "./types.js";
 import { SoundManager } from "./utils/SoundManager.js";
 
-
 export class Game {
   private grid: Grid;
   private config: GameConfig;
@@ -318,7 +317,6 @@ export class Game {
     }
   }
 
-
   public releaseBall(col: number): boolean {
     if (this.state !== GameState.BALL_RELEASE_PHASE) {
       return false;
@@ -421,7 +419,6 @@ export class Game {
 
     this.notifyStateChange();
   }
-
 
   public completeMovesExecution(ballPaths: BallPath[]): void {
     // For directional execution, ball paths are already applied during execution

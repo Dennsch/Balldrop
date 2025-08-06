@@ -38,7 +38,7 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
         
         // Determine button styling based on game mode and column status
         let buttonClasses = 'column-selector';
-        let buttonText = (column + 1).toString();
+        let buttonText = '⬇️';
         let titleText = `Drop ball in column ${column + 1}`;
         
         if (isDisabled) {
@@ -52,11 +52,11 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
             buttonClasses += ' reserved-column';
             if (reservedBy === Player.PLAYER1) {
               buttonClasses += ' reserved-by-player1';
-              buttonText += ' 🔴'; // Red ball hovering
+              buttonText = '🔴'; // Red ball hovering
               titleText = `Column ${column + 1} - Reserved by Player 1`;
             } else if (reservedBy === Player.PLAYER2) {
               buttonClasses += ' reserved-by-player2';
-              buttonText += ' 🔵'; // Blue ball hovering
+              buttonText = '🔵'; // Blue ball hovering
               titleText = `Column ${column + 1} - Reserved by Player 2`;
             }
           } else if (gameState === GameState.BALL_RELEASE_PHASE && isReserved) {
@@ -64,11 +64,11 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
             buttonClasses += ' reserved-column';
             if (reservedBy === Player.PLAYER1) {
               buttonClasses += ' reserved-by-player1';
-              buttonText += ' 🔴'; // Red ball ready to release
+              buttonText = '🔴'; // Red ball ready to release
               titleText = `Column ${column + 1} - Player 1 ball ready to release`;
             } else if (reservedBy === Player.PLAYER2) {
               buttonClasses += ' reserved-by-player2';
-              buttonText += ' 🔵'; // Blue ball ready to release
+              buttonText = '🔵'; // Blue ball ready to release
               titleText = `Column ${column + 1} - Player 2 ball ready to release`;
             }
             
@@ -80,7 +80,7 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
           } else if (columnWinner !== null) {
             // Show completed columns
             buttonClasses += ' used-column';
-            buttonText += ' ✓';
+            buttonText = '✓';
             if (columnWinner === Player.PLAYER1) {
               buttonClasses += ' secured-by-player1';
               titleText = `Column ${column + 1} - Secured by Player 1`;
@@ -93,7 +93,7 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
           // Normal mode behavior
           if (!canDrop) {
             buttonClasses += ' used-column';
-            buttonText += ' ✓';
+            buttonText = '✓';
             titleText += ' (unavailable)';
           }
           

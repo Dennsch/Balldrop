@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { Game } from '../Game.js';
-import Cell from './Cell.js';
+import React, { useEffect, useState } from "react";
+import { Game } from "../Game.js";
+import Cell from "./Cell.js";
 
 interface GridProps {
   game: Game;

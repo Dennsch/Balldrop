@@ -68,7 +68,9 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       
       <div className="game-mode-selector">
         <div className="mode-switch-container">
-          <span className="mode-switch-label">Game Mode:</span>
+          <span className={`mode-switch-label ${gameMode === GameMode.NORMAL ? 'active' : ''}`}>
+            Normal
+          </span>
           <div className="mode-switch-wrapper">
             <input
               type="checkbox"
@@ -78,11 +80,12 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               onChange={(e) => onGameModeChange(e.target.checked ? GameMode.HARD_MODE : GameMode.NORMAL)}
             />
             <label htmlFor="mode-switch" className="mode-switch">
-              <span className="mode-label normal-label">Normal</span>
               <span className="mode-switch-slider"></span>
-              <span className="mode-label hard-label">Hard</span>
             </label>
           </div>
+          <span className={`mode-switch-label ${gameMode === GameMode.HARD_MODE ? 'active' : ''}`}>
+            Hard
+          </span>
         </div>
       </div>
     </header>
