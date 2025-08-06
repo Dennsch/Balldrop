@@ -3,10 +3,7 @@ export enum Direction {
     RIGHT = 'RIGHT'
 }
 
-export enum ExecutionDirection {
-    LEFT_TO_RIGHT = 'LEFT_TO_RIGHT',
-    RIGHT_TO_LEFT = 'RIGHT_TO_LEFT'
-}
+
 
 export enum CellType {
     EMPTY = 'EMPTY',

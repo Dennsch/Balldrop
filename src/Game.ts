@@ -8,12 +8,12 @@ import {
   BallPath,
   GameMode,
   MoveSelection,
-  ExecutionDirection,
   BallReleaseSelection,
   DormantBall,
   ColumnReservation,
 } from "./types.js";
 import { SoundManager } from "./utils/SoundManager.js";
+
 
 export class Game {
   private grid: Grid;
@@ -318,39 +318,6 @@ export class Game {
     }
   }
 
-  private placeDormantBalls(): void {
-    // Place all selected balls as dormant balls
-    const allBallPaths: BallPath[] = [];
-
-    // Place player 1 balls as dormant
-    for (const col of this.moveSelection.player1Moves) {
-      const result = this.grid.calculateBallPath(col, Player.PLAYER1);
-      if (result.ballPath) {
-        this.grid.applyBallPath(result.ballPath, true); // true = dormant
-        allBallPaths.push(result.ballPath);
-      }
-    }
-
-    // Place player 2 balls as dormant
-    for (const col of this.moveSelection.player2Moves) {
-      const result = this.grid.calculateBallPath(col, Player.PLAYER2);
-      if (result.ballPath) {
-        this.grid.applyBallPath(result.ballPath, true); // true = dormant
-        allBallPaths.push(result.ballPath);
-      }
-    }
-
-    // Update dormant balls tracking
-    const dormantBalls = this.grid.getDormantBalls();
-    this.ballReleaseSelection.dormantBalls.clear();
-    for (const ball of dormantBalls) {
-      this.ballReleaseSelection.dormantBalls.set(ball.ballId, ball);
-    }
-
-    // Set balls remaining to 0 for both players (they're all placed now)
-    this.ballsRemaining.set(Player.PLAYER1, 0);
-    this.ballsRemaining.set(Player.PLAYER2, 0);
-  }
 
   public releaseBall(col: number): boolean {
     if (this.state !== GameState.BALL_RELEASE_PHASE) {
@@ -456,109 +423,6 @@ export class Game {
   }
 
 
-
-  public executeAllMoves(): boolean {
-    if (
-      (this.state !== GameState.SELECTING_MOVES &&
-        this.state !== GameState.BALL_PLACEMENT_PHASE) ||
-      !this.moveSelection.allMovesSelected
-    ) {
-      return false;
-    }
-
-    this.state = GameState.EXECUTING_MOVES;
-    this.notifyStateChange();
-
-    // Execute all moves simultaneously
-    const allBallPaths: BallPath[] = [];
-
-    // Execute player 1 moves
-    for (const col of this.moveSelection.player1Moves) {
-      const result = this.grid.calculateBallPath(col, Player.PLAYER1);
-      if (result.ballPath) {
-        allBallPaths.push(result.ballPath);
-        // Play pop sound for each ball dropped
-        this.soundManager.playSound("pop", 0.5);
-      }
-    }
-
-    // Execute player 2 moves
-    for (const col of this.moveSelection.player2Moves) {
-      const result = this.grid.calculateBallPath(col, Player.PLAYER2);
-      if (result.ballPath) {
-        allBallPaths.push(result.ballPath);
-        // Play pop sound for each ball dropped
-        this.soundManager.playSound("pop", 0.5);
-      }
-    }
-
-    // Set balls remaining to 0 for both players
-    this.ballsRemaining.set(Player.PLAYER1, 0);
-    this.ballsRemaining.set(Player.PLAYER2, 0);
-
-    if (this.onMovesExecuted) {
-      this.onMovesExecuted(allBallPaths);
-    }
-
-    return true;
-  }
-
-
-
-  private executeMovesDirectional(direction: ExecutionDirection): boolean {
-    if (
-      (this.state !== GameState.SELECTING_MOVES &&
-        this.state !== GameState.BALL_PLACEMENT_PHASE) ||
-      !this.moveSelection.allMovesSelected
-    ) {
-      return false;
-    }
-
-    this.state = GameState.EXECUTING_MOVES;
-    this.notifyStateChange();
-
-    // Get all selected columns and sort them based on execution direction
-    const allColumns: Array<{ col: number; player: Player }> = [];
-
-    // Add player 1 moves
-    for (const col of this.moveSelection.player1Moves) {
-      allColumns.push({ col, player: Player.PLAYER1 });
-    }
-
-    // Add player 2 moves
-    for (const col of this.moveSelection.player2Moves) {
-      allColumns.push({ col, player: Player.PLAYER2 });
-    }
-
-    // Sort columns based on execution direction
-    if (direction === ExecutionDirection.LEFT_TO_RIGHT) {
-      allColumns.sort((a, b) => a.col - b.col); // Ascending order (left to right)
-    } else {
-      allColumns.sort((a, b) => b.col - a.col); // Descending order (right to left)
-    }
-
-    // Execute moves in the specified order
-    const allBallPaths: BallPath[] = [];
-    for (const { col, player } of allColumns) {
-      const result = this.grid.calculateBallPath(col, player);
-      if (result.ballPath) {
-        allBallPaths.push(result.ballPath);
-        // Apply the ball path immediately to affect subsequent ball calculations
-        this.grid.applyBallPath(result.ballPath);
-      }
-    }
-
-    // Set balls remaining to 0 for both players
-    this.ballsRemaining.set(Player.PLAYER1, 0);
-    this.ballsRemaining.set(Player.PLAYER2, 0);
-
-    if (this.onMovesExecuted) {
-      this.onMovesExecuted(allBallPaths);
-    }
-
-    return true;
-  }
-
   public completeMovesExecution(ballPaths: BallPath[]): void {
     // For directional execution, ball paths are already applied during execution
     // For simultaneous execution (executeAllMoves), we need to apply them here
@@ -658,19 +522,6 @@ export class Game {
     const p1Balls = this.ballsRemaining.get(Player.PLAYER1) || 0;
     const p2Balls = this.ballsRemaining.get(Player.PLAYER2) || 0;
     return p1Balls === 0 && p2Balls === 0;
-  }
-
-  // Sound control methods
-  public setSoundEnabled(enabled: boolean): void {
-    this.soundManager.setEnabled(enabled);
-  }
-
-  public isSoundEnabled(): boolean {
-    return this.soundManager.isEnabled();
-  }
-
-  public setSoundVolume(volume: number): void {
-    this.soundManager.setMasterVolume(volume);
   }
 
   public getCurrentScore(): { player1Columns: number; player2Columns: number } {
