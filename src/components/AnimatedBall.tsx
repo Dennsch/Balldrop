@@ -1,31 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BallPath, Player, AnimationSpeed } from '../types.js';
+import { BallPath, Player } from '../types.js';
 
 interface AnimatedBallProps {
   ballPath: BallPath;
-  animationSpeed: AnimationSpeed;
   onAnimationComplete: () => void;
 }
 
 const AnimatedBall: React.FC<AnimatedBallProps> = ({
   ballPath,
-  animationSpeed,
   onAnimationComplete
 }) => {
   const ballRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
 
-  // Animation timing configurations
-  const animationTimings = {
-    [AnimationSpeed.SLOW]: { multiplier: 2.0, cssMultiplier: 2.0 },
-    [AnimationSpeed.NORMAL]: { multiplier: 1.0, cssMultiplier: 1.0 },
-    [AnimationSpeed.FAST]: { multiplier: 0.5, cssMultiplier: 0.5 },
-    [AnimationSpeed.INSTANT]: { multiplier: 0, cssMultiplier: 0.01 },
-  };
+  // Fixed fast animation timing
+  const ANIMATION_MULTIPLIER = 0.5; // Fast speed
+  const CSS_MULTIPLIER = 0.5;
 
   const getAnimatedDuration = (baseDuration: number): number => {
-    const timing = animationTimings[animationSpeed];
-    return baseDuration * timing.multiplier;
+    return baseDuration * ANIMATION_MULTIPLIER;
   };
 
   const getCellElement = (row: number, col: number): HTMLElement | null => {
@@ -100,7 +93,8 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
       const ball = ballRef.current;
       if (!ball) return;
 
-      console.log(`🎬 Starting ball animation for column ${ballPath.startColumn}`);
+      console.log(`🎬 Starting ball animation for column ${ballPath.startColumn} (fast speed)`);
+      
       
       try {
         // Animate through each step of the path
@@ -131,7 +125,7 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
     // Start animation after a brief delay
     const timer = setTimeout(animateBall, 50);
     return () => clearTimeout(timer);
-  }, [ballPath, animationSpeed, onAnimationComplete]);
+  }, [ballPath, onAnimationComplete]);
 
   if (!isVisible) return null;
 
@@ -146,7 +140,7 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: '50%',
-    transition: `all ${0.35 * animationTimings[animationSpeed].cssMultiplier}s ease-in-out`,
+    transition: `all ${0.35 * CSS_MULTIPLIER}s ease-in-out`,
     border: '2px solid rgba(255, 255, 255, 0.8)',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)',
     backgroundColor: ballPath.player === Player.PLAYER1 ? '#ff6b6b' : '#4ecdc4',

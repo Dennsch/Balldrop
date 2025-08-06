@@ -135,7 +135,7 @@ export class Game {
         return this.selectMove(col);
       } else if (this.state === GameState.BALL_RELEASE_PHASE) {
         // In release phase, use the releaseBall method
-        return this.selectMove(col);
+        return this.releaseBall(col);
       } else {
         return this.selectMove(col);
       }
@@ -405,8 +405,20 @@ export class Game {
       this.soundManager.playSound("pop", 0.6);
 
       // Trigger ball dropped callback for animation (like normal mode)
+      console.log("🎬 releaseBall: About to trigger animation callback", {
+        hasCallback: !!this.onBallDropped,
+        ballPath: result.ballPath,
+        startColumn: result.ballPath.startColumn,
+        player: result.ballPath.player,
+      });
+
       if (this.onBallDropped) {
         this.onBallDropped(result.ballPath);
+        console.log(
+          "🎬 releaseBall: Animation callback triggered successfully"
+        );
+      } else {
+        console.warn("🎬 releaseBall: No animation callback registered!");
       }
 
       return true;
@@ -416,6 +428,15 @@ export class Game {
   }
 
   public completeBallRelease(ballPath: BallPath): void {
+    console.log(
+      "🎬 completeBallRelease: Animation completed, applying ball path",
+      {
+        startColumn: ballPath.startColumn,
+        player: ballPath.player,
+        finalPosition: ballPath.finalPosition,
+      }
+    );
+
     // Apply the ball path changes to the grid after animation completes (like normal mode)
     this.grid.applyBallPath(ballPath);
 

@@ -3,7 +3,6 @@ import { Game } from "./Game.js";
 import {
   GameState,
   Player,
-  AnimationSpeed,
   BallPath,
   GameMode,
 } from "./types.js";
@@ -21,9 +20,7 @@ const App: React.FC = () => {
   const [player2Balls, setPlayer2Balls] = useState<number>(10);
   const [winnerMessage, setWinnerMessage] = useState<string>("");
   const [gameMessage, setGameMessage] = useState<string>("");
-  const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeed>(
-    AnimationSpeed.FAST
-  );
+
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [gridKey, setGridKey] = useState<number>(0); // Force grid re-render
   const [gameMode, setGameMode] = useState<GameMode>(GameMode.NORMAL);
@@ -88,12 +85,20 @@ const App: React.FC = () => {
       // Handle individual ball drop animation
       setIsAnimating(true);
       console.log(
-        "Ball dropped, starting animation for column:",
-        ballPath.startColumn
+        "🎬 App: Ball dropped callback received, starting animation for column:",
+        ballPath.startColumn,
+        "Player:",
+        ballPath.player,
+        "Game state:",
+        gameInstance.getState()
       );
 
       // Add the ball to animated balls state to trigger animation
-      setAnimatedBalls((prev) => [...prev, ballPath]);
+      setAnimatedBalls((prev) => {
+        const newBalls = [...prev, ballPath];
+        console.log("🎬 App: Updated animated balls count:", newBalls.length);
+        return newBalls;
+      });
     });
 
     gameInstance.onMovesExecutedHandler((ballPaths: BallPath[]) => {
@@ -262,9 +267,7 @@ const App: React.FC = () => {
     [game, isAnimating]
   );
 
-  const handleAnimationSpeedChange = useCallback((speed: AnimationSpeed) => {
-    setAnimationSpeed(speed);
-  }, []);
+
 
   const handleGameModeChange = useCallback(
     (mode: GameMode) => {
@@ -272,8 +275,18 @@ const App: React.FC = () => {
         console.log(`Changing game mode to: ${mode}`);
         game.setGameMode(mode);
         setGameMode(mode);
+        
+        // Automatically start a new game when switching modes
+        game.startNewGame();
+        
+        // Reset animation state
+        setIsAnimating(false);
+        setAnimatedBalls([]);
+        
         // Force grid re-render
         setGridKey((prev) => prev + 1);
+        
+        console.log(`New game started in ${mode} mode`);
       }
     },
     [game]
@@ -282,10 +295,17 @@ const App: React.FC = () => {
   const handleAnimationComplete = useCallback(
     (ballPath: BallPath) => {
       if (game) {
-        console.log("Animation completed for column:", ballPath.startColumn);
+        const currentState = game.getState();
+        console.log("🎬 App: Animation completed for column:", ballPath.startColumn, "Game state:", currentState);
 
-        // Complete the ball drop in the game logic
-        game.completeBallDrop(ballPath);
+        // Complete the ball drop/release in the game logic based on current state
+        if (currentState === GameState.BALL_RELEASE_PHASE) {
+          console.log("🎬 App: Calling completeBallRelease");
+          game.completeBallRelease(ballPath);
+        } else {
+          console.log("🎬 App: Calling completeBallDrop");
+          game.completeBallDrop(ballPath);
+        }
 
         // Remove this ball from animated balls
         setAnimatedBalls((prev) => prev.filter((ball) => ball !== ballPath));
@@ -338,7 +358,6 @@ const App: React.FC = () => {
           game={game}
           onColumnClick={handleColumnClick}
           onCellClick={handleCellClick}
-          animationSpeed={animationSpeed}
           isAnimating={isAnimating}
           gridKey={gridKey}
           animatedBalls={animatedBalls}
@@ -348,8 +367,6 @@ const App: React.FC = () => {
         <GameControls
           onNewGame={handleNewGame}
           onReset={handleReset}
-          animationSpeed={animationSpeed}
-          onAnimationSpeedChange={handleAnimationSpeedChange}
         />
 
         <GameStatus winnerMessage={winnerMessage} gameMessage={gameMessage} />

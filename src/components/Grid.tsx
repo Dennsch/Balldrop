@@ -1,80 +1,59 @@
 import React, { useEffect, useState } from 'react';
 import { Game } from '../Game.js';
-import { AnimationSpeed } from '../types.js';
 import Cell from './Cell.js';
 
 interface GridProps {
   game: Game;
-  animationSpeed: AnimationSpeed;
   onCellClick?: (row: number, col: number) => void;
 }
 
-const Grid: React.FC<GridProps> = ({ game, animationSpeed, onCellClick }) => {
+const Grid: React.FC<GridProps> = ({ game, onCellClick }) => {
   const [gridData, setGridData] = useState(game.getGrid().getCells());
   const gridSize = game.getGrid().getSize();
 
-  // Update animation timing CSS variables
+  // Set fixed fast animation timing CSS variables
   useEffect(() => {
-    const animationTimings = {
-      [AnimationSpeed.SLOW]: {
-        multiplier: 2.0,
-        cssMultiplier: 2.0,
-      },
-      [AnimationSpeed.NORMAL]: {
-        multiplier: 1.0,
-        cssMultiplier: 1.0,
-      },
-      [AnimationSpeed.FAST]: {
-        multiplier: 0.5,
-        cssMultiplier: 0.5,
-      },
-      [AnimationSpeed.INSTANT]: {
-        multiplier: 0,
-        cssMultiplier: 0.01,
-      },
-    };
-
-    const timing = animationTimings[animationSpeed];
+    const CSS_MULTIPLIER = 0.5; // Fast speed
     const root = document.documentElement;
 
-    // Update CSS custom properties for animations
+    // Update CSS custom properties for fast animations
     root.style.setProperty(
       "--ball-transition-duration",
-      `${0.35 * timing.cssMultiplier}s`
+      `${0.35 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--cell-transition-duration",
-      `${0.15 * timing.cssMultiplier}s`
+      `${0.15 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--button-transition-duration",
-      `${0.2 * timing.cssMultiplier}s`
+      `${0.2 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--fall-animation-duration",
-      `${0.25 * timing.cssMultiplier}s`
+      `${0.25 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--box-hit-animation-duration",
-      `${0.3 * timing.cssMultiplier}s`
+      `${0.3 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--arrow-rotate-duration",
-      `${0.2 * timing.cssMultiplier}s`
+      `${0.2 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--arrow-transition-duration",
-      `${0.15 * timing.cssMultiplier}s`
+      `${0.15 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--bottom-row-effect-duration",
-      `${0.8 * timing.cssMultiplier}s`
+      `${0.8 * CSS_MULTIPLIER}s`
     );
     root.style.setProperty(
       "--ball-place-animation-duration",
-      `${0.4 * timing.cssMultiplier}s`
+      `${0.4 * CSS_MULTIPLIER}s`
     );
-  }, [animationSpeed]);
+  }, []); // Run once on mount
 
   // Update grid data when game state changes
   useEffect(() => {

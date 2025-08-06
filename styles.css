@@ -541,50 +541,7 @@ header {
     flex-wrap: wrap;
 }
 
-.animation-speed-control {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
 
-.animation-speed-control label {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--text-primary);
-}
-
-.speed-select {
-    padding: 12px 16px;
-    border: 2px solid var(--border-color);
-    border-radius: 10px;
-    background: linear-gradient(135deg, var(--surface-color), #F5F0DC);
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all var(--button-transition-duration) ease;
-    min-width: 100px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    padding-right: 40px;
-}
-
-.speed-select:hover {
-    border-color: var(--brand-primary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-}
-
-.speed-select:focus {
-    outline: none;
-    border-color: var(--brand-primary);
-    box-shadow: 0 0 0 3px rgba(255, 204, 51, 0.25), 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-}
 
 .btn {
     padding: 14px 28px;
