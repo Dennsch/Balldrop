@@ -1,4 +1,4 @@
-import { Grid } from "./Grid.js";
+import { Grid } from "./Grid";
 import {
   GameConfig,
   GameState,
@@ -78,7 +78,7 @@ export class Game {
   }
 
   public startNewGame(): void {
-    console.log("new")
+    console.log("new");
     this.grid.clearGrid();
     this.grid.placeRandomBoxes(this.config.minBoxes, this.config.maxBoxes);
 
@@ -135,7 +135,7 @@ export class Game {
         return this.selectMove(col);
       } else if (this.state === GameState.BALL_RELEASE_PHASE) {
         // In release phase, use the releaseBall method
-        return this.selectMove(col)
+        return this.selectMove(col);
       } else {
         return this.selectMove(col);
       }
@@ -180,7 +180,7 @@ export class Game {
         return true;
       }
     } catch (error) {
-      console.error('Error calculating ball path:', error);
+      console.error("Error calculating ball path:", error);
       // Return false to indicate the drop failed
     }
 
@@ -313,7 +313,7 @@ export class Game {
         }
       }
     } catch (error) {
-      console.error('Error placing dormant ball:', error);
+      console.error("Error placing dormant ball:", error);
       // Continue execution - don't let portal errors break the game flow
     }
   }
@@ -363,12 +363,12 @@ export class Game {
     }
 
     const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
-    
+
     // TURN-BASED RESTRICTION: Only the current player can release balls
     if (columnOwner !== this.currentPlayer) {
       return false; // Not the current player's turn
     }
-    
+
     // Check if column is full
     if (this.grid.isColumnFull(col)) {
       return false;
@@ -618,7 +618,7 @@ export class Game {
         return true;
       }
     } catch (error) {
-      console.error('Error in dropBallSync:', error);
+      console.error("Error in dropBallSync:", error);
       // Return false to indicate the drop failed
     }
 
@@ -668,7 +668,7 @@ export class Game {
     let player1Columns = 0;
     let player2Columns = 0;
 
-    columnWinners.forEach((winner) => {
+    columnWinners.forEach((winner: Player | null) => {
       if (winner === Player.PLAYER1) {
         player1Columns++;
       } else if (winner === Player.PLAYER2) {
@@ -684,7 +684,7 @@ export class Game {
     let player1Columns = 0;
     let player2Columns = 0;
 
-    columnWinners.forEach((winner) => {
+    columnWinners.forEach((winner: Player | null) => {
       if (winner === Player.PLAYER1) {
         player1Columns++;
       } else if (winner === Player.PLAYER2) {

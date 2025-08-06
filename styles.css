@@ -628,6 +628,145 @@ header {
     background: linear-gradient(135deg, #363A4A, var(--button-secondary));
 }
 
+/* Modern Game Mode Toggle Switch */
+.game-mode-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.mode-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px 25px;
+    border-radius: 25px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.mode-switch-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.mode-switch-wrapper {
+    position: relative;
+}
+
+.mode-switch-input {
+    display: none;
+}
+
+.mode-switch {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 140px;
+    height: 50px;
+    background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 15px rgba(0, 0, 0, 0.2),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+}
+
+.mode-switch:hover {
+    transform: scale(1.05);
+    box-shadow: 
+        0 6px 20px rgba(0, 0, 0, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.mode-switch-slider {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #FFD700, #FF8C00);
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 
+        0 4px 12px rgba(0, 0, 0, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mode-switch-slider::before {
+    content: '🎯';
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+.mode-switch-input:checked + .mode-switch .mode-switch-slider {
+    transform: translateX(90px);
+    background: linear-gradient(135deg, #8E44AD, #9B59B6);
+}
+
+.mode-switch-input:checked + .mode-switch .mode-switch-slider::before {
+    content: '⚡';
+}
+
+.mode-label {
+    position: absolute;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+.normal-label {
+    left: 12px;
+    opacity: 1;
+}
+
+.hard-label {
+    right: 12px;
+    opacity: 0.6;
+}
+
+.mode-switch-input:checked + .mode-switch .normal-label {
+    opacity: 0.6;
+}
+
+.mode-switch-input:checked + .mode-switch .hard-label {
+    opacity: 1;
+}
+
+/* Playful animation effects */
+.mode-switch-slider {
+    animation: float-normal 3s ease-in-out infinite;
+}
+
+.mode-switch-input:checked + .mode-switch .mode-switch-slider {
+    animation: float-hard 3s ease-in-out infinite;
+}
+
+@keyframes float-normal {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-2px); }
+}
+
+@keyframes float-hard {
+    0%, 100% { transform: translateX(90px) translateY(0px); }
+    50% { transform: translateX(90px) translateY(-2px); }
+}
+
 .game-status {
     text-align: center;
 }

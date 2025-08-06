@@ -20,9 +20,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   player1Score,
   player2Score
 }) => {
-  const handleModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    onGameModeChange(event.target.value as GameMode);
-  };
+
 
   return (
     <header>
@@ -69,27 +67,23 @@ const GameHeader: React.FC<GameHeaderProps> = ({
       </div>
       
       <div className="game-mode-selector">
-        <label>Game Mode: </label>
-        <label style={{ marginRight: '15px' }}>
-          <input
-            type="radio"
-            name="gameMode"
-            value={GameMode.NORMAL}
-            checked={gameMode === GameMode.NORMAL}
-            onChange={handleModeChange}
-          />
-          Normal
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="gameMode"
-            value={GameMode.HARD_MODE}
-            checked={gameMode === GameMode.HARD_MODE}
-            onChange={handleModeChange}
-          />
-          Hard Mode
-        </label>
+        <div className="mode-switch-container">
+          <span className="mode-switch-label">Game Mode:</span>
+          <div className="mode-switch-wrapper">
+            <input
+              type="checkbox"
+              id="mode-switch"
+              className="mode-switch-input"
+              checked={gameMode === GameMode.HARD_MODE}
+              onChange={(e) => onGameModeChange(e.target.checked ? GameMode.HARD_MODE : GameMode.NORMAL)}
+            />
+            <label htmlFor="mode-switch" className="mode-switch">
+              <span className="mode-label normal-label">Normal</span>
+              <span className="mode-switch-slider"></span>
+              <span className="mode-label hard-label">Hard</span>
+            </label>
+          </div>
+        </div>
       </div>
     </header>
   );
