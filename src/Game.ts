@@ -135,7 +135,7 @@ export class Game {
         return this.selectMove(col);
       } else if (this.state === GameState.BALL_RELEASE_PHASE) {
         // In release phase, use the releaseBall method
-        return this.releaseBall(col);
+        return this.selectMove(col)
       } else {
         return this.selectMove(col);
       }

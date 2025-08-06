@@ -209,10 +209,9 @@ export class Grid {
                     // Find the other portal of the same type
                     const portalType = nextCell.type;
                     const otherPortalPosition = this.findOtherPortalPosition(portalType, { row: nextRow, col: currentCol });
-                    
                     if (otherPortalPosition) {
                         // Calculate teleport destination (position above the other portal)
-                        const teleportRow = otherPortalPosition.row - 1;
+                        const teleportRow = otherPortalPosition.row +1;
                         const teleportCol = otherPortalPosition.col;
                         
                         // Validate teleport destination
