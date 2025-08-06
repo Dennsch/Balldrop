@@ -16,9 +16,9 @@ export class SoundManager {
 
     private loadSounds(): void {
         const soundFiles = {
-            pop: '/assets/sounds/pop.mp3',
-            impact: '/assets/sounds/impact.mp3',
-            plop: '/assets/sounds/plop-sound-made-with-my-mouth-100690.mp3'
+            pop: '/sounds/pop.mp3',
+            impact: '/sounds/impact.mp3',
+            plop: '/sounds/plop-sound-made-with-my-mouth-100690.mp3'
         };
 
         Object.entries(soundFiles).forEach(([name, path]) => {

@@ -26,7 +26,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
     <header>
       <div className="header-content">
         <div className="logo-container">
-          <img src="assets/icon.png" alt="Dropple Game Logo" className="game-logo" />
+          <img src="/icon.png" alt="Dropple Game Logo" className="game-logo" />
         </div>
       </div>
       <div className="game-info">
