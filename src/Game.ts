@@ -455,12 +455,7 @@ export class Game {
     this.notifyStateChange();
   }
 
-  // Legacy method for backward compatibility - now redirects to column-based release
-  public releaseBallAtPosition(row: number, col: number): boolean {
-    // For the new system, we release balls by column, not by position
-    // This method is kept for backward compatibility but redirects to the new system
-    return this.releaseBall(col);
-  }
+
 
   public executeAllMoves(): boolean {
     if (
@@ -508,13 +503,7 @@ export class Game {
     return true;
   }
 
-  public executeMovesLeftToRight(): boolean {
-    return this.executeMovesDirectional(ExecutionDirection.LEFT_TO_RIGHT);
-  }
 
-  public executeMovesRightToLeft(): boolean {
-    return this.executeMovesDirectional(ExecutionDirection.RIGHT_TO_LEFT);
-  }
 
   private executeMovesDirectional(direction: ExecutionDirection): boolean {
     if (
