@@ -182,9 +182,6 @@ const App: React.FC = () => {
           "Release Phase - Click your reserved columns to release balls"
         );
         break;
-      case GameState.EXECUTING_MOVES:
-        setGameMessage("Executing moves...");
-        break;
       case GameState.FINISHED:
         setGameMessage("Game finished!");
         break;
@@ -213,7 +210,7 @@ const App: React.FC = () => {
               column
             )}`
           );
-          const success = game.dropBall(column);
+          const success = game.getState()===GameState.BALL_RELEASE_PHASE?game.releaseBall(column):game.dropBall(column);
           console.log(`Drop result: ${success}`);
           if (!success) {
             setGameMessage(`Cannot drop ball in column ${column + 1}`);

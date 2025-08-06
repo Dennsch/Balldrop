@@ -318,7 +318,7 @@ export class Game {
   }
 
   public releaseBall(col: number): boolean {
-    if (this.state !== GameState.BALL_RELEASE_PHASE) {
+    if (this.state !== GameState.BALL_PLACEMENT_PHASE) {
       return false;
     }
 
