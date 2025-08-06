@@ -45,6 +45,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Export classes for potential external use
 export { Game } from "./Game.js";
-export { GameUI } from "./GameUI.js";
-export { Grid } from "./Grid.js";
 export * from "./types.js";
