@@ -166,6 +166,7 @@ header {
     gap: 1px;
     margin-bottom: 3px;
     width: 600px;
+    max-width: 600px;
 }
 
 .column-selector {
@@ -906,6 +907,7 @@ header {
     .column-selectors {
         width: min(90vw, 500px);
         gap: 1px;
+        max-width: min(90vw, 500px);
     }
 }
 
@@ -959,6 +961,7 @@ header {
     .column-selectors {
         width: min(95vw, 450px);
         gap: 1px;
+        max-width: min(95vw, 450px);
         overflow-x: auto;
         overflow-y: hidden;
         scrollbar-width: thin;
@@ -1067,6 +1070,7 @@ header {
     .column-selectors {
         width: min(98vw, 350px);
         gap: 1px;
+        max-width: min(98vw, 350px);
     }
     
     .column-selector {
@@ -1123,6 +1127,7 @@ header {
     .column-selectors {
         width: min(99vw, 300px);
         gap: 1px;
+        max-width: min(99vw, 300px);
     }
     
     .column-selector {
@@ -1198,6 +1203,7 @@ header {
     .column-selectors {
         width: min(60vh, 300px);
         gap: 1px;
+        max-width: min(60vh, 300px);
     }
     
     .column-selector {
