@@ -1,16 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Game } from "./Game.js";
-import {
-  GameState,
-  Player,
-  BallPath,
-  GameMode,
-} from "./types.js";
+import { GameState, Player, BallPath, GameMode } from "./types.js";
 import GameHeader from "./components/GameHeader.js";
 import GameBoard from "./components/GameBoard.js";
 import GameControls from "./components/GameControls.js";
 import GameStatus from "./components/GameStatus.js";
-import AnimatedBall from "./components/AnimatedBall.js";
+import GameModeSwitch from "./components/GameModeSwitch.js";
 
 const App: React.FC = () => {
   const [game, setGame] = useState<Game | null>(null);
@@ -199,8 +194,6 @@ const App: React.FC = () => {
     }
   }, [game]);
 
-
-
   const handleColumnClick = useCallback(
     (column: number) => {
       if (game && !isAnimating) {
@@ -210,7 +203,10 @@ const App: React.FC = () => {
               column
             )}`
           );
-          const success = game.getState()===GameState.BALL_RELEASE_PHASE?game.releaseBall(column):game.dropBall(column);
+          const success =
+            game.getState() === GameState.BALL_RELEASE_PHASE
+              ? game.releaseBall(column)
+              : game.dropBall(column);
           console.log(`Drop result: ${success}`);
           if (!success) {
             setGameMessage(`Cannot drop ball in column ${column + 1}`);
@@ -257,25 +253,23 @@ const App: React.FC = () => {
     [game, isAnimating]
   );
 
-
-
   const handleGameModeChange = useCallback(
     (mode: GameMode) => {
       if (game) {
         console.log(`Changing game mode to: ${mode}`);
         game.setGameMode(mode);
         setGameMode(mode);
-        
+
         // Automatically start a new game when switching modes
         game.startNewGame();
-        
+
         // Reset animation state
         setIsAnimating(false);
         setAnimatedBalls([]);
-        
+
         // Force grid re-render
         setGridKey((prev) => prev + 1);
-        
+
         console.log(`New game started in ${mode} mode`);
       }
     },
@@ -286,7 +280,12 @@ const App: React.FC = () => {
     (ballPath: BallPath) => {
       if (game) {
         const currentState = game.getState();
-        console.log("🎬 App: Animation completed for column:", ballPath.startColumn, "Game state:", currentState);
+        console.log(
+          "🎬 App: Animation completed for column:",
+          ballPath.startColumn,
+          "Game state:",
+          currentState
+        );
 
         // Complete the ball drop/release in the game logic based on current state
         if (currentState === GameState.BALL_RELEASE_PHASE) {
@@ -337,8 +336,6 @@ const App: React.FC = () => {
         currentPlayer={currentPlayer}
         player1Balls={player1Balls}
         player2Balls={player2Balls}
-        gameMode={gameMode}
-        onGameModeChange={handleGameModeChange}
         player1Score={player1Score}
         player2Score={player2Score}
       />
@@ -354,9 +351,12 @@ const App: React.FC = () => {
           onAnimationComplete={handleAnimationComplete}
         />
 
-        <GameControls
-          onNewGame={handleNewGame}
+        <GameModeSwitch
+          gameMode={gameMode}
+          onGameModeChange={handleGameModeChange}
         />
+
+        <GameControls onNewGame={handleNewGame} />
 
         <GameStatus winnerMessage={winnerMessage} gameMessage={gameMessage} />
       </main>

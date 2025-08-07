@@ -1,12 +1,10 @@
 import React from "react";
-import { Player, GameMode } from "../types.js";
+import { Player } from "../types.js";
 
 interface GameHeaderProps {
   currentPlayer: Player;
   player1Balls: number;
   player2Balls: number;
-  gameMode: GameMode;
-  onGameModeChange: (mode: GameMode) => void;
   player1Score: number;
   player2Score: number;
 }
@@ -15,8 +13,6 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   currentPlayer,
   player1Balls,
   player2Balls,
-  gameMode,
-  onGameModeChange,
   player1Score,
   player2Score,
 }) => {
@@ -88,40 +84,7 @@ const GameHeader: React.FC<GameHeaderProps> = ({
         </div>
       </div>
 
-      <div className="game-mode-selector">
-        <div className="mode-switch-container">
-          <span
-            className={`mode-switch-label ${
-              gameMode === GameMode.NORMAL ? "active" : ""
-            }`}
-          >
-            Normal
-          </span>
-          <div className="mode-switch-wrapper">
-            <input
-              type="checkbox"
-              id="mode-switch"
-              className="mode-switch-input"
-              checked={gameMode === GameMode.HARD_MODE}
-              onChange={(e) =>
-                onGameModeChange(
-                  e.target.checked ? GameMode.HARD_MODE : GameMode.NORMAL
-                )
-              }
-            />
-            <label htmlFor="mode-switch" className="mode-switch">
-              <span className="mode-switch-slider"></span>
-            </label>
-          </div>
-          <span
-            className={`mode-switch-label ${
-              gameMode === GameMode.HARD_MODE ? "active" : ""
-            }`}
-          >
-            Hard
-          </span>
-        </div>
-      </div>
+     
     </header>
   );
 };
