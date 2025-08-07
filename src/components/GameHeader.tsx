@@ -1,5 +1,5 @@
-import React from 'react';
-import { Player, GameMode } from '../types.js';
+import React from "react";
+import { Player, GameMode } from "../types.js";
 
 interface GameHeaderProps {
   currentPlayer: Player;
@@ -18,10 +18,8 @@ const GameHeader: React.FC<GameHeaderProps> = ({
   gameMode,
   onGameModeChange,
   player1Score,
-  player2Score
+  player2Score,
 }) => {
-
-
   return (
     <header>
       <div className="header-content">
@@ -29,46 +27,74 @@ const GameHeader: React.FC<GameHeaderProps> = ({
           <img src="/icon.png" alt="Dropple Game Logo" className="game-logo" />
         </div>
       </div>
-      <div className="game-info">
-        <div className="player-info">
-          <div className="player player-1">
-            <span className="player-name">Player 1</span>
-            <span className="balls-remaining">
-              Balls: <span id="player1-balls">{player1Balls}</span>
-            </span>
-          </div>
-          <div className="current-turn">
-            <span id="current-player">Player {currentPlayer}'s Turn</span>
-          </div>
-          <div className="player player-2">
-            <span className="player-name">Player 2</span>
-            <span className="balls-remaining">
-              Balls: <span id="player2-balls">{player2Balls}</span>
-            </span>
-          </div>
-        </div>
-        
-        <div className="score-display">
-          <div className="score-title">Current Score</div>
-          <div className="score-info">
-            <div className="player-score player-1-score">
-              <span className="score-label">Player 1:</span>
-              <span id="player1-score" className="score-value">{player1Score}</span>
-              <span className="score-unit">columns</span>
+
+      <div className="player-info-redesigned">
+        <div className="players-container">
+          <div
+            className={`player-card player-1-card ${
+              currentPlayer === Player.PLAYER1 ? "active-player" : ""
+            }`}
+          >
+            <div className="player-avatar">
+              <div className="avatar-icon">🔴</div>
+              {currentPlayer === Player.PLAYER1 && (
+                <div className="active-indicator"></div>
+              )}
             </div>
-            <div className="score-separator">-</div>
-            <div className="player-score player-2-score">
-              <span className="score-label">Player 2:</span>
-              <span id="player2-score" className="score-value">{player2Score}</span>
-              <span className="score-unit">columns</span>
+            <div className="player-details">
+              <div className="player-name">Player 1</div>
+              <div className="player-stats">
+                <div className="stat-item">
+                  <span className="stat-icon">⚽</span>
+                  <span className="stat-value">{player1Balls}</span>
+                  <span className="stat-label">balls</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-icon">🏆</span>
+                  <span className="stat-value">{player1Score}</span>
+                  <span className="stat-label">columns</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className={`player-card player-2-card ${
+              currentPlayer === Player.PLAYER2 ? "active-player" : ""
+            }`}
+          >
+            <div className="player-avatar">
+              <div className="avatar-icon">🔵</div>
+              {currentPlayer === Player.PLAYER2 && (
+                <div className="active-indicator"></div>
+              )}
+            </div>
+            <div className="player-details">
+              <div className="player-name">Player 2</div>
+              <div className="player-stats">
+                <div className="stat-item">
+                  <span className="stat-icon">⚽</span>
+                  <span className="stat-value">{player2Balls}</span>
+                  <span className="stat-label">balls</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-icon">🏆</span>
+                  <span className="stat-value">{player2Score}</span>
+                  <span className="stat-label">columns</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       <div className="game-mode-selector">
         <div className="mode-switch-container">
-          <span className={`mode-switch-label ${gameMode === GameMode.NORMAL ? 'active' : ''}`}>
+          <span
+            className={`mode-switch-label ${
+              gameMode === GameMode.NORMAL ? "active" : ""
+            }`}
+          >
             Normal
           </span>
           <div className="mode-switch-wrapper">
@@ -77,13 +103,21 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               id="mode-switch"
               className="mode-switch-input"
               checked={gameMode === GameMode.HARD_MODE}
-              onChange={(e) => onGameModeChange(e.target.checked ? GameMode.HARD_MODE : GameMode.NORMAL)}
+              onChange={(e) =>
+                onGameModeChange(
+                  e.target.checked ? GameMode.HARD_MODE : GameMode.NORMAL
+                )
+              }
             />
             <label htmlFor="mode-switch" className="mode-switch">
               <span className="mode-switch-slider"></span>
             </label>
           </div>
-          <span className={`mode-switch-label ${gameMode === GameMode.HARD_MODE ? 'active' : ''}`}>
+          <span
+            className={`mode-switch-label ${
+              gameMode === GameMode.HARD_MODE ? "active" : ""
+            }`}
+          >
             Hard
           </span>
         </div>
