@@ -877,36 +877,194 @@ header {
     color: var(--text-secondary);
 }
 
-.game-status {
-    text-align: center;
+/* Modern Game Status Container */
+.game-status-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin: 20px 0;
 }
 
-.winner-message {
-    font-size: 1.5em;
-    font-weight: bold;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 10px;
+/* Winner Announcement Styles */
+.winner-announcement {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+    backdrop-filter: blur(15px);
+    padding: 25px 35px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    animation: winner-entrance 0.8s ease-out;
+    position: relative;
+    overflow: hidden;
 }
 
-.winner-message.player1-wins {
-    background: var(--player-1-color);
-    color: var(--text-light);
+.winner-announcement::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: winner-shine 2s ease-in-out infinite;
 }
 
-.winner-message.player2-wins {
-    background: var(--player-2-color);
-    color: var(--text-light);
+.winner-announcement.player1-wins {
+    border-color: var(--player-1-color);
+    background: linear-gradient(135deg, 
+        rgba(242, 92, 60, 0.2), 
+        rgba(242, 92, 60, 0.1));
 }
 
-.winner-message.tie {
-    background: var(--brand-accent);
+.winner-announcement.player2-wins {
+    border-color: var(--player-2-color);
+    background: linear-gradient(135deg, 
+        rgba(110, 207, 246, 0.2), 
+        rgba(110, 207, 246, 0.1));
+}
+
+.winner-announcement.tie {
+    border-color: var(--brand-accent);
+    background: linear-gradient(135deg, 
+        rgba(110, 207, 246, 0.2), 
+        rgba(110, 207, 246, 0.1));
+}
+
+.winner-icon {
+    font-size: 48px;
+    animation: winner-bounce 2s ease-in-out infinite;
+}
+
+.winner-text {
+    flex: 1;
+}
+
+.winner-title {
+    font-size: 24px;
+    font-weight: 800;
     color: var(--text-primary);
+    margin-bottom: 5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.game-message {
-    font-size: 1.1em;
+.winner-details {
+    font-size: 16px;
     color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* Game Info Card Styles */
+.game-info-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(10px);
+    padding: 18px 25px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    min-width: 300px;
+    max-width: 500px;
+}
+
+.game-info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+}
+
+.info-icon {
+    font-size: 28px;
+    animation: info-pulse 2s ease-in-out infinite;
+}
+
+.info-content {
+    flex: 1;
+    position: relative;
+}
+
+.info-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.info-pulse {
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+        var(--brand-primary), 
+        var(--brand-secondary), 
+        var(--brand-accent));
+    border-radius: 1px;
+    animation: info-progress 3s ease-in-out infinite;
+}
+
+/* Animations */
+@keyframes winner-entrance {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes winner-shine {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes winner-bounce {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes info-pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+@keyframes info-progress {
+    0% {
+        width: 0%;
+        opacity: 0.5;
+    }
+    50% {
+        width: 100%;
+        opacity: 1;
+    }
+    100% {
+        width: 0%;
+        opacity: 0.5;
+    }
 }
 
 .hidden {
@@ -1148,13 +1306,45 @@ header {
         font-size: 14px;
     }
     
-    .winner-message {
-        font-size: 1.2em;
-        padding: 12px;
+    .game-status-container {
+        margin: 15px 0;
+        gap: 12px;
     }
     
-    .game-message {
-        font-size: 1em;
+    .winner-announcement {
+        padding: 20px 25px;
+        gap: 15px;
+        border-radius: 16px;
+        min-width: auto;
+        max-width: 90vw;
+    }
+    
+    .winner-icon {
+        font-size: 36px;
+    }
+    
+    .winner-title {
+        font-size: 20px;
+    }
+    
+    .winner-details {
+        font-size: 14px;
+    }
+    
+    .game-info-card {
+        padding: 15px 20px;
+        gap: 12px;
+        border-radius: 14px;
+        min-width: auto;
+        max-width: 90vw;
+    }
+    
+    .info-icon {
+        font-size: 24px;
+    }
+    
+    .info-text {
+        font-size: 14px;
     }
 }
 
@@ -1210,6 +1400,40 @@ header {
     
     .btn {
         padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    .winner-announcement {
+        padding: 15px 20px;
+        gap: 12px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .winner-icon {
+        font-size: 32px;
+    }
+    
+    .winner-title {
+        font-size: 18px;
+    }
+    
+    .winner-details {
+        font-size: 13px;
+    }
+    
+    .game-info-card {
+        padding: 12px 16px;
+        gap: 10px;
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .info-icon {
+        font-size: 20px;
+    }
+    
+    .info-text {
         font-size: 13px;
     }
 }
