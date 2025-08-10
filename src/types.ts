@@ -80,11 +80,13 @@ export interface GameResult {
 
 export interface BallPathStep {
     position: Position;
-    action: 'fall' | 'redirect' | 'settle';
+    action: 'fall' | 'redirect' | 'settle' | 'portal_entry' | 'portal_exit';
     hitBox?: boolean;
     boxDirection?: Direction;
     newBoxDirection?: Direction;
     boxPosition?: Position;
+    portalType?: CellType; // For portal entry/exit steps
+    portalPosition?: Position; // Position of the portal being entered/exited
 }
 
 export interface BallPath {
