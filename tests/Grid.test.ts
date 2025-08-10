@@ -551,9 +551,11 @@ describe('Grid', () => {
             
             const steps1 = result1.ballPath?.steps || [];
             
-            // Should have a redirect step for portal teleportation
-            const redirectStep1 = steps1.find(step => step.action === 'redirect');
-            expect(redirectStep1).toBeDefined();
+            // Should have portal entry and exit steps for portal teleportation
+            const portalEntryStep = steps1.find(step => step.action === 'portal_entry');
+            const portalExitStep = steps1.find(step => step.action === 'portal_exit');
+            expect(portalEntryStep).toBeDefined();
+            expect(portalExitStep).toBeDefined();
             
             // Should have steps in both columns (entry and exit)
             const column1Steps = steps1.filter(step => step.position.col === 1);
@@ -590,9 +592,11 @@ describe('Grid', () => {
             
             const steps1 = result1.ballPath?.steps || [];
             
-            // Should have a redirect step for portal teleportation
-            const redirectStep1 = steps1.find(step => step.action === 'redirect');
-            expect(redirectStep1).toBeDefined();
+            // Should have portal entry and exit steps for portal teleportation
+            const portalEntryStep = steps1.find(step => step.action === 'portal_entry');
+            const portalExitStep = steps1.find(step => step.action === 'portal_exit');
+            expect(portalEntryStep).toBeDefined();
+            expect(portalExitStep).toBeDefined();
             
             // Should have steps in both columns
             const column1Steps = steps1.filter(step => step.position.col === 1);

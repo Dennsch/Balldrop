@@ -203,14 +203,14 @@ export class Grid {
                 }
             }
 
-            // If next cell has a portal, teleport the ball
+            // If next cell has a portal, create portal entry sequence
             if (nextCell.type === CellType.PORTAL_1 || nextCell.type === CellType.PORTAL_2) {
                 try {
                     // Find the other portal of the same type
                     const portalType = nextCell.type;
                     const otherPortalPosition = this.findOtherPortalPosition(portalType, { row: nextRow, col: currentCol });
                     if (otherPortalPosition) {
-                        // Calculate teleport destination (position above the other portal)
+                        // Calculate teleport destination (position below the other portal)
                         const teleportRow = otherPortalPosition.row + 1;
                         const teleportCol = otherPortalPosition.col;
                         
@@ -218,21 +218,25 @@ export class Grid {
                         if (this.isValidPosition(teleportRow, teleportCol) && 
                             this.cells[teleportRow][teleportCol].type === CellType.EMPTY) {
                             
-                            // Add portal entry step
+                            // Step 1: Ball moves to the top of the entry portal
                             pathSteps.push({
-                                position: { row: currentRow, col: currentCol },
-                                action: 'redirect' // Using redirect action for portal teleportation
+                                position: { row: nextRow, col: currentCol },
+                                action: 'portal_entry',
+                                portalType: portalType,
+                                portalPosition: { row: nextRow, col: currentCol }
                             });
                             
-                            // Teleport to the valid destination
+                            // Step 2: Ball exits from the bottom of the destination portal
+                            pathSteps.push({
+                                position: { row: teleportRow, col: teleportCol },
+                                action: 'portal_exit',
+                                portalType: portalType,
+                                portalPosition: { row: otherPortalPosition.row, col: otherPortalPosition.col }
+                            });
+                            
+                            // Update current position to continue falling from teleport destination
                             currentRow = teleportRow;
                             currentCol = teleportCol;
-                            
-                            // Add teleport arrival step
-                            pathSteps.push({
-                                position: { row: currentRow, col: currentCol },
-                                action: 'fall'
-                            });
                             
                             // Continue falling from the new position
                             continue;

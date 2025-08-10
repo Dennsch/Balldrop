@@ -29,7 +29,9 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
     ball: HTMLElement,
     row: number,
     col: number,
-    action: string
+    action: string,
+    portalType?: string,
+    portalPosition?: { row: number; col: number }
   ): Promise<void> => {
     return new Promise((resolve) => {
       const cellElement = getCellElement(row, col);
@@ -54,14 +56,72 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
       const paddingLeft = parseInt(containerStyle.paddingLeft) || 0;
       const paddingTop = parseInt(containerStyle.paddingTop) || 0;
       
-      const left = rect.left - containerRect.left - borderLeft - paddingLeft + (rect.width - 32) / 2;
-      const top = rect.top - containerRect.top - borderTop - paddingTop + (rect.height - 32) / 2;
+      let left = rect.left - containerRect.left - borderLeft - paddingLeft + (rect.width - 32) / 2;
+      let top = rect.top - containerRect.top - borderTop - paddingTop + (rect.height - 32) / 2;
+
+      // Special positioning for portal entry and exit
+      if (action === 'portal_entry') {
+        // Position ball at the top center of the portal for entry
+        top = rect.top - containerRect.top - borderTop - paddingTop + 2; // Near top of cell
+        ball.style.transform = 'scale(0.8)'; // Slightly smaller as it enters
+      } else if (action === 'portal_exit') {
+        // Position ball at the bottom center of the portal for exit
+        top = rect.top - containerRect.top - borderTop - paddingTop + rect.height - 34; // Near bottom of cell
+        ball.style.transform = 'scale(0.8)'; // Start small and grow
+        setTimeout(() => {
+          ball.style.transform = 'scale(1)'; // Grow back to normal size
+        }, getAnimatedDuration(100));
+      }
 
       ball.style.left = `${left}px`;
       ball.style.top = `${top}px`;
 
       // Add visual effects based on action
-      if (action === 'redirect') {
+      if (action === 'portal_entry') {
+        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(138, 43, 226, 0.8)';
+        ball.style.transform = 'scale(0.8) rotate(360deg)';
+        
+        // Add portal glow effect to the portal cell
+        if (portalPosition) {
+          const portalElement = getCellElement(portalPosition.row, portalPosition.col);
+          if (portalElement) {
+            portalElement.style.boxShadow = '0 0 20px rgba(138, 43, 226, 0.9), inset 0 0 20px rgba(138, 43, 226, 0.3)';
+            portalElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+              portalElement.style.boxShadow = '0 0 10px rgba(155, 89, 182, 0.5)';
+              portalElement.style.transform = 'scale(1)';
+            }, getAnimatedDuration(300));
+          }
+        }
+        
+        setTimeout(() => {
+          ball.style.transform = 'scale(0.6)';
+          ball.style.opacity = '0.3';
+        }, getAnimatedDuration(200));
+      } else if (action === 'portal_exit') {
+        ball.style.opacity = '0.3';
+        ball.style.transform = 'scale(0.6)';
+        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(138, 43, 226, 0.8)';
+        
+        // Add portal glow effect to the exit portal
+        if (portalPosition) {
+          const portalElement = getCellElement(portalPosition.row, portalPosition.col);
+          if (portalElement) {
+            portalElement.style.boxShadow = '0 0 20px rgba(138, 43, 226, 0.9), inset 0 0 20px rgba(138, 43, 226, 0.3)';
+            portalElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+              portalElement.style.boxShadow = '0 0 10px rgba(155, 89, 182, 0.5)';
+              portalElement.style.transform = 'scale(1)';
+            }, getAnimatedDuration(300));
+          }
+        }
+        
+        setTimeout(() => {
+          ball.style.opacity = '1';
+          ball.style.transform = 'scale(1)';
+          ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
+        }, getAnimatedDuration(150));
+      } else if (action === 'redirect') {
         ball.style.transform = 'scale(1.3) rotate(360deg)';
         ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 255, 0, 0.8)';
         setTimeout(() => {
@@ -81,7 +141,10 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
       }
 
       // Adjust timing based on action
-      const baseDuration = action === 'settle' ? 250 : action === 'redirect' ? 400 : 350;
+      const baseDuration = action === 'settle' ? 250 : 
+                          action === 'redirect' ? 400 : 
+                          action === 'portal_entry' ? 500 :
+                          action === 'portal_exit' ? 400 : 350;
       const duration = getAnimatedDuration(baseDuration);
 
       setTimeout(resolve, duration);
@@ -104,7 +167,9 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
             ball,
             step.position.row,
             step.position.col,
-            step.action
+            step.action,
+            step.portalType?.toString(),
+            step.portalPosition
           );
         }
 
