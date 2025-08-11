@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.js";
-import "../styles.css";
+import "./styles.css";
 
 // Initialize the React app when the DOM is loaded
 document.addEventListener("DOMContentLoaded", () => {
