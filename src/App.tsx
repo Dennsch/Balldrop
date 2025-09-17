@@ -6,6 +6,7 @@ import GameBoard from "./components/GameBoard.js";
 import GameControls from "./components/GameControls.js";
 import GameStatus from "./components/GameStatus.js";
 import GameModeSwitch from "./components/GameModeSwitch.js";
+import { loadGameMode, saveGameMode } from "./utils/localStorage.js";
 
 const App: React.FC = () => {
   const [game, setGame] = useState<Game | null>(null);
@@ -18,18 +19,20 @@ const App: React.FC = () => {
 
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [gridKey, setGridKey] = useState<number>(0); // Force grid re-render
-  const [gameMode, setGameMode] = useState<GameMode>(GameMode.NORMAL);
+  const [gameMode, setGameMode] = useState<GameMode>(loadGameMode());
   const [player1Score, setPlayer1Score] = useState<number>(0);
   const [player2Score, setPlayer2Score] = useState<number>(0);
   const [animatedBalls, setAnimatedBalls] = useState<BallPath[]>([]);
 
   // Initialize game
   useEffect(() => {
+    const initialGameMode = loadGameMode();
     const gameInstance = new Game({
       gridSize: 20,
       ballsPerPlayer: 10,
       minBoxes: 15,
       maxBoxes: 30,
+      gameMode: initialGameMode,
     });
 
     // Set up game event listeners
@@ -259,6 +262,9 @@ const App: React.FC = () => {
         console.log(`Changing game mode to: ${mode}`);
         game.setGameMode(mode);
         setGameMode(mode);
+
+        // Save the new game mode to local storage
+        saveGameMode(mode);
 
         // Automatically start a new game when switching modes
         game.startNewGame();
