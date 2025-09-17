@@ -60,7 +60,7 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     margin: 0;
@@ -68,6 +68,7 @@ body {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     touch-action: manipulation;
+    padding-top: 10px;
 }
 
 .game-container {
@@ -371,6 +372,10 @@ header {
     flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .column-selectors-container {
@@ -378,13 +383,14 @@ header {
     flex-direction: column;
     align-items: center;
     margin-bottom: 3px;
+    width: 100%;
 }
 
 .column-selectors {
     display: grid;
     grid-template-columns: repeat(20, 1fr);
     gap: 1px;
-    width: 600px;
+    width: 100%;
     max-width: 600px;
 }
 
@@ -393,6 +399,7 @@ header {
     flex-direction: column;
     align-items: center;
     gap: 2px;
+    width: 100%;
 }
 
 .column-number {
@@ -617,6 +624,8 @@ header {
     border-radius: 10px;
     overflow: hidden;
     background: var(--grid-background);
+    width: 100%;
+    max-width: 600px;
 }
 
 .grid {
@@ -624,8 +633,9 @@ header {
     grid-template-columns: repeat(20, 1fr);
     grid-template-rows: repeat(20, 1fr);
     gap: 1px;
-    width: 600px;
-    height: 600px;
+    width: 100%;
+    max-width: 600px;
+    aspect-ratio: 1;
     background: var(--border-color);
     position: relative;
 }
@@ -640,8 +650,7 @@ header {
     font-weight: bold;
     position: relative;
     transition: all var(--cell-transition-duration) ease;
-    min-height: 20px;
-    min-width: 20px;
+    aspect-ratio: 1;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
 }
@@ -1293,15 +1302,17 @@ header {
         padding: 18px;
     }
     
+    .game-board {
+        max-width: min(90vw, 500px);
+    }
+    
     .grid {
-        width: min(90vw, 500px);
-        height: min(90vw, 500px);
+        max-width: min(90vw, 500px);
     }
     
     .column-selectors {
-        width: min(90vw, 500px);
-        gap: 1px;
         max-width: min(90vw, 500px);
+        gap: 1px;
     }
     
     .column-number {
@@ -1351,32 +1362,127 @@ header {
         transform: translateX(38px);
     }
     
+    .game-board {
+        max-width: min(95vw, 450px);
+    }
+    
     .grid {
-        width: min(95vw, 450px);
-        height: min(95vw, 450px);
+        max-width: min(95vw, 450px);
     }
     
     .column-selectors-container {
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: thin;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        padding-bottom: 5px;
         width: 100%;
     }
     
     .column-selectors {
-        width: min(95vw, 450px);
-        gap: 1px;
         max-width: min(95vw, 450px);
+        gap: 1px;
     }
     
     .column-number {
         font-size: 7px;
     }
-        overflow-y: hidden;
-        scrollbar-width: thin;
+    
+    .column-selector {
+        padding: 8px 2px;
+        font-size: 16px;
+        min-height: 40px;
+    }
+    
+    .players-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .player-card {
+        min-width: auto;
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 10px;
+        margin: 5px;
+        width: calc(100vw - 10px);
+    }
+    
+    .game-board {
+        max-width: min(98vw, 350px);
+    }
+    
+    .grid {
+        max-width: min(98vw, 350px);
+    }
+    
+    .column-selectors {
+        max-width: min(98vw, 350px);
+        gap: 0px;
+    }
+    
+    .column-selector {
+        padding: 6px 1px;
+        font-size: 14px;
+        min-height: 36px;
+    }
+    
+    .column-number {
+        font-size: 6px;
+    }
+    
+    .game-logo {
+        max-width: 60px;
+        max-height: 60px;
+    }
+    
+    .player-name {
+        font-size: 16px;
+    }
+    
+    .stat-value {
+        font-size: 14px;
+    }
+    
+    .turn-player {
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    .game-controls {
+        gap: 10px;
+    }
+    
+    .mode-switch-container {
+        padding: 8px 15px;
+        gap: 8px;
+    }
+    
+    .mode-switch-label {
+        font-size: 12px;
+    }
+    
+    .mode-switch {
+        width: 60px;
+        height: 28px;
+    }
+    
+    .mode-switch-slider {
+        width: 22px;
+        height: 22px;
+        top: 2px;
+        left: 2px;
+    }
+    
+    .mode-switch-input:checked + .mode-switch .mode-switch-slider {
+        transform: translateX(32px);
+    }
+}r-width: thin;
         -webkit-overflow-scrolling: touch;
         scroll-behavior: smooth;
         padding-bottom: 5px;
