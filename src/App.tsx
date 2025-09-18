@@ -141,7 +141,7 @@ const App: React.FC = () => {
         break;
       case GameState.PLAYING:
         setGameMessage(
-          `Player ${currentPlayer}'s turn - Click a column to drop a ball`
+          `Player ${currentPlayer}'s turn - Drag the ball to a column to drop it`
         );
         break;
       case GameState.SELECTING_MOVES:
@@ -177,7 +177,7 @@ const App: React.FC = () => {
         break;
       case GameState.BALL_RELEASE_PHASE:
         setGameMessage(
-          "Release Phase - Click your reserved columns to release balls"
+          "Release Phase - Drag the ball to your reserved columns to release balls"
         );
         break;
       case GameState.FINISHED:
