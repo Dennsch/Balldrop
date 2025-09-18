@@ -6,12 +6,14 @@ interface DragDropAreaProps {
   game: Game;
   onColumnClick: (column: number) => void;
   isAnimating: boolean;
+  onHighlightedColumnChange?: (column: number | null) => void;
 }
 
 const DragDropArea: React.FC<DragDropAreaProps> = ({
   game,
   onColumnClick,
   isAnimating,
+  onHighlightedColumnChange,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [highlightedColumn, setHighlightedColumn] = useState<number | null>(null);
@@ -25,6 +27,13 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
   const currentPlayer = game.getCurrentPlayer();
   const columnWinners = game.getGrid().getColumnWinners();
   const columnReservation = game.getColumnReservation();
+
+  // Notify parent component when highlighted column changes
+  useEffect(() => {
+    if (onHighlightedColumnChange) {
+      onHighlightedColumnChange(highlightedColumn);
+    }
+  }, [highlightedColumn, onHighlightedColumnChange]);
 
   // Calculate which column is under the cursor/touch point
   const getColumnFromPosition = useCallback((clientX: number): number | null => {

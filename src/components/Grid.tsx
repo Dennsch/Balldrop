@@ -5,9 +5,10 @@ import Cell from "./Cell.js";
 interface GridProps {
   game: Game;
   onCellClick?: (row: number, col: number) => void;
+  highlightedColumn?: number | null;
 }
 
-const Grid: React.FC<GridProps> = ({ game, onCellClick }) => {
+const Grid: React.FC<GridProps> = ({ game, onCellClick, highlightedColumn }) => {
   const [gridData, setGridData] = useState(game.getGrid().getCells());
   const gridSize = game.getGrid().getSize();
 
@@ -64,6 +65,7 @@ const Grid: React.FC<GridProps> = ({ game, onCellClick }) => {
   const cells = [];
   for (let row = 0; row < gridSize; row++) {
     for (let col = 0; col < gridSize; col++) {
+      const isHighlighted = row === 0 && highlightedColumn === col;
       cells.push(
         <Cell
           key={`${row}-${col}`}
@@ -71,6 +73,7 @@ const Grid: React.FC<GridProps> = ({ game, onCellClick }) => {
           col={col}
           cell={gridData[row][col]}
           onCellClick={onCellClick}
+          isHighlighted={isHighlighted}
         />
       );
     }

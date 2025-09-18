@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Game } from '../Game.js';
 import { BallPath } from '../types.js';
 import Grid from './Grid.js';
@@ -25,6 +25,12 @@ const GameBoard: React.FC<GameBoardProps> = ({
   animatedBalls,
   onAnimationComplete
 }) => {
+  const [highlightedColumn, setHighlightedColumn] = useState<number | null>(null);
+
+  const handleHighlightedColumnChange = (column: number | null) => {
+    setHighlightedColumn(column);
+  };
+
   return (
     <div className="game-board">
       <DragDropArea
@@ -32,12 +38,14 @@ const GameBoard: React.FC<GameBoardProps> = ({
         game={game}
         onColumnClick={onColumnClick}
         isAnimating={isAnimating}
+        onHighlightedColumnChange={handleHighlightedColumnChange}
       />
       <div className="grid-container" style={{ position: 'relative' }}>
         <Grid
           key={gridKey}
           game={game}
           onCellClick={onCellClick}
+          highlightedColumn={highlightedColumn}
         />
         {/* Render animated balls inside grid container */}
         {animatedBalls.map((ballPath, index) => (
