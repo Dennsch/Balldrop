@@ -6,11 +6,17 @@ interface CellProps {
   col: number;
   cell: CellType;
   onCellClick?: (row: number, col: number) => void;
+  isHighlighted?: boolean;
 }
 
-const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick }) => {
+const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick, isHighlighted }) => {
   const getCellClasses = () => {
     const classes = ['cell'];
+    
+    // Add highlighting class if this cell should be highlighted
+    if (isHighlighted) {
+      classes.push('highlighted-drop-target');
+    }
     
     switch (cell.type) {
       case CellTypeEnum.BOX:
