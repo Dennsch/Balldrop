@@ -39,10 +39,13 @@ npm run preview
 
 ## Game Rules
 
-- Players take turns dropping balls into columns
+- Players take turns dropping balls into columns using drag and drop
+- Drag the colored ball from the drop area above the grid to any column
+- Column highlighting shows where the ball will be placed when you release it
 - Balls fall down and interact with directional boxes
 - The goal is to get your balls to the bottom row
 - Two game modes available: Normal and Hard Mode
+- Supports both mouse and touch interactions for mobile devices
 
 ## Technologies Used
 

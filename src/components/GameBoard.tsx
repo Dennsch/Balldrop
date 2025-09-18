@@ -2,8 +2,9 @@ import React from 'react';
 import { Game } from '../Game.js';
 import { BallPath } from '../types.js';
 import Grid from './Grid.js';
-import ColumnSelectors from './ColumnSelectors.js';
+import DragDropArea from './DragDropArea.js';
 import AnimatedBall from './AnimatedBall.js';
+import '../dragdrop.css';
 
 interface GameBoardProps {
   game: Game;
@@ -26,7 +27,7 @@ const GameBoard: React.FC<GameBoardProps> = ({
 }) => {
   return (
     <div className="game-board">
-      <ColumnSelectors
+      <DragDropArea
         key={gridKey}
         game={game}
         onColumnClick={onColumnClick}
