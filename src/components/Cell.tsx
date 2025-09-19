@@ -1,16 +1,28 @@
 import React from 'react';
-import { Cell as CellType, CellType as CellTypeEnum, Direction } from '../types.js';
+import { Cell as CellType, CellType as CellTypeEnum, Direction, Player } from '../types.js';
 
 interface CellProps {
   row: number;
   col: number;
   cell: CellType;
   onCellClick?: (row: number, col: number) => void;
+  isHighlighted?: boolean;
+  currentPlayer?: Player;
 }
 
-const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick }) => {
+const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick, isHighlighted, currentPlayer }) => {
   const getCellClasses = () => {
     const classes = ['cell'];
+    
+    // Add highlight class if this cell is highlighted
+    if (isHighlighted) {
+      classes.push('highlighted-drop-target');
+      if (currentPlayer === Player.PLAYER1) {
+        classes.push('highlighted-player1');
+      } else if (currentPlayer === Player.PLAYER2) {
+        classes.push('highlighted-player2');
+      }
+    }
     
     switch (cell.type) {
       case CellTypeEnum.BOX:
@@ -45,6 +57,11 @@ const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick }) => {
   };
 
   const getCellContent = () => {
+    // If highlighted and empty, show the ball that would be dropped
+    if (isHighlighted && cell.type === CellTypeEnum.EMPTY) {
+      return currentPlayer === Player.PLAYER1 ? '🔴' : '🔵';
+    }
+    
     switch (cell.type) {
       case CellTypeEnum.BOX:
         return (

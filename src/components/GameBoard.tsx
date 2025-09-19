@@ -25,6 +25,8 @@ const GameBoard: React.FC<GameBoardProps> = ({
   animatedBalls,
   onAnimationComplete
 }) => {
+  const [highlightedColumn, setHighlightedColumn] = React.useState<number | null>(null);
+
   return (
     <div className="game-board">
       <DragDropArea
@@ -32,12 +34,14 @@ const GameBoard: React.FC<GameBoardProps> = ({
         game={game}
         onColumnClick={onColumnClick}
         isAnimating={isAnimating}
+        onColumnHighlight={setHighlightedColumn}
       />
       <div className="grid-container" style={{ position: 'relative' }}>
         <Grid
           key={gridKey}
           game={game}
           onCellClick={onCellClick}
+          highlightedColumn={highlightedColumn}
         />
         {/* Render animated balls inside grid container */}
         {animatedBalls.map((ballPath, index) => (

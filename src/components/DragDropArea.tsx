@@ -6,12 +6,14 @@ interface DragDropAreaProps {
   game: Game;
   onColumnClick: (column: number) => void;
   isAnimating: boolean;
+  onColumnHighlight?: (column: number | null) => void;
 }
 
 const DragDropArea: React.FC<DragDropAreaProps> = ({
   game,
   onColumnClick,
   isAnimating,
+  onColumnHighlight,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [highlightedColumn, setHighlightedColumn] = useState<number | null>(null);
@@ -71,11 +73,13 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     if (column !== null && canDropInColumn(column)) {
       e.dataTransfer.dropEffect = "move";
       setHighlightedColumn(column);
+      onColumnHighlight?.(column);
     } else {
       e.dataTransfer.dropEffect = "none";
       setHighlightedColumn(null);
+      onColumnHighlight?.(null);
     }
-  }, [isDragging, getColumnFromPosition, canDropInColumn]);
+  }, [isDragging, getColumnFromPosition, canDropInColumn, onColumnHighlight]);
 
   // Handle drag enter
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -87,8 +91,9 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     // Only clear highlight if we're leaving the drag area entirely
     if (!dragAreaRef.current?.contains(e.relatedTarget as Node)) {
       setHighlightedColumn(null);
+      onColumnHighlight?.(null);
     }
-  }, []);
+  }, [onColumnHighlight]);
 
   // Handle drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -101,15 +106,17 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     
     setIsDragging(false);
     setHighlightedColumn(null);
+    onColumnHighlight?.(null);
     setDragStarted(false);
-  }, [getColumnFromPosition, canDropInColumn, onColumnClick]);
+  }, [getColumnFromPosition, canDropInColumn, onColumnClick, onColumnHighlight]);
 
   // Handle drag end
   const handleDragEnd = useCallback(() => {
     setIsDragging(false);
     setHighlightedColumn(null);
+    onColumnHighlight?.(null);
     setDragStarted(false);
-  }, []);
+  }, [onColumnHighlight]);
 
   // Touch event handlers for mobile support
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -129,10 +136,12 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     
     if (column !== null && canDropInColumn(column)) {
       setHighlightedColumn(column);
+      onColumnHighlight?.(column);
     } else {
       setHighlightedColumn(null);
+      onColumnHighlight?.(null);
     }
-  }, [isDragging, getColumnFromPosition, canDropInColumn]);
+  }, [isDragging, getColumnFromPosition, canDropInColumn, onColumnHighlight]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (!isDragging) return;
@@ -147,8 +156,9 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     
     setIsDragging(false);
     setHighlightedColumn(null);
+    onColumnHighlight?.(null);
     setDragStarted(false);
-  }, [isDragging, getColumnFromPosition, canDropInColumn, onColumnClick]);
+  }, [isDragging, getColumnFromPosition, canDropInColumn, onColumnClick, onColumnHighlight]);
 
   // Get the current player's ball emoji and color
   const getCurrentPlayerBall = () => {
@@ -176,7 +186,8 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
 
       if (isHighlighted && canDrop) {
         indicatorClasses += " highlighted";
-        indicatorText = getCurrentPlayerBall();
+        // Don't show ball emoji in indicator when highlighted - it will be shown in the grid cell
+        indicatorText = "";
         titleText += " - Drop here!";
       } else if (gameMode === GameMode.HARD_MODE) {
         if (gameState === GameState.COLUMN_RESERVATION_PHASE && isReserved) {
