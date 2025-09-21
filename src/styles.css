@@ -376,6 +376,7 @@ header {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+    overflow: visible;
 }
 
 .column-selectors-container {
@@ -384,6 +385,22 @@ header {
     align-items: center;
     margin-bottom: 3px;
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.column-selectors-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.column-selectors-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+}
+
+.column-selectors-container::-webkit-scrollbar-thumb {
+    background: var(--brand-primary);
+    border-radius: 2px;
 }
 
 .column-selectors {
@@ -626,6 +643,7 @@ header {
     background: var(--grid-background);
     width: 100%;
     max-width: 600px;
+    position: relative;
 }
 
 .grid {
@@ -1363,19 +1381,31 @@ header {
     }
     
     .game-board {
-        max-width: min(95vw, 450px);
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .grid-container {
+        width: 100%;
+        max-width: 100%;
     }
     
     .grid {
-        max-width: min(95vw, 450px);
+        width: 100%;
+        max-width: 100%;
+        min-width: 350px;
     }
     
     .column-selectors-container {
         width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .column-selectors {
-        max-width: min(95vw, 450px);
+        width: 100%;
+        max-width: 100%;
+        min-width: 350px;
         gap: 1px;
     }
     
@@ -1384,9 +1414,10 @@ header {
     }
     
     .column-selector {
-        padding: 8px 2px;
-        font-size: 16px;
-        min-height: 40px;
+        padding: 6px 2px;
+        font-size: 14px;
+        min-height: 36px;
+        flex: 1;
     }
     
     .players-container {
@@ -1403,33 +1434,78 @@ header {
 
 /* Mobile phones */
 @media (max-width: 480px) {
+    body {
+        padding-top: 5px;
+        overflow-x: auto;
+    }
+    
     .game-container {
-        padding: 10px;
+        padding: 8px;
         margin: 5px;
         width: calc(100vw - 10px);
+        max-width: none;
+        min-width: 320px;
+        overflow-x: auto;
     }
     
     .game-board {
-        max-width: min(98vw, 350px);
+        max-width: 100%;
+        width: 100%;
+        min-width: 320px;
+        overflow-x: auto;
+    }
+    
+    .grid-container {
+        width: 100%;
+        max-width: 100%;
+        min-width: 320px;
+        overflow: visible;
+        border-width: 2px;
     }
     
     .grid {
-        max-width: min(98vw, 350px);
+        width: 100%;
+        max-width: 100%;
+        min-width: 320px;
+        aspect-ratio: 1;
+        height: auto;
+    }
+    
+    .column-selectors-container {
+        width: 100%;
+        min-width: 320px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        padding-bottom: 5px;
     }
     
     .column-selectors {
-        max-width: min(98vw, 350px);
+        width: 100%;
+        max-width: 100%;
+        min-width: 320px;
         gap: 0px;
+        display: grid;
+        grid-template-columns: repeat(20, minmax(16px, 1fr));
     }
     
     .column-selector {
-        padding: 6px 1px;
-        font-size: 14px;
-        min-height: 36px;
+        padding: 4px 1px;
+        font-size: 12px;
+        min-height: 32px;
+        min-width: 16px;
+        box-sizing: border-box;
     }
     
     .column-number {
         font-size: 6px;
+    }
+    
+    .cell {
+        font-size: 10px;
+        min-height: 16px;
+        min-width: 16px;
+        box-sizing: border-box;
     }
     
     .game-logo {
@@ -1706,40 +1782,73 @@ header {
 /* Very small phones */
 @media (max-width: 360px) {
     .game-container {
-        padding: 8px;
+        padding: 5px;
         margin: 2px;
+        width: calc(100vw - 4px);
+        min-width: 300px;
+        overflow-x: auto;
+    }
+    
+    .game-board {
+        min-width: 300px;
+        overflow-x: auto;
+    }
+    
+    .grid-container {
+        width: 100%;
+        max-width: 100%;
+        min-width: 300px;
+        border-width: 1px;
     }
     
     .grid {
-        width: min(99vw, 300px);
-        height: min(99vw, 300px);
+        width: 100%;
+        max-width: 100%;
+        min-width: 300px;
+        aspect-ratio: 1;
+    }
+    
+    .column-selectors-container {
+        width: 100%;
+        min-width: 300px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 5px;
     }
     
     .column-selectors {
-        width: min(99vw, 300px);
-        gap: 1px;
-        max-width: min(99vw, 300px);
+        width: 100%;
+        max-width: 100%;
+        min-width: 300px;
+        gap: 0px;
+        display: grid;
+        grid-template-columns: repeat(20, minmax(15px, 1fr));
     }
     
     .column-number {
-        font-size: 6px;
+        font-size: 5px;
     }
     
     .column-selector {
-        font-size: 12px;
-        padding: 3px 1px;
-        min-height: 28px;
-        border-radius: 3px;
+        font-size: 10px;
+        padding: 2px 1px;
+        min-height: 24px;
+        border-radius: 2px;
+        min-width: 15px;
+        box-sizing: border-box;
     }
     
     .cell {
-        font-size: clamp(7px, 1.5vw, 10px);
+        font-size: 8px;
+        min-height: 15px;
+        min-width: 15px;
+        box-sizing: border-box;
     }
     
     .animated-ball {
-        width: 18px;
-        height: 18px;
-        font-size: 10px;
+        width: 16px;
+        height: 16px;
+        font-size: 8px;
     }
     
     .game-logo {
