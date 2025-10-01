@@ -23,12 +23,39 @@ const App: React.FC = () => {
   const [player1Score, setPlayer1Score] = useState<number>(0);
   const [player2Score, setPlayer2Score] = useState<number>(0);
   const [animatedBalls, setAnimatedBalls] = useState<BallPath[]>([]);
+  const [columns, setColumns] = useState<number>(20);
+
+  // Function to get responsive column count
+  const getResponsiveColumns = useCallback(() => {
+    return window.innerWidth <= 768 ? 15 : 20;
+  }, []);
+
+  // Handle window resize to update columns responsively
+  useEffect(() => {
+    const handleResize = () => {
+      const newColumns = getResponsiveColumns();
+      if (newColumns !== columns && game) {
+        setColumns(newColumns);
+        game.setColumns(newColumns);
+        setGridKey((prev) => prev + 1);
+      }
+    };
+
+    // Set initial columns based on screen size
+    const initialColumns = getResponsiveColumns();
+    setColumns(initialColumns);
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [columns, game, getResponsiveColumns]);
 
   // Initialize game
   useEffect(() => {
     const initialGameMode = loadGameMode();
+    const initialColumns = getResponsiveColumns();
     const gameInstance = new Game({
       gridSize: 20,
+      columns: initialColumns,
       ballsPerPlayer: 10,
       minBoxes: 15,
       maxBoxes: 30,
@@ -109,6 +136,7 @@ const App: React.FC = () => {
     // Initialize the game
     gameInstance.startNewGame();
     setGame(gameInstance);
+    setColumns(initialColumns);
 
     // Make game available globally for debugging
     (window as any).game = gameInstance;
@@ -128,7 +156,7 @@ const App: React.FC = () => {
     return () => {
       // Cleanup if needed
     };
-  }, []);
+  }, [getResponsiveColumns]);
 
   const updateGameMessage = useCallback((gameInstance: Game) => {
     const state = gameInstance.getState();
@@ -281,6 +309,8 @@ const App: React.FC = () => {
     },
     [game]
   );
+
+
 
   const handleAnimationComplete = useCallback(
     (ballPath: BallPath) => {

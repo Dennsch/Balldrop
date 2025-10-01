@@ -5,6 +5,9 @@
 }
 
 :root {
+    /* Grid configuration */
+    --grid-columns: 20;
+    
     /* Animation timing variables - can be dynamically updated */
     --ball-transition-duration: 0.35s;
     --cell-transition-duration: 0.15s;
@@ -405,7 +408,7 @@ header {
 
 .column-selectors {
     display: grid;
-    grid-template-columns: repeat(20, 1fr);
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
     gap: 1px;
     width: 100%;
     max-width: 600px;
@@ -648,7 +651,7 @@ header {
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(20, 1fr);
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
     grid-template-rows: repeat(20, 1fr);
     gap: 1px;
     width: 100%;
@@ -854,6 +857,8 @@ header {
     margin-bottom: 20px;
     flex-wrap: wrap;
 }
+
+
 
 
 

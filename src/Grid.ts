@@ -3,9 +3,11 @@ import { Cell, CellType, Direction, Position, Player, BallPath, BallPathStep, Do
 export class Grid {
     private cells: Cell[][];
     private readonly size: number;
+    private readonly columns: number;
 
-    constructor(size: number = 20) {
+    constructor(size: number = 20, columns: number = 20) {
         this.size = size;
+        this.columns = columns;
         this.cells = this.initializeGrid();
     }
 
@@ -13,7 +15,7 @@ export class Grid {
         const grid: Cell[][] = [];
         for (let row = 0; row < this.size; row++) {
             grid[row] = [];
-            for (let col = 0; col < this.size; col++) {
+            for (let col = 0; col < this.columns; col++) {
                 grid[row][col] = { type: CellType.EMPTY };
             }
         }
@@ -36,7 +38,7 @@ export class Grid {
     }
 
     public isValidPosition(row: number, col: number): boolean {
-        return row >= 0 && row < this.size && col >= 0 && col < this.size;
+        return row >= 0 && row < this.size && col >= 0 && col < this.columns;
     }
 
     public placeRandomBoxes(minBoxes: number, maxBoxes: number): void {
@@ -46,7 +48,7 @@ export class Grid {
 
         // Generate all possible positions (excluding first and last rows)
         for (let row = 1; row < this.size - 1; row++) {
-            for (let col = 0; col < this.size; col++) {
+            for (let col = 0; col < this.columns; col++) {
                 positions.push({ row, col });
             }
         }
@@ -76,7 +78,7 @@ export class Grid {
 
         // Generate all possible positions (excluding first and last rows, and occupied cells)
         for (let row = 1; row < this.size - 1; row++) {
-            for (let col = 0; col < this.size; col++) {
+            for (let col = 0; col < this.columns; col++) {
                 if (this.cells[row][col].type === CellType.EMPTY) {
                     availablePositions.push({ row, col });
                 }
@@ -341,7 +343,7 @@ export class Grid {
 
     public getColumnWinners(): (Player | null)[] {
         const winners: (Player | null)[] = [];
-        for (let col = 0; col < this.size; col++) {
+        for (let col = 0; col < this.columns; col++) {
             winners.push(this.getColumnWinner(col));
         }
         return winners;
@@ -388,7 +390,7 @@ export class Grid {
         let ballIdCounter = 0;
 
         for (let row = 0; row < this.size; row++) {
-            for (let col = 0; col < this.size; col++) {
+            for (let col = 0; col < this.columns; col++) {
                 const cell = this.cells[row][col];
                 if (cell.type === CellType.DORMANT_BALL_P1 || cell.type === CellType.DORMANT_BALL_P2) {
                     const player = cell.type === CellType.DORMANT_BALL_P1 ? Player.PLAYER1 : Player.PLAYER2;
@@ -411,7 +413,7 @@ export class Grid {
 
     public clearGrid(): void {
         for (let row = 0; row < this.size; row++) {
-            for (let col = 0; col < this.size; col++) {
+            for (let col = 0; col < this.columns; col++) {
                 this.cells[row][col] = { type: CellType.EMPTY };
             }
         }
@@ -419,6 +421,10 @@ export class Grid {
 
     public getSize(): number {
         return this.size;
+    }
+
+    public getColumns(): number {
+        return this.columns;
     }
 
     public getCells(): Cell[][] {
@@ -434,7 +440,7 @@ export class Grid {
 
     private findOtherPortalPosition(portalType: CellType, currentPortalPosition: Position): Position | null {
         for (let row = 0; row < this.size; row++) {
-            for (let col = 0; col < this.size; col++) {
+            for (let col = 0; col < this.columns; col++) {
                 if (this.cells[row][col].type === portalType && 
                     !(row === currentPortalPosition.row && col === currentPortalPosition.col)) {
                     return { row, col };

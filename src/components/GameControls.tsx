@@ -3,12 +3,17 @@ import { getSoundManager } from '../utils/SoundManager.js';
 
 interface GameControlsProps {
   onNewGame: () => void;
+  onColumnsChange?: (columns: number) => void;
+  currentColumns?: number;
 }
 
 const GameControls: React.FC<GameControlsProps> = ({
-  onNewGame
+  onNewGame,
+  onColumnsChange,
+  currentColumns = 20
 }) => {
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [columns, setColumns] = useState(currentColumns);
   const soundManager = getSoundManager();
 
   useEffect(() => {
@@ -31,6 +36,14 @@ const GameControls: React.FC<GameControlsProps> = ({
     onNewGame();
   };
 
+  const handleColumnsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newColumns = parseInt(event.target.value, 10);
+    setColumns(newColumns);
+    if (onColumnsChange) {
+      onColumnsChange(newColumns);
+    }
+  };
+
   return (
     <div className="game-controls">
       <button 
@@ -40,6 +53,20 @@ const GameControls: React.FC<GameControlsProps> = ({
       >
         New Game
       </button>
+      
+      <div className="control-group">
+        <label htmlFor="columns-input">Columns:</label>
+        <input
+          id="columns-input"
+          type="range"
+          min="5"
+          max="30"
+          value={columns}
+          onChange={handleColumnsChange}
+          className="columns-slider"
+        />
+        <span className="columns-value">{columns}</span>
+      </div>
       
       <button 
         className="btn btn-secondary"

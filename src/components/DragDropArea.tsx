@@ -22,6 +22,7 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
   const dragBallRef = useRef<HTMLDivElement>(null);
 
   const gridSize = game.getGrid().getSize();
+  const columns = game.getGrid().getColumns();
   const gameMode = game.getGameMode();
   const gameState = game.getState();
   const currentPlayer = game.getCurrentPlayer();
@@ -34,10 +35,10 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     
     const rect = dragAreaRef.current.getBoundingClientRect();
     const relativeX = clientX - rect.left;
-    const columnWidth = rect.width / gridSize;
+    const columnWidth = rect.width / columns;
     const column = Math.floor(relativeX / columnWidth);
     
-    return column >= 0 && column < gridSize ? column : null;
+    return column >= 0 && column < columns ? column : null;
   }, [gridSize]);
 
   // Check if a column can accept a ball drop
@@ -171,9 +172,9 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
 
   // Generate column indicators with appropriate styling
   const renderColumnIndicators = () => {
-    const columns = Array.from({ length: gridSize }, (_, i) => i);
+    const columnArray = Array.from({ length: columns }, (_, i) => i);
     
-    return columns.map((column) => {
+    return columnArray.map((column) => {
       const canDrop = canDropInColumn(column);
       const columnWinner = columnWinners[column];
       const isReserved = columnReservation.reservedColumnOwners.has(column);
