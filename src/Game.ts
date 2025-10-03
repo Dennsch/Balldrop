@@ -33,6 +33,7 @@ export class Game {
   constructor(config: Partial<GameConfig> = {}) {
     this.config = {
       gridSize: 20,
+      columns: 20,
       ballsPerPlayer: 10,
       minBoxes: 15,
       maxBoxes: 30,
@@ -40,7 +41,7 @@ export class Game {
       ...config,
     };
 
-    this.grid = new Grid(this.config.gridSize);
+    this.grid = new Grid(this.config.gridSize, this.config.columns);
     this.state = GameState.SETUP;
     this.currentPlayer = Player.PLAYER1;
     this.ballsRemaining = new Map();
@@ -752,6 +753,13 @@ export class Game {
     this.config.gameMode = mode;
     // Reset the game when mode changes
     this.reset();
+  }
+
+  public setColumns(columns: number): void {
+    this.config.columns = Math.max(5, Math.min(30, columns)); // Limit between 5 and 30
+    this.grid = new Grid(this.config.gridSize, this.config.columns);
+    // Only start a new game instead of full reset to preserve the number of rows
+    this.startNewGame();
   }
 
   public canExecuteAllMoves(): boolean {

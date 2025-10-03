@@ -51,6 +51,7 @@ export interface Cell {
 
 export interface GameConfig {
     gridSize: number;
+    columns: number;
     ballsPerPlayer: number;
     minBoxes: number;
     maxBoxes: number;

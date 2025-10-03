@@ -11,11 +11,15 @@ interface GridProps {
 const Grid: React.FC<GridProps> = ({ game, onCellClick, highlightedColumn }) => {
   const [gridData, setGridData] = useState(game.getGrid().getCells());
   const gridSize = game.getGrid().getSize();
+  const columns = game.getGrid().getColumns();
 
-  // Set fixed fast animation timing CSS variables
+  // Set CSS variables for grid configuration and animations
   useEffect(() => {
     const CSS_MULTIPLIER = 0.5; // Fast speed
     const root = document.documentElement;
+
+    // Update grid columns CSS custom property
+    root.style.setProperty("--grid-columns", columns.toString());
 
     // Update CSS custom properties for fast animations
     root.style.setProperty(
@@ -54,7 +58,7 @@ const Grid: React.FC<GridProps> = ({ game, onCellClick, highlightedColumn }) => 
       "--ball-place-animation-duration",
       `${0.4 * CSS_MULTIPLIER}s`
     );
-  }, []); // Run once on mount
+  }, [columns]); // Re-run when columns change
 
   // Update grid data when game state changes
   useEffect(() => {
@@ -64,7 +68,7 @@ const Grid: React.FC<GridProps> = ({ game, onCellClick, highlightedColumn }) => 
   // Create grid cells
   const cells = [];
   for (let row = 0; row < gridSize; row++) {
-    for (let col = 0; col < gridSize; col++) {
+    for (let col = 0; col < columns; col++) {
       const isHighlighted = highlightedColumn === col && row === 0;
       cells.push(
         <Cell
