@@ -49,16 +49,16 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
           // Handle different states for hard mode
           if (gameMode === GameMode.HARD_MODE) {
             if (gameState === GameState.COLUMN_RESERVATION_PHASE && isReserved) {
-              // Show reserved columns with hovering ball indicator
+              // Show reserved columns with ball indicator
               buttonClasses += " reserved-column";
               if (reservedBy === Player.PLAYER1) {
                 buttonClasses += " reserved-by-player1";
-                buttonText = "🔴"; // Red ball hovering
-                titleText = `Column ${column + 1} - Reserved by Player 1`;
+                buttonText = "●";
+                titleText = `Column ${column + 1} - Placed by Player 1`;
               } else if (reservedBy === Player.PLAYER2) {
                 buttonClasses += " reserved-by-player2";
-                buttonText = "🔵"; // Blue ball hovering
-                titleText = `Column ${column + 1} - Reserved by Player 2`;
+                buttonText = "●";
+                titleText = `Column ${column + 1} - Placed by Player 2`;
               }
             } else if (gameState === GameState.BALL_RELEASE_PHASE && isReserved) {
               // Show reserved columns that can be released
@@ -67,30 +67,24 @@ const ColumnSelectors: React.FC<ColumnSelectorsProps> = ({
 
               if (reservedBy === Player.PLAYER1) {
                 buttonClasses += " reserved-by-player1";
-                buttonText = "🔴"; // Red ball ready to release
-                titleText = `Column ${
-                  column + 1
-                } - Player 1 ball ready to release`;
+                buttonText = "●";
+                titleText = `Column ${column + 1} - Player 1's ball`;
 
-                // Highlight if it's Player 1's turn and they can release from this column
                 if (currentPlayer === Player.PLAYER1 && canDrop) {
                   buttonClasses += " current-player-turn";
-                  titleText += " - Your turn!";
+                  titleText += " - Your turn to release!";
                 } else if (currentPlayer !== Player.PLAYER1) {
                   buttonClasses += " not-current-turn";
                   titleText += " - Wait for your turn";
                 }
               } else if (reservedBy === Player.PLAYER2) {
                 buttonClasses += " reserved-by-player2";
-                buttonText = "🔵"; // Blue ball ready to release
-                titleText = `Column ${
-                  column + 1
-                } - Player 2 ball ready to release`;
+                buttonText = "●";
+                titleText = `Column ${column + 1} - Player 2's ball`;
 
-                // Highlight if it's Player 2's turn and they can release from this column
                 if (currentPlayer === Player.PLAYER2 && canDrop) {
                   buttonClasses += " current-player-turn";
-                  titleText += " - Your turn!";
+                  titleText += " - Your turn to release!";
                 } else if (currentPlayer !== Player.PLAYER2) {
                   buttonClasses += " not-current-turn";
                   titleText += " - Wait for your turn";

@@ -56,7 +56,7 @@ const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick, isHighlighted,
 
   const getCellContent = () => {
     if (isHighlighted && cell.type === CellTypeEnum.EMPTY) {
-      const color = currentPlayer === Player.PLAYER1 ? '#FF6B6B' : '#4ECDC4';
+      const color = currentPlayer === Player.PLAYER1 ? '#E06C5E' : '#4A9EC2';
       return (
         <svg width="70%" height="70%" viewBox="0 0 16 16" fill="none">
           <circle cx="8" cy="8" r="7" fill={color} opacity="0.6" />

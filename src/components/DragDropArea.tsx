@@ -162,8 +162,8 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
 
   // Get the current player's ball visual
   const getCurrentPlayerBall = () => {
-    const color = currentPlayer === Player.PLAYER1 ? "#FF6B6B" : "#4ECDC4";
-    const highlight = currentPlayer === Player.PLAYER1 ? "#FF8A8A" : "#7EDDD7";
+    const color = currentPlayer === Player.PLAYER1 ? "#E06C5E" : "#4A9EC2";
+    const highlight = currentPlayer === Player.PLAYER1 ? "#F5A89F" : "#8DC8E2";
     return (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="10" fill={color} />
@@ -202,30 +202,30 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
           indicatorClasses += " reserved-column";
           if (reservedBy === Player.PLAYER1) {
             indicatorClasses += " reserved-by-player1";
-            indicatorText = "🔴";
-            titleText += " - Reserved by Player 1";
+            indicatorText = "●";
+            titleText += " - Placed by Player 1";
           } else if (reservedBy === Player.PLAYER2) {
             indicatorClasses += " reserved-by-player2";
-            indicatorText = "🔵";
-            titleText += " - Reserved by Player 2";
+            indicatorText = "●";
+            titleText += " - Placed by Player 2";
           }
         } else if (gameState === GameState.BALL_RELEASE_PHASE && isReserved) {
           indicatorClasses += " reserved-column";
           if (reservedBy === Player.PLAYER1) {
             indicatorClasses += " reserved-by-player1";
-            indicatorText = "🔴";
-            titleText += " - Player 1 ball ready to release";
+            indicatorText = "●";
+            titleText += " - Player 1's ball";
             if (currentPlayer === Player.PLAYER1 && canDrop) {
               indicatorClasses += " current-player-turn";
-              titleText += " - Your turn!";
+              titleText += " - Your turn to release!";
             }
           } else if (reservedBy === Player.PLAYER2) {
             indicatorClasses += " reserved-by-player2";
-            indicatorText = "🔵";
-            titleText += " - Player 2 ball ready to release";
+            indicatorText = "●";
+            titleText += " - Player 2's ball";
             if (currentPlayer === Player.PLAYER2 && canDrop) {
               indicatorClasses += " current-player-turn";
-              titleText += " - Your turn!";
+              titleText += " - Your turn to release!";
             }
           }
         } else if (columnWinner !== null) {
@@ -314,6 +314,10 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
         <div className="drag-instructions">
           {isAnimating 
             ? "Animation in progress..." 
+            : gameState === GameState.COLUMN_RESERVATION_PHASE
+            ? `Player ${currentPlayer}: Drag ball to a column to place it (ball won't drop yet)`
+            : gameState === GameState.BALL_RELEASE_PHASE
+            ? `Player ${currentPlayer}: Drag ball to one of your columns to release it`
             : `Drag the ${currentPlayer === Player.PLAYER1 ? 'red' : 'blue'} ball to a column to drop it`
           }
         </div>

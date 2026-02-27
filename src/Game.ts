@@ -11,6 +11,7 @@ import {
   BallReleaseSelection,
   DormantBall,
   ColumnReservation,
+  CellType,
 } from "./types.js";
 import { SoundManager } from "./utils/SoundManager.js";
 
@@ -191,7 +192,8 @@ export class Game {
       return false;
     }
 
-    if (this.grid.isColumnFull(col)) {
+    // Column must be valid
+    if (col < 0 || col >= this.config.gridSize) {
       return false;
     }
 
@@ -209,9 +211,15 @@ export class Game {
       return false;
     }
 
-    // Reserve the column (don't place ball yet)
+    // Reserve the column and place a dormant ball at the top (row 0)
     currentReservedColumns.push(col);
     this.columnReservation.reservedColumnOwners.set(col, this.currentPlayer);
+
+    // Place a dormant ball at row 0 so it's visually sitting at the top
+    const dormantType = this.currentPlayer === Player.PLAYER1 
+      ? CellType.DORMANT_BALL_P1 
+      : CellType.DORMANT_BALL_P2;
+    this.grid.setCell(0, col, { type: dormantType, player: this.currentPlayer });
 
     // Check if all columns have been reserved by both players
     const totalColumnsReserved =
@@ -329,14 +337,9 @@ export class Game {
 
     const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
 
-    // TURN-BASED RESTRICTION: Only the current player can release balls
+    // TURN-BASED RESTRICTION: Only the current player can release their own balls
     if (columnOwner !== this.currentPlayer) {
-      return false; // Not the current player's turn
-    }
-
-    // Check if column is full
-    if (this.grid.isColumnFull(col)) {
-      return false;
+      return false; // Not the current player's column
     }
 
     // Check if this column still has balls to release (each ball can only be released once)
@@ -347,6 +350,17 @@ export class Game {
 
     if (!currentReservedColumns.includes(col)) {
       return false; // No more balls to release from this column
+    }
+
+    // Remove the dormant ball from row 0 before calculating physics path
+    const topCell = this.grid.getCell(0, col);
+    if (topCell && (topCell.type === CellType.DORMANT_BALL_P1 || topCell.type === CellType.DORMANT_BALL_P2)) {
+      this.grid.setCell(0, col, { type: CellType.EMPTY });
+    }
+
+    // Check if column is full (after removing dormant ball)
+    if (this.grid.isColumnFull(col)) {
+      return false;
     }
 
     // Calculate the ball path without applying changes to the grid yet (like normal mode)
@@ -370,20 +384,8 @@ export class Game {
       this.soundManager.playSound("pop", 0.6);
 
       // Trigger ball dropped callback for animation (like normal mode)
-      console.log("🎬 releaseBall: About to trigger animation callback", {
-        hasCallback: !!this.onBallDropped,
-        ballPath: result.ballPath,
-        startColumn: result.ballPath.startColumn,
-        player: result.ballPath.player,
-      });
-
       if (this.onBallDropped) {
         this.onBallDropped(result.ballPath);
-        console.log(
-          "🎬 releaseBall: Animation callback triggered successfully"
-        );
-      } else {
-        console.warn("🎬 releaseBall: No animation callback registered!");
       }
 
       return true;
@@ -393,15 +395,6 @@ export class Game {
   }
 
   public completeBallRelease(ballPath: BallPath): void {
-    console.log(
-      "🎬 completeBallRelease: Animation completed, applying ball path",
-      {
-        startColumn: ballPath.startColumn,
-        player: ballPath.player,
-        finalPosition: ballPath.finalPosition,
-      }
-    );
-
     // Apply the ball path changes to the grid after animation completes (like normal mode)
     this.grid.applyBallPath(ballPath);
 
@@ -600,7 +593,8 @@ export class Game {
       return false;
     }
 
-    if (this.grid.isColumnFull(col)) {
+    // Column must be valid
+    if (col < 0 || col >= this.config.gridSize) {
       return false;
     }
 
@@ -629,9 +623,9 @@ export class Game {
 
     const columnOwner = this.columnReservation.reservedColumnOwners.get(col);
 
-    // TURN-BASED RESTRICTION: Only the current player can release balls
+    // TURN-BASED RESTRICTION: Only the current player can release their own balls
     if (columnOwner !== this.currentPlayer) {
-      return false; // Not the current player's turn
+      return false; // Not the current player's column
     }
 
     // Check if this column still has balls to release (each ball can only be released once)
@@ -641,11 +635,10 @@ export class Game {
         : this.columnReservation.player2ReservedColumns;
 
     if (!currentReservedColumns.includes(col)) {
-      return false; // No more balls to release from this column
+      return false; // Already released from this column
     }
 
-    // Check if column is full
-    return !this.grid.isColumnFull(col);
+    return true;
   }
 
   public canSelectMove(col: number): boolean {

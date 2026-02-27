@@ -155,7 +155,7 @@ const App: React.FC = () => {
             columnReservation.player2ReservedColumns.length;
           const totalNeeded = gameInstance.getConfig().ballsPerPlayer * 2;
           setGameMessage(
-            `Hard Mode - Player ${currentPlayer}'s turn to reserve a column (${totalReserved}/${totalNeeded} columns reserved)`
+            `Placement Phase - Player ${currentPlayer}'s turn to place a ball (${totalReserved}/${totalNeeded} placed)`
           );
         } else {
           setGameMessage("Reserve your columns");
@@ -167,9 +167,9 @@ const App: React.FC = () => {
           const totalPlaced =
             moveSelection.player1Moves.length +
             moveSelection.player2Moves.length;
-          const totalNeeded = gameInstance.getConfig().ballsPerPlayer * 2;
+          const totalNeeded2 = gameInstance.getConfig().ballsPerPlayer * 2;
           setGameMessage(
-            `Hard Mode - Player ${currentPlayer}'s turn to place a ball (${totalPlaced}/${totalNeeded} balls placed)`
+            `Hard Mode - Player ${currentPlayer}'s turn to place a ball (${totalPlaced}/${totalNeeded2} balls placed)`
           );
         } else {
           setGameMessage("Place your balls on the grid");
@@ -177,7 +177,7 @@ const App: React.FC = () => {
         break;
       case GameState.BALL_RELEASE_PHASE:
         setGameMessage(
-          "Release Phase - Drag the ball to your reserved columns to release balls"
+          `Release Phase - Player ${currentPlayer}'s turn to release a ball`
         );
         break;
       case GameState.FINISHED:
