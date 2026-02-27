@@ -32,7 +32,13 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             }`}
           >
             <div className="player-avatar">
-              <div className="avatar-icon">🔴</div>
+              <div className="avatar-icon">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <circle cx="16" cy="16" r="14" fill="#FF6B6B" />
+                  <circle cx="16" cy="16" r="10" fill="#FF8A8A" opacity="0.4" />
+                  <circle cx="12" cy="12" r="3" fill="white" opacity="0.3" />
+                </svg>
+              </div>
               {currentPlayer === Player.PLAYER1 && (
                 <div className="active-indicator"></div>
               )}
@@ -41,14 +47,12 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               <div className="player-name">Player 1</div>
               <div className="player-stats">
                 <div className="stat-item">
-                  <span className="stat-icon">⚽</span>
                   <span className="stat-value">{player1Balls}</span>
                   <span className="stat-label">balls</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-icon">🏆</span>
                   <span className="stat-value">{player1Score}</span>
-                  <span className="stat-label">columns</span>
+                  <span className="stat-label">cols</span>
                 </div>
               </div>
             </div>
@@ -60,7 +64,13 @@ const GameHeader: React.FC<GameHeaderProps> = ({
             }`}
           >
             <div className="player-avatar">
-              <div className="avatar-icon">🔵</div>
+              <div className="avatar-icon">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <circle cx="16" cy="16" r="14" fill="#4ECDC4" />
+                  <circle cx="16" cy="16" r="10" fill="#7EDDD7" opacity="0.4" />
+                  <circle cx="12" cy="12" r="3" fill="white" opacity="0.3" />
+                </svg>
+              </div>
               {currentPlayer === Player.PLAYER2 && (
                 <div className="active-indicator"></div>
               )}
@@ -69,22 +79,18 @@ const GameHeader: React.FC<GameHeaderProps> = ({
               <div className="player-name">Player 2</div>
               <div className="player-stats">
                 <div className="stat-item">
-                  <span className="stat-icon">⚽</span>
                   <span className="stat-value">{player2Balls}</span>
                   <span className="stat-label">balls</span>
                 </div>
                 <div className="stat-item">
-                  <span className="stat-icon">🏆</span>
                   <span className="stat-value">{player2Score}</span>
-                  <span className="stat-label">columns</span>
+                  <span className="stat-label">cols</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-     
     </header>
   );
 };

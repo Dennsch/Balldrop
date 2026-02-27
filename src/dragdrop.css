@@ -1,9 +1,9 @@
-/* Drag and Drop Area Styles */
+/* Drag and Drop Area Styles — Soft Clay Light Theme */
 .drag-drop-area-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     width: 100%;
 }
 
@@ -11,51 +11,63 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 14px;
     width: 100%;
     max-width: 600px;
-    padding: 20px;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    border: 2px dashed var(--border-color);
-    border-radius: 15px;
-    transition: all 0.3s ease;
+    padding: 18px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    transition: all 0.35s ease;
     position: relative;
-    backdrop-filter: blur(5px);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Subtle top highlight on drag area */
+.drag-drop-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
+    pointer-events: none;
 }
 
 .drag-drop-area.dragging {
-    border-color: var(--brand-primary);
-    background: linear-gradient(135deg, rgba(255, 204, 51, 0.2), rgba(255, 204, 51, 0.1));
-    box-shadow: 0 0 20px rgba(255, 204, 51, 0.3);
+    border-color: var(--accent-warm);
+    background: rgba(232, 164, 74, 0.06);
+    box-shadow: 0 0 24px rgba(232, 164, 74, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .drag-drop-area.disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     pointer-events: none;
-    border-color: var(--button-disabled);
+    border-color: var(--border-subtle);
 }
 
 .draggable-ball {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
+    font-size: 28px;
     cursor: grab;
-    transition: all 0.3s ease;
-    border: 3px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 2px solid rgba(255, 255, 255, 0.6);
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    position: relative;
 }
 
 .draggable-ball:hover {
-    transform: scale(1.1);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 255, 255, 0.7);
+    transform: scale(1.12);
 }
 
 .draggable-ball:active,
@@ -66,27 +78,46 @@
 
 .draggable-ball.player1 {
     background: var(--player-1-color);
-    color: var(--text-light);
+    color: white;
+    box-shadow: 
+        0 4px 16px var(--player-1-glow),
+        0 0 24px rgba(224, 108, 94, 0.18);
+}
+
+.draggable-ball.player1:hover {
+    box-shadow: 
+        0 6px 24px var(--player-1-glow),
+        0 0 32px rgba(224, 108, 94, 0.25);
 }
 
 .draggable-ball.player2 {
     background: var(--player-2-color);
-    color: var(--text-light);
+    color: white;
+    box-shadow: 
+        0 4px 16px var(--player-2-glow),
+        0 0 24px rgba(74, 158, 194, 0.18);
+}
+
+.draggable-ball.player2:hover {
+    box-shadow: 
+        0 6px 24px var(--player-2-glow),
+        0 0 32px rgba(74, 158, 194, 0.25);
 }
 
 .drag-instructions {
-    font-size: 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text-muted);
     text-align: center;
     margin: 0;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
 }
 
 .drag-drop-area.dragging .drag-instructions {
+    color: var(--accent-warm);
     opacity: 1;
-    color: var(--brand-primary);
 }
 
 .column-indicators {
@@ -107,7 +138,7 @@
 
 .column-indicator {
     background: transparent;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     padding: 8px 4px;
     border-radius: 0;
     font-size: 16px;
@@ -118,33 +149,33 @@
     align-items: center;
     justify-content: center;
     user-select: none;
-    opacity: 0.3;
+    opacity: 0.2;
 }
 
 .column-indicator.highlighted {
-    background: linear-gradient(135deg, rgba(255, 204, 51, 0.3), rgba(255, 204, 51, 0.2));
+    background: rgba(232, 164, 74, 0.1);
     color: var(--text-primary);
-    transform: scale(1.2);
+    transform: scale(1.15);
     opacity: 1;
-    border: 2px solid var(--brand-primary);
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(255, 204, 51, 0.5);
-    animation: column-highlight-pulse 0.6s ease-in-out infinite;
+    border: 1px solid rgba(232, 164, 74, 0.3);
+    border-radius: 6px;
+    box-shadow: 0 0 12px rgba(232, 164, 74, 0.15);
+    animation: column-highlight-pulse 0.8s ease-in-out infinite;
 }
 
 .column-indicator.reserved-column {
-    opacity: 0.7;
+    opacity: 0.6;
     animation: pulse-reserved 2s infinite;
 }
 
 .column-indicator.reserved-by-player1 {
     color: var(--player-1-color);
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
 .column-indicator.reserved-by-player2 {
     color: var(--player-2-color);
-    opacity: 0.8;
+    opacity: 0.7;
 }
 
 .column-indicator.current-player-turn {
@@ -153,7 +184,7 @@
 }
 
 .column-indicator.secured-column {
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 .column-indicator.secured-by-player1 {
@@ -167,31 +198,31 @@
 }
 
 .column-indicator.disabled {
-    opacity: 0.2;
+    opacity: 0.15;
     cursor: not-allowed;
 }
 
 @keyframes column-highlight-pulse {
     0%, 100% {
-        box-shadow: 0 0 15px rgba(255, 204, 51, 0.5);
-        transform: scale(1.2);
+        box-shadow: 0 0 12px rgba(232, 164, 74, 0.15);
+        transform: scale(1.15);
     }
     50% {
-        box-shadow: 0 0 25px rgba(255, 204, 51, 0.8);
-        transform: scale(1.25);
+        box-shadow: 0 0 20px rgba(232, 164, 74, 0.25);
+        transform: scale(1.2);
     }
 }
 
 /* Touch support improvements */
 @media (hover: none) and (pointer: coarse) {
     .draggable-ball {
-        width: 60px;
-        height: 60px;
-        font-size: 36px;
+        width: 56px;
+        height: 56px;
+        font-size: 32px;
     }
     
     .drag-drop-area {
-        padding: 25px;
+        padding: 22px;
     }
     
     .column-indicator {
@@ -203,18 +234,18 @@
 /* Responsive adjustments for drag and drop */
 @media (max-width: 768px) {
     .drag-drop-area {
-        padding: 15px;
+        padding: 14px;
         gap: 10px;
     }
     
     .draggable-ball {
-        width: 45px;
-        height: 45px;
-        font-size: 28px;
+        width: 42px;
+        height: 42px;
+        font-size: 26px;
     }
     
     .drag-instructions {
-        font-size: 14px;
+        font-size: 12px;
     }
     
     .column-indicator {
@@ -226,35 +257,35 @@
 
 /* Highlighted drop target cell styles */
 .cell.highlighted-drop-target {
-    background: linear-gradient(135deg, rgba(255, 204, 51, 0.3), rgba(255, 204, 51, 0.2)) !important;
-    border: 2px solid var(--brand-primary) !important;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(255, 204, 51, 0.5);
-    animation: cell-highlight-pulse 0.6s ease-in-out infinite;
-    transform: scale(1.1);
+    background: rgba(232, 164, 74, 0.08) !important;
+    border: 1px solid rgba(232, 164, 74, 0.3) !important;
+    border-radius: 4px;
+    box-shadow: 0 0 12px rgba(232, 164, 74, 0.15);
+    animation: cell-highlight-pulse 0.8s ease-in-out infinite;
+    transform: scale(1.08);
     z-index: 10;
     position: relative;
 }
 
 .cell.highlighted-drop-target.highlighted-player1 {
-    background: linear-gradient(135deg, rgba(242, 92, 60, 0.3), rgba(242, 92, 60, 0.2)) !important;
-    border-color: var(--player-1-color) !important;
-    box-shadow: 0 0 15px rgba(242, 92, 60, 0.5);
+    background: rgba(224, 108, 94, 0.1) !important;
+    border-color: rgba(224, 108, 94, 0.35) !important;
+    box-shadow: 0 0 12px var(--player-1-glow);
 }
 
 .cell.highlighted-drop-target.highlighted-player2 {
-    background: linear-gradient(135deg, rgba(110, 207, 246, 0.3), rgba(110, 207, 246, 0.2)) !important;
-    border-color: var(--player-2-color) !important;
-    box-shadow: 0 0 15px rgba(110, 207, 246, 0.5);
+    background: rgba(74, 158, 194, 0.1) !important;
+    border-color: rgba(74, 158, 194, 0.35) !important;
+    box-shadow: 0 0 12px var(--player-2-glow);
 }
 
 @keyframes cell-highlight-pulse {
     0%, 100% {
-        box-shadow: 0 0 15px rgba(255, 204, 51, 0.5);
-        transform: scale(1.1);
+        box-shadow: 0 0 12px rgba(232, 164, 74, 0.15);
+        transform: scale(1.08);
     }
     50% {
-        box-shadow: 0 0 25px rgba(255, 204, 51, 0.8);
-        transform: scale(1.15);
+        box-shadow: 0 0 20px rgba(232, 164, 74, 0.25);
+        transform: scale(1.12);
     }
 }

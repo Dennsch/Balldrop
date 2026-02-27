@@ -78,17 +78,17 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
 
       // Add visual effects based on action
       if (action === 'portal_entry') {
-        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(138, 43, 226, 0.8)';
+        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15), 0 0 24px rgba(155, 127, 212, 0.6)';
         ball.style.transform = 'scale(0.8) rotate(360deg)';
         
         // Add portal glow effect to the portal cell
         if (portalPosition) {
           const portalElement = getCellElement(portalPosition.row, portalPosition.col);
           if (portalElement) {
-            portalElement.style.boxShadow = '0 0 20px rgba(138, 43, 226, 0.9), inset 0 0 20px rgba(138, 43, 226, 0.3)';
+            portalElement.style.boxShadow = '0 0 16px rgba(155, 127, 212, 0.7), inset 0 0 16px rgba(155, 127, 212, 0.2)';
             portalElement.style.transform = 'scale(1.1)';
             setTimeout(() => {
-              portalElement.style.boxShadow = '0 0 10px rgba(155, 89, 182, 0.5)';
+              portalElement.style.boxShadow = '0 0 8px rgba(155, 127, 212, 0.3)';
               portalElement.style.transform = 'scale(1)';
             }, getAnimatedDuration(300));
           }
@@ -101,16 +101,16 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
       } else if (action === 'portal_exit') {
         ball.style.opacity = '0.3';
         ball.style.transform = 'scale(0.6)';
-        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(138, 43, 226, 0.8)';
+        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15), 0 0 24px rgba(155, 127, 212, 0.6)';
         
         // Add portal glow effect to the exit portal
         if (portalPosition) {
           const portalElement = getCellElement(portalPosition.row, portalPosition.col);
           if (portalElement) {
-            portalElement.style.boxShadow = '0 0 20px rgba(138, 43, 226, 0.9), inset 0 0 20px rgba(138, 43, 226, 0.3)';
+            portalElement.style.boxShadow = '0 0 16px rgba(155, 127, 212, 0.7), inset 0 0 16px rgba(155, 127, 212, 0.2)';
             portalElement.style.transform = 'scale(1.1)';
             setTimeout(() => {
-              portalElement.style.boxShadow = '0 0 10px rgba(155, 89, 182, 0.5)';
+              portalElement.style.boxShadow = '0 0 8px rgba(155, 127, 212, 0.3)';
               portalElement.style.transform = 'scale(1)';
             }, getAnimatedDuration(300));
           }
@@ -119,14 +119,14 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
         setTimeout(() => {
           ball.style.opacity = '1';
           ball.style.transform = 'scale(1)';
-          ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
+          ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1), 0 0 12px rgba(0, 0, 0, 0.06)';
         }, getAnimatedDuration(150));
       } else if (action === 'redirect') {
         ball.style.transform = 'scale(1.3) rotate(360deg)';
-        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 255, 0, 0.8)';
+        ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.15), 0 0 24px rgba(232, 164, 74, 0.5)';
         setTimeout(() => {
           ball.style.transform = 'scale(1)';
-          ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)';
+          ball.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1), 0 0 12px rgba(0, 0, 0, 0.06)';
         }, getAnimatedDuration(120));
       } else if (action === 'fall') {
         ball.style.transform = 'scale(1.05)';
@@ -206,9 +206,11 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
     justifyContent: 'center',
     borderRadius: '50%',
     transition: `all ${0.35 * CSS_MULTIPLIER}s ease-in-out`,
-    border: '2px solid rgba(255, 255, 255, 0.8)',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)',
-    backgroundColor: ballPath.player === Player.PLAYER1 ? '#ff6b6b' : '#4ecdc4',
+    border: '2px solid rgba(255, 255, 255, 0.6)',
+    boxShadow: ballPath.player === Player.PLAYER1 
+      ? '0 4px 12px rgba(224, 108, 94, 0.4), 0 0 16px rgba(224, 108, 94, 0.2)' 
+      : '0 4px 12px rgba(74, 158, 194, 0.4), 0 0 16px rgba(74, 158, 194, 0.2)',
+    backgroundColor: ballPath.player === Player.PLAYER1 ? '#E06C5E' : '#4A9EC2',
     color: 'white',
     // Start off-screen
     left: '-100px',
