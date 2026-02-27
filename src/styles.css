@@ -641,15 +641,20 @@ header {
 .cell.has-dormant-ball-p1 {
     background: var(--player-1-bg);
     color: var(--player-1-color);
-    opacity: 0.75;
-    border: 1px dashed var(--player-1-light);
+    border: 1.5px dashed var(--player-1-light);
+    animation: dormant-pulse 2s ease-in-out infinite;
 }
 
 .cell.has-dormant-ball-p2 {
     background: var(--player-2-bg);
     color: var(--player-2-color);
-    opacity: 0.75;
-    border: 1px dashed var(--player-2-light);
+    border: 1.5px dashed var(--player-2-light);
+    animation: dormant-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dormant-pulse {
+    0%, 100% { opacity: 0.65; }
+    50% { opacity: 1; }
 }
 
 .cell.has-portal {
