@@ -160,9 +160,17 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
     setDragStarted(false);
   }, [isDragging, getColumnFromPosition, canDropInColumn, onColumnClick, onColumnHighlight]);
 
-  // Get the current player's ball emoji and color
+  // Get the current player's ball visual
   const getCurrentPlayerBall = () => {
-    return currentPlayer === Player.PLAYER1 ? "🔴" : "🔵";
+    const color = currentPlayer === Player.PLAYER1 ? "#FF6B6B" : "#4ECDC4";
+    const highlight = currentPlayer === Player.PLAYER1 ? "#FF8A8A" : "#7EDDD7";
+    return (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" fill={color} />
+        <circle cx="12" cy="12" r="7" fill={highlight} opacity="0.3" />
+        <circle cx="9" cy="9" r="2.5" fill="white" opacity="0.25" />
+      </svg>
+    );
   };
 
   const getCurrentPlayerColor = () => {

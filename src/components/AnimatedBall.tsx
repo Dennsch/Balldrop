@@ -206,8 +206,10 @@ const AnimatedBall: React.FC<AnimatedBallProps> = ({
     justifyContent: 'center',
     borderRadius: '50%',
     transition: `all ${0.35 * CSS_MULTIPLIER}s ease-in-out`,
-    border: '2px solid rgba(255, 255, 255, 0.8)',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 255, 255, 0.5)',
+    border: '2px solid rgba(255, 255, 255, 0.5)',
+    boxShadow: ballPath.player === Player.PLAYER1 
+      ? '0 4px 12px rgba(255, 107, 107, 0.5), 0 0 20px rgba(255, 107, 107, 0.3)' 
+      : '0 4px 12px rgba(78, 205, 196, 0.5), 0 0 20px rgba(78, 205, 196, 0.3)',
     backgroundColor: ballPath.player === Player.PLAYER1 ? '#ff6b6b' : '#4ecdc4',
     color: 'white',
     // Start off-screen

@@ -14,7 +14,6 @@ const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick, isHighlighted,
   const getCellClasses = () => {
     const classes = ['cell'];
     
-    // Add highlight class if this cell is highlighted
     if (isHighlighted) {
       classes.push('highlighted-drop-target');
       if (currentPlayer === Player.PLAYER1) {
@@ -49,7 +48,6 @@ const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick, isHighlighted,
         classes.push('has-portal');
         break;
       default:
-        // Empty cell - no additional classes
         break;
     }
     
@@ -57,26 +55,36 @@ const Cell: React.FC<CellProps> = ({ row, col, cell, onCellClick, isHighlighted,
   };
 
   const getCellContent = () => {
-    // If highlighted and empty, show the ball that would be dropped
     if (isHighlighted && cell.type === CellTypeEnum.EMPTY) {
-      return currentPlayer === Player.PLAYER1 ? '🔴' : '🔵';
+      const color = currentPlayer === Player.PLAYER1 ? '#FF6B6B' : '#4ECDC4';
+      return (
+        <svg width="70%" height="70%" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="7" fill={color} opacity="0.6" />
+        </svg>
+      );
     }
     
     switch (cell.type) {
       case CellTypeEnum.BOX:
         return (
           <span className="arrow">
-            {cell.direction === Direction.LEFT ? '←' : '→'}
+            {cell.direction === Direction.LEFT ? '\u2190' : '\u2192'}
           </span>
         );
       case CellTypeEnum.BALL_P1:
       case CellTypeEnum.BALL_P2:
       case CellTypeEnum.DORMANT_BALL_P1:
       case CellTypeEnum.DORMANT_BALL_P2:
-        return '●';
+        return '\u25CF';
       case CellTypeEnum.PORTAL_1:
       case CellTypeEnum.PORTAL_2:
-        return '🌀';
+        return (
+          <svg width="70%" height="70%" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.7" />
+            <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.5" />
+            <circle cx="8" cy="8" r="1" fill="currentColor" opacity="0.8" />
+          </svg>
+        );
       default:
         return null;
     }
