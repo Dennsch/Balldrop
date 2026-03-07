@@ -202,18 +202,15 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
           indicatorClasses += " reserved-column";
           if (reservedBy === Player.PLAYER1) {
             indicatorClasses += " reserved-by-player1";
-            indicatorText = "●";
             titleText += " - Placed by Player 1";
           } else if (reservedBy === Player.PLAYER2) {
             indicatorClasses += " reserved-by-player2";
-            indicatorText = "●";
             titleText += " - Placed by Player 2";
           }
         } else if (gameState === GameState.BALL_RELEASE_PHASE && isReserved) {
           indicatorClasses += " reserved-column";
           if (reservedBy === Player.PLAYER1) {
             indicatorClasses += " reserved-by-player1";
-            indicatorText = "●";
             titleText += " - Player 1's ball";
             if (currentPlayer === Player.PLAYER1 && canDrop) {
               indicatorClasses += " current-player-turn";
@@ -221,7 +218,6 @@ const DragDropArea: React.FC<DragDropAreaProps> = ({
             }
           } else if (reservedBy === Player.PLAYER2) {
             indicatorClasses += " reserved-by-player2";
-            indicatorText = "●";
             titleText += " - Player 2's ball";
             if (currentPlayer === Player.PLAYER2 && canDrop) {
               indicatorClasses += " current-player-turn";
