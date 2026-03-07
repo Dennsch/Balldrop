@@ -79,13 +79,13 @@
 .draggable-ball.player1 {
     background: var(--player-1-color);
     color: white;
-    box-shadow: 
+    box-shadow:
         0 4px 16px var(--player-1-glow),
         0 0 24px rgba(224, 108, 94, 0.18);
 }
 
 .draggable-ball.player1:hover {
-    box-shadow: 
+    box-shadow:
         0 6px 24px var(--player-1-glow),
         0 0 32px rgba(224, 108, 94, 0.25);
 }
@@ -93,13 +93,13 @@
 .draggable-ball.player2 {
     background: var(--player-2-color);
     color: white;
-    box-shadow: 
+    box-shadow:
         0 4px 16px var(--player-2-glow),
         0 0 24px rgba(74, 158, 194, 0.18);
 }
 
 .draggable-ball.player2:hover {
-    box-shadow: 
+    box-shadow:
         0 6px 24px var(--player-2-glow),
         0 0 32px rgba(74, 158, 194, 0.25);
 }
@@ -124,8 +124,15 @@
     display: grid;
     grid-template-columns: repeat(20, 1fr);
     gap: 1px;
-    width: 100%;
-    max-width: 600px;
+    width: calc(100% + 36px);
+    /* break out of 18px padding on each side */
+    margin-left: -18px;
+    margin-right: -18px;
+    padding-left: 2px;
+    /* account for grid-container 2px border */
+    padding-right: 2px;
+    max-width: none;
+    box-sizing: border-box;
 }
 
 .column-indicator-wrapper {
@@ -203,10 +210,13 @@
 }
 
 @keyframes column-highlight-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 12px rgba(232, 164, 74, 0.15);
         transform: scale(1.15);
     }
+
     50% {
         box-shadow: 0 0 20px rgba(232, 164, 74, 0.25);
         transform: scale(1.2);
@@ -220,11 +230,11 @@
         height: 56px;
         font-size: 32px;
     }
-    
+
     .drag-drop-area {
         padding: 22px;
     }
-    
+
     .column-indicator {
         min-height: 40px;
         font-size: 18px;
@@ -237,21 +247,28 @@
         padding: 14px;
         gap: 10px;
     }
-    
+
     .draggable-ball {
         width: 42px;
         height: 42px;
         font-size: 26px;
     }
-    
+
     .drag-instructions {
         font-size: 12px;
     }
-    
+
     .column-indicator {
         font-size: 14px;
         min-height: 28px;
         padding: 6px 2px;
+    }
+
+    .column-indicators {
+        width: calc(100% + 28px);
+        /* match 14px padding */
+        margin-left: -14px;
+        margin-right: -14px;
     }
 }
 
@@ -280,10 +297,13 @@
 }
 
 @keyframes cell-highlight-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 12px rgba(232, 164, 74, 0.15);
         transform: scale(1.08);
     }
+
     50% {
         box-shadow: 0 0 20px rgba(232, 164, 74, 0.25);
         transform: scale(1.12);
